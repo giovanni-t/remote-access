@@ -18,8 +18,14 @@
         android:layout_gravity="center_horizontal"
         android:onClick="onClickServer"
         />
+    <EditText
+        android:text="IP address to connect to"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/idIpAddrEditText"
+        />
     <Button
-        android:text="Client"
+        android:text="Connect as Client"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
