@@ -5,13 +5,13 @@
               android:layout_height="match_parent">
 
     <TextView
-        android:text="Received commands will be shown here"
+        android:hint="Received commands will be shown here\n"
         android:layout_width="match_parent"
         android:layout_height="173dp"
         android:id="@+id/idClientText"
         />
     <EditText
-        android:text="Write here"
+        android:hint="Write here"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/idClientEditText"
