@@ -8,13 +8,13 @@ import android.view.View;
  * Created by pacel_000 on 22/10/2015.
  */
 public class ServerActivity extends Activity {
-   @Override
-   protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.activity_server);
-   }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_server);
+    }
 
-   public void onClickSendCommand(View view){
+    public void onClickSendCommand(View view){
 
-   }
+    }
 }
