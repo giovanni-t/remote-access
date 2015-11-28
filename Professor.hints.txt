@@ -1,0 +1,9 @@
+Very important : intuitive interface for script composing.
+
+top requests to be satisfied :
+- request GPS position
+- request photo
+- streaming audio video ( only if advanced fase reached )
+
+moreover, the app should also have a sub-app that collects informations such as temperature, then it should reveal such informations when asked through the proper request.
+
