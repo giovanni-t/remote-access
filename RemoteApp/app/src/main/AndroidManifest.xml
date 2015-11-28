@@ -31,7 +31,9 @@
         </activity>
 
         <activity android:name=".ClientActivity"
-                  android:label="Client Activity">
+                  android:label="Client Activity"
+                  android:screenOrientation="portrait"
+            >
             <intent-filter>
                 <action android:name="com.example.mobserv.remoteapp.ClientActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
