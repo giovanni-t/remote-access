@@ -85,6 +85,19 @@ public class ClientActivity extends Activity {
         et.setSelection(et.getText().toString().length());
     }
 
+    public void onClickRead(View view){
+        String tmp = et.getText().toString();
+        tmp += "/READ/";
+        et.setText(tmp);
+        et.setSelection(et.getText().toString().length());
+    }
+
+    public void onClickExec(View view){
+        String tmp = et.getText().toString();
+        tmp += "/EXEC/";
+        et.setText(tmp);
+        et.setSelection(et.getText().toString().length());
+    }
 
     class ClientThread implements Runnable {
         BufferedReader inputStream;

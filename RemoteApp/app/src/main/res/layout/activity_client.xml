@@ -21,13 +21,42 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="onClick"
-        android:text="Send" >
+        android:text="Send"
+        android:layout_gravity="center"
+        >
     </Button>
-    <Button
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="WRITE"
-        android:onClick="onClickWrite"
+        android:layout_gravity="center"
+        android:text="Predefined commands"
         />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        >
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WRITE"
+            android:onClick="onClickWrite"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="READ"
+            android:onClick="onClickRead"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EXEC"
+            android:onClick="onClickExec"
+            />
+
+    </LinearLayout>
+
 
 </LinearLayout>
