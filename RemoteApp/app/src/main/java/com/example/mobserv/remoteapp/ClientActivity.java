@@ -76,6 +76,13 @@ public class ClientActivity extends Activity {
         }
     }
 
+    public void onClickWrite(View view){
+        String tmp = et.getText().toString();
+        tmp += "/WRITE/";
+        et.setText(tmp);
+        et.setSelection(et.getText().toString().length());
+    }
+
 
     class ClientThread implements Runnable {
         BufferedReader inputStream;
@@ -140,4 +147,21 @@ public class ClientActivity extends Activity {
             Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
         }
     }
+
+    /*
+    // TODO try if the two overrides wold preserve the connection, but they don't
+    // TODO actually, it would be better to close the connection to the server on exit
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+        savedInstanceState.putString("ipaddr", serverip);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        // Always call the superclass so it can restore the view hierarchy
+        serverip = (String) savedInstanceState.getString("ipaddr");
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+    */
 }

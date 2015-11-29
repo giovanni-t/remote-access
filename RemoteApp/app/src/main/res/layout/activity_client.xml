@@ -23,5 +23,11 @@
         android:onClick="onClick"
         android:text="Send" >
     </Button>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="WRITE"
+        android:onClick="onClickWrite"
+        />
 
 </LinearLayout>
