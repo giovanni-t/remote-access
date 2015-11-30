@@ -28,6 +28,7 @@ public class ClientActivity extends Activity {
     private TextView text;
     Handler updateConversationHandler;
     EditText et;
+    Thread th;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +42,9 @@ public class ClientActivity extends Activity {
         if(this.serverip.isEmpty()) {
             this.serverip = it.getStringExtra("serverip");
             et.setFocusable(false);
-            new Thread(new ClientThread()).start();
+            th = new Thread(new ClientThread());
+            th.start();
+
             // TODO avoid reconnect when activity is created again, for ex. after rotation
             // (I tried using this if statement but is not effective)
             // an idea could be keep the bg thread alive somehow, and start it only when the
@@ -80,21 +83,21 @@ public class ClientActivity extends Activity {
 
     public void onClickWrite(View view){
         String tmp = et.getText().toString();
-        tmp += "/WRITE/";
+        tmp += "/write/";
         et.setText(tmp);
         et.setSelection(et.getText().toString().length());
     }
 
     public void onClickRead(View view){
         String tmp = et.getText().toString();
-        tmp += "/READ/";
+        tmp += "/read/";
         et.setText(tmp);
         et.setSelection(et.getText().toString().length());
     }
 
     public void onClickExec(View view){
         String tmp = et.getText().toString();
-        tmp += "/EXEC/";
+        tmp += "/exec/";
         et.setText(tmp);
         et.setSelection(et.getText().toString().length());
     }
@@ -131,7 +134,10 @@ public class ClientActivity extends Activity {
                     updateConversationHandler.post(new updateUIThread(read));
                 } catch (IOException e) {
                     e.printStackTrace();
-                    runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
+                    if(!socket.isClosed())
+                        runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
+                    else
+                        runOnUiThread(new makeToast(e.getMessage()));
                     finish();
                     return;
                 }
@@ -148,7 +154,7 @@ public class ClientActivity extends Activity {
 
         @Override
         public void run() {
-            text.setText(text.getText().toString()+ msg + "\n");
+            text.setText(text.getText().toString() + msg + "\n");
         }
     }
 
@@ -172,6 +178,14 @@ public class ClientActivity extends Activity {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
                         ClientActivity.super.onBackPressed();
+                        // TODO try to close connection here
+                        try {
+                            th.interrupt();
+                            socket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
+                        }
                     }
                 }).create().show();
     }

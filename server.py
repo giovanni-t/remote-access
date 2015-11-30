@@ -10,6 +10,8 @@ class Chat(LineReceiver):
 
     def connectionMade(self):
         print "clients make connection "
+        self.sendLine("Hello, please choose a name")
+
 
     def connectionLost(self, reason):
         if self.clients.has_key(self.name):
@@ -68,21 +70,19 @@ class Chat(LineReceiver):
 
     def handle_Command(self, msg_array, raw_msg):
         print "clients are %s " %self.clients
-        if len(msg_array)>=3 :
-            if msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec':
-                if self.clients.has_key(msg_array[1]):
-                    ##need to send to the other clients
-                        if msg_array[1] != self.name :
-                            print "fowarding msg to %s " % self.clients[msg_array[1]].name
-                        self.message(msg_array[1], raw_msg)
-                else :
-                    self.broadcast(raw_msg)
+        if len(msg_array)>=3 and (msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec'):
+            if self.clients.has_key(msg_array[1]):
+                print "fowarding msg to %s " % self.clients[msg_array[1]].name
+                self.message(msg_array[1], raw_msg)
             else :
-                #broadcast the message if the array is less than 2 or the 3rd position is not name to send to
-                #for all other cases
-                self.broadcast(raw_msg)
+                #print "client %s not found. Broadcasting the message" % msg_array[1]
+                #self.broadcast(raw_msg)
+                print "client %s not found" % msg_array[1]
+            	self.message(self.name, "client %s not found" % msg_array[1])
         else :
-                 self.message(self.name, 'wrong command')
+            #self.broadcast(raw_msg)
+            self.message(self.name, 'wrong command')
+        
 
 class ChatFactory(Factory):
 
