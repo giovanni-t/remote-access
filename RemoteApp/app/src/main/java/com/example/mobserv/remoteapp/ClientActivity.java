@@ -142,6 +142,11 @@ public class ClientActivity extends Activity {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     String read = inputStream.readLine();
+                    String splits1[] = read.split(" ");
+                    String splits2[] = splits1[1].split("/");
+                    for(String s : splits2){
+                        runOnUiThread(new makeToast("received "+s));
+                    }
                     updateConversationHandler.post(new updateUIThread(read));
                 } catch (IOException e) {
                     e.printStackTrace();
