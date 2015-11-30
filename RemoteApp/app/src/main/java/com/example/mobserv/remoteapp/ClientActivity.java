@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
 import android.text.Layout;
+import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.EditText;
@@ -28,9 +29,10 @@ public class ClientActivity extends Activity {
     private static final int serverport = 45678;
     private String serverip = "";
     private TextView text;
-    Handler updateConversationHandler;
-    EditText et;
-    Thread th;
+    private Handler updateConversationHandler;
+    private EditText et;
+    private Thread th;
+    private String myName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +48,7 @@ public class ClientActivity extends Activity {
         if(this.serverip.isEmpty()) {
             this.serverip = it.getStringExtra("serverip");
             et.setFocusable(false);
+            myName = "unknown";
             th = new Thread(new ClientThread());
             th.start();
 
@@ -54,6 +57,7 @@ public class ClientActivity extends Activity {
             // an idea could be keep the bg thread alive somehow, and start it only when the
             // 'connect' button in the main activity is pressed
             // TODO: rotation also erases the text in the textview, which is the 'current conversation'
+            // temporary fix: forbid rotation
         }
     }
 
@@ -79,6 +83,8 @@ public class ClientActivity extends Activity {
                     text.scrollBy(0, scrollDelta);
             }
             et.setText(null);
+            if (myName.equals("unknown"))
+                myName = str;
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -144,10 +150,10 @@ public class ClientActivity extends Activity {
                     String read = inputStream.readLine();
                     String splits1[] = read.split(" ");
                     String splits2[] = splits1[1].split("/");
-                    for(String s : splits2){
-                        runOnUiThread(new makeToast("received "+s));
-                    }
+                    //for(String s : splits2)
+                        //runOnUiThread(new makeToast("received "+s));
                     updateConversationHandler.post(new updateUIThread(read));
+                    messageDispatch(splits2);
                 } catch (IOException e) {
                     e.printStackTrace();
                     if(!socket.isClosed())
@@ -159,6 +165,36 @@ public class ClientActivity extends Activity {
                 }
             }
         }
+
+        public void messageDispatch(String[] args){
+            boolean isBroadcast = false;
+
+            if(! args[1].equals(myName))
+                isBroadcast = true;
+
+            if(!isBroadcast){
+                switch (args[2]){
+                    case "read":
+                        messageIsRead(args);
+                        break;
+                    case "write":
+                        // TODO: 11/30/15
+                        break;
+                    case "exec":
+                        // TODO: 11/30/15
+                        break;
+                    default:
+                        // this should never happen if the server is well behaved
+                        runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
+                        break;
+                }
+            }
+        }
+
+        public void messageIsRead(String[] args){
+            // TODO: 11/30/15
+        }
+
     }
 
     class updateUIThread implements Runnable {
@@ -208,8 +244,10 @@ public class ClientActivity extends Activity {
 
 
     /*
-    // TODO try if the two overrides wold preserve the connection, but they don't
-    // TODO actually, it would be better to close the connection to the server on exit
+    // try if the two overrides wold preserve the connection, but they don't
+    // actually, it would be better to close the connection to the server on exit
+    // DONE: 11/30/15 - user is asked for a confirmation before leaving the activity,
+    //                  which closes the connection
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState){
         savedInstanceState.putString("ipaddr", serverip);
