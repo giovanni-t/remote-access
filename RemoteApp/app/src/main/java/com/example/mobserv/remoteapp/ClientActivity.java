@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
+import android.text.Layout;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -36,6 +38,8 @@ public class ClientActivity extends Activity {
         setContentView(R.layout.activity_client);
         Intent it = getIntent();
         text = (TextView) findViewById(R.id.idClientText);
+        text.setMovementMethod(new ScrollingMovementMethod());
+
         et = (EditText) findViewById(R.id.idClientEditText);
         updateConversationHandler = new Handler();
 
@@ -67,6 +71,13 @@ public class ClientActivity extends Activity {
 //            text.setText(text.getText().toString() + Html.fromHtml(str) + "\n");
 
             text.setText(text.getText().toString() + str + "\n");
+            final Layout layout = text.getLayout();
+            if(layout != null){
+                int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
+                        - text.getScrollY() - text.getHeight();
+                if(scrollDelta > 0)
+                    text.scrollBy(0, scrollDelta);
+            }
             et.setText(null);
 
         } catch (UnknownHostException e) {
