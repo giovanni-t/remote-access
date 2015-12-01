@@ -62,19 +62,27 @@ public class ClientActivity extends Activity {
     }
 
     public void onClick(View view) {
-        try {
-            String str = et.getText().toString();
-            PrintWriter out = new PrintWriter(new BufferedWriter(
-                new OutputStreamWriter(socket.getOutputStream())),
-            true);
+        String str = et.getText().toString();
+        sendMsg(str);
+    }
 
-            out.write(str);
+    /** Write the string on the socket, no matter what is the format.
+     *  So the 'msg' string received need to be already in the right format
+     * @param msg
+     */
+    public void sendMsg(String msg){
+        try {
+            PrintWriter out = new PrintWriter(new BufferedWriter(
+                    new OutputStreamWriter(socket.getOutputStream())),
+                    true);
+
+            out.write(msg);
             out.flush();
             // tried to make sent text blue but is not working this way:
 //            str = "<font color=blue>"+str+"</font>";
 //            text.setText(text.getText().toString() + Html.fromHtml(str) + "\n");
 
-            text.setText(text.getText().toString() + str + "\n");
+            text.setText(text.getText().toString() + msg + "\n");
             final Layout layout = text.getLayout();
             if(layout != null){
                 int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
@@ -84,7 +92,7 @@ public class ClientActivity extends Activity {
             }
             et.setText(null);
             if (myName.equals("unknown"))
-                myName = str;
+                myName = msg;
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -153,7 +161,8 @@ public class ClientActivity extends Activity {
                     //for(String s : splits2)
                         //runOnUiThread(new makeToast("received "+s));
                     updateConversationHandler.post(new updateUIThread(read));
-                    messageDispatch(splits2);
+                    String senderName = splits1[0].substring(1,splits1[0].length()-1);
+                    messageDispatch(senderName, splits2);
                 } catch (IOException e) {
                     e.printStackTrace();
                     if(!socket.isClosed())
@@ -166,7 +175,7 @@ public class ClientActivity extends Activity {
             }
         }
 
-        public void messageDispatch(String[] args){
+        public void messageDispatch(String senderName, String[] args){
             boolean isBroadcast = false;
 
             if(! args[1].equals(myName))
@@ -175,7 +184,7 @@ public class ClientActivity extends Activity {
             if(!isBroadcast){
                 switch (args[2]){
                     case "read":
-                        messageIsRead(args);
+                        messageIsRead(senderName, args);
                         break;
                     case "write":
                         // TODO: 11/30/15
@@ -188,11 +197,39 @@ public class ClientActivity extends Activity {
                         runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
                         break;
                 }
+            } else {
+                // isBroadcast == true
             }
         }
 
-        public void messageIsRead(String[] args){
+        public void messageIsRead(String senderName, String[] args){
             // TODO: 11/30/15
+            String[] reply = null;
+            switch (args[3]){
+                case "gps":
+                    // TODO: 12/1/15
+                    // temporary fake position
+                    reply[0]="12234";
+                    reply[1]="56789";
+                    break;
+                default:
+                    runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
+                    break;
+            }
+
+            String msg = composeMsg(senderName, reply);
+            sendMsg(msg);
+        }
+
+        public String composeMsg(String to, String[] content){
+            String msg = "/"; // <-- leaving field 0 empty
+            msg.concat(to);
+            if(content == null)
+                return msg;
+            for(String arg : content){
+                msg.concat("/").concat("arg");
+            }
+            return msg;
         }
 
     }
