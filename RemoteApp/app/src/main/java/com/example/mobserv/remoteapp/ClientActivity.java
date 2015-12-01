@@ -10,6 +10,7 @@ import android.text.Html;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Created by pacel_000 on 22/10/2015.
@@ -48,7 +50,7 @@ public class ClientActivity extends Activity {
         if(this.serverip.isEmpty()) {
             this.serverip = it.getStringExtra("serverip");
             et.setFocusable(false);
-            myName = "unknown";
+            myName = null;
             th = new Thread(new ClientThread());
             th.start();
 
@@ -64,6 +66,8 @@ public class ClientActivity extends Activity {
     public void onClick(View view) {
         String str = et.getText().toString();
         sendMsg(str);
+        if (myName == null)
+            myName = str;
     }
 
     /** Write the string on the socket, no matter what is the format.
@@ -91,8 +95,6 @@ public class ClientActivity extends Activity {
                     text.scrollBy(0, scrollDelta);
             }
             et.setText(null);
-            if (myName.equals("unknown"))
-                myName = msg;
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -101,6 +103,7 @@ public class ClientActivity extends Activity {
             e.printStackTrace();
             runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
         } catch (Exception e) {
+            // ONLY FOR DEBUG
             e.printStackTrace();
             runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
         }
@@ -156,13 +159,18 @@ public class ClientActivity extends Activity {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     String read = inputStream.readLine();
-                    String splits1[] = read.split(" ");
-                    String splits2[] = splits1[1].split("/");
-                    //for(String s : splits2)
-                        //runOnUiThread(new makeToast("received "+s));
                     updateConversationHandler.post(new updateUIThread(read));
-                    String senderName = splits1[0].substring(1,splits1[0].length()-1);
-                    messageDispatch(senderName, splits2);
+
+                    boolean isOK = checkReceivedMessageFormat(read);
+                    if(!isOK){
+                        runOnUiThread(new makeToast(read));
+                    } else {
+                        String senderName = read.substring(1, read.indexOf(">"));
+                        String[] args = read.substring(read.indexOf(">")+2, read.length()).split("/");
+                        //messageDispatch(senderName, args);
+                        runOnUiThread(new makeToast(senderName));
+                        runOnUiThread(new makeToast(TextUtils.join("/", args)));
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     if(!socket.isClosed())
@@ -173,6 +181,29 @@ public class ClientActivity extends Activity {
                     return;
                 }
             }
+        }
+
+        private boolean checkReceivedMessageFormat(String msg) {
+            try {
+                String splits1[] = msg.split(" ");
+                if(splits1[1] == null){
+                    Log.d("ReceivedMessageFormat", "second part is null");
+                    return false;
+                }
+                if(!splits1[0].matches("^<.*>$")) {
+                    Log.d("ReceivedMessageFormat", "format of first part does not match");
+                    return false;
+                }
+                if(!splits1[1].matches("[^/]*/[^/]+/[^/]+")) {
+                    // TODO: debug needed
+                    Log.d("ReceivedMessageFormat", "format of second part does not match");
+                    return false;
+                }
+            } catch (NullPointerException | IndexOutOfBoundsException | PatternSyntaxException e){
+                Log.d("ReceivedMessageFormat", e.getMessage());
+                return false;
+            }
+            return true;
         }
 
         public void messageDispatch(String senderName, String[] args){

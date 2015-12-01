@@ -27,7 +27,7 @@ class Chat(LineReceiver):
         self.name = name
         self.clients[name] = self
         self.state = "GETCOMMAND"
-        send_msg = "Welcome, %s!" % (name, )
+        send_msg = "<%s> Welcome!" % (name, )
         self.sendLine(send_msg )
         self.send_clients_lists()
 
