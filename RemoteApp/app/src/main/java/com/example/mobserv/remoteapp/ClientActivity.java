@@ -270,7 +270,7 @@ public class ClientActivity extends Activity implements LocationListener {
                     Criteria criteria = new Criteria();
                     LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
                     provider = locationManager.getBestProvider(criteria, false);
-                    //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) getBaseContext());
                     location = locationManager.getLastKnownLocation(provider);
                     reply.add("OK");
                     reply.add(String.valueOf(location.getLatitude()));
@@ -310,6 +310,7 @@ public class ClientActivity extends Activity implements LocationListener {
         @Override
         public void run() {
             text.setText(text.getText().toString() + msg + "\n");
+            // code below just makes the text scroll on update/receive of messages
             final Layout layout = text.getLayout();
             if(layout != null){
                 int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
