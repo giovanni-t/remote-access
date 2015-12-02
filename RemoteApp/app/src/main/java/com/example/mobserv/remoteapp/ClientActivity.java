@@ -228,9 +228,11 @@ public class ClientActivity extends Activity implements LocationListener {
                         break;
                     case "write":
                         // TODO: 11/30/15
+                        messageIsWrite(senderName,args);
                         break;
                     case "exec":
                         // TODO: 11/30/15
+                        messageIsExec(senderName,args);
                         break;
                     default:
                         // this should never happen if the server is well behaved
@@ -241,18 +243,18 @@ public class ClientActivity extends Activity implements LocationListener {
                 // isBroadcast == true
             }
         }
+        public void messageIsWrite(String senderName, String[] args){
 
+        }
+        public void messageIsExec(String senderName, String[] args){
+
+        }
         public void messageIsRead(String senderName, String[] args){
             // TODO: 11/30/15
             LinkedList<String> reply = new LinkedList<>();
             switch (args[3]){
                 case "gps":
-                    // TODO: 12/1/15
-                    // temporary fake position
-                    //reply.add("OK");
-                    //reply.add("12234");
-                    //reply.add("56789");
-                    // TODO check if the geo service actually works
+                     // TODO check if the geo service actually works
                     if (ContextCompat.checkSelfPermission(getApplicationContext(),
                             Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                             ContextCompat.checkSelfPermission(getApplicationContext(),
