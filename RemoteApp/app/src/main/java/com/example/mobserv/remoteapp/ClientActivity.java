@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.text.Html;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
@@ -28,8 +27,6 @@ import android.widget.Toast;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.regex.PatternSyntaxException;
 
@@ -83,6 +80,7 @@ public class ClientActivity extends Activity implements LocationListener {
             myName = str;
             Log.d("debug", "My name as client: " + myName);
         }
+        et.setText(null);
     }
 
     /** Write the string on the socket, no matter what is the format.
@@ -91,28 +89,12 @@ public class ClientActivity extends Activity implements LocationListener {
      */
     public void sendMsg(String msg){
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(
-                    new OutputStreamWriter(socket.getOutputStream())),
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),
                     true);
-
             out.write(msg);
             out.flush();
-            // tried to make sent text blue but is not working this way:
-//            str = "<font color=blue>"+str+"</font>";
-//            text.setText(text.getText().toString() + Html.fromHtml(str) + "\n");
-
             updateConversationHandler.post(new updateUIThread(msg));
-
-            et.setText(null);
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
         } catch (IOException e) {
-            e.printStackTrace();
-            runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
-        } catch (Exception e) {
-            // ONLY FOR DEBUG
             e.printStackTrace();
             runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
         }
@@ -153,11 +135,6 @@ public class ClientActivity extends Activity implements LocationListener {
              // success =)
                 runOnUiThread(new makeToast("Connected to " + serverAddr + " " + serverport));
                 runOnUiThread(new Runnable() {@Override public void run() {et.setFocusableInTouchMode(true);}});
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-                runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
-                finish();
-                return;
             } catch (IOException e) {
                 e.printStackTrace();
                 runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
@@ -192,6 +169,11 @@ public class ClientActivity extends Activity implements LocationListener {
             }
         }
 
+        /** Check if received message should be dispatched or not
+         * (if it is a protocol-like message or human-like message)
+         * @param msg the message to be checked
+         * @return true if it is protocol-like, false otherwise
+         */
         private boolean checkReceivedMessageFormat(String msg) {
             try {
                 String splits1[] = msg.split(" ");
@@ -254,7 +236,7 @@ public class ClientActivity extends Activity implements LocationListener {
             LinkedList<String> reply = new LinkedList<>();
             switch (args[3]){
                 case "gps":
-                     // TODO check if the geo service actually works
+                    // TODO check if the geo service actually works
                     if (ContextCompat.checkSelfPermission(getApplicationContext(),
                             Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                             ContextCompat.checkSelfPermission(getApplicationContext(),
@@ -302,11 +284,7 @@ public class ClientActivity extends Activity implements LocationListener {
 
     class updateUIThread implements Runnable {
         private String msg;
-
-        public updateUIThread(String str) {
-            this.msg = str;
-        }
-
+        public updateUIThread(String str) { this.msg = str; }
         @Override
         public void run() {
             text.setText(text.getText().toString() + msg + "\n");
@@ -323,9 +301,7 @@ public class ClientActivity extends Activity implements LocationListener {
 
     class makeToast implements Runnable{
         private String msg;
-
         public makeToast(String msg){ this.msg = msg; }
-
         @Override
         public void run() {
             Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
