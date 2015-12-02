@@ -187,20 +187,20 @@ public class ClientActivity extends Activity {
             try {
                 String splits1[] = msg.split(" ");
                 if(splits1[1] == null){
-                    Log.d("ReceivedMessageFormat", "second part is null");
+                    Log.d("ReceivedMessageFormat", "second part is null :: " + msg);
                     return false;
                 }
                 if(!splits1[0].matches("^<.*>$")) {
-                    Log.d("ReceivedMessageFormat", "format of first part does not match");
+                    Log.d("ReceivedMessageFormat", "format of first part does not match :: " + msg);
                     return false;
                 }
-                if(!splits1[1].matches("[^/]*/[^/]+/[^/]+")) {
-                    // TODO: debug needed
-                    Log.d("ReceivedMessageFormat", "format of second part does not match");
+                if(!splits1[1].matches("[^/]*/[^/]+/[^/]+.*")) {
+                    Log.d("ReceivedMessageFormat", "format of second part does not match :: " + msg);
                     return false;
                 }
             } catch (NullPointerException | IndexOutOfBoundsException | PatternSyntaxException e){
-                Log.d("ReceivedMessageFormat", e.getMessage());
+                Log.d("ReceivedMessageFormat", "Exception: " + e.getClass().getName() + " " + e.getMessage());
+                Log.d("ReceivedMessageFormat", "Exception :: " + msg);
                 return false;
             }
             return true;
