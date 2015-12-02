@@ -20,6 +20,8 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -66,8 +68,10 @@ public class ClientActivity extends Activity {
     public void onClick(View view) {
         String str = et.getText().toString();
         sendMsg(str);
-        if (myName == null)
+        if (myName == null){
             myName = str;
+            Log.d("debug", "My name as client: " +myName);
+        }
     }
 
     /** Write the string on the socket, no matter what is the format.
@@ -86,14 +90,8 @@ public class ClientActivity extends Activity {
 //            str = "<font color=blue>"+str+"</font>";
 //            text.setText(text.getText().toString() + Html.fromHtml(str) + "\n");
 
-            text.setText(text.getText().toString() + msg + "\n");
-            final Layout layout = text.getLayout();
-            if(layout != null){
-                int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
-                        - text.getScrollY() - text.getHeight();
-                if(scrollDelta > 0)
-                    text.scrollBy(0, scrollDelta);
-            }
+            updateConversationHandler.post(new updateUIThread(msg));
+
             et.setText(null);
 
         } catch (UnknownHostException e) {
@@ -167,9 +165,9 @@ public class ClientActivity extends Activity {
                     } else {
                         String senderName = read.substring(1, read.indexOf(">"));
                         String[] args = read.substring(read.indexOf(">")+2, read.length()).split("/");
-                        //messageDispatch(senderName, args);
-                        runOnUiThread(new makeToast(senderName));
-                        runOnUiThread(new makeToast(TextUtils.join("/", args)));
+                        messageDispatch(senderName, args);
+                        //runOnUiThread(new makeToast(senderName));
+                        //runOnUiThread(new makeToast(TextUtils.join("/", args)));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -235,13 +233,14 @@ public class ClientActivity extends Activity {
 
         public void messageIsRead(String senderName, String[] args){
             // TODO: 11/30/15
-            String[] reply = null;
+            LinkedList<String> reply = new LinkedList<>();
             switch (args[3]){
                 case "gps":
                     // TODO: 12/1/15
                     // temporary fake position
-                    reply[0]="12234";
-                    reply[1]="56789";
+                    reply.add("OK");
+                    reply.add("12234");
+                    reply.add("56789");
                     break;
                 default:
                     runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
@@ -250,15 +249,17 @@ public class ClientActivity extends Activity {
 
             String msg = composeMsg(senderName, reply);
             sendMsg(msg);
+            // Log.d("SendMsg", msg);
         }
 
-        public String composeMsg(String to, String[] content){
+        public String composeMsg(String to, LinkedList<String> content){
             String msg = "/"; // <-- leaving field 0 empty
-            msg.concat(to);
+            // Log.d("composeMsg", "to: "+ to+" Content: "+content.toString());
+            msg += to;
             if(content == null)
                 return msg;
             for(String arg : content){
-                msg.concat("/").concat("arg");
+                msg += "/" + arg;
             }
             return msg;
         }
@@ -275,6 +276,13 @@ public class ClientActivity extends Activity {
         @Override
         public void run() {
             text.setText(text.getText().toString() + msg + "\n");
+            final Layout layout = text.getLayout();
+            if(layout != null){
+                int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
+                        - text.getScrollY() - text.getHeight();
+                if(scrollDelta > 0)
+                    text.scrollBy(0, scrollDelta);
+            }
         }
     }
 
@@ -298,7 +306,7 @@ public class ClientActivity extends Activity {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
                         ClientActivity.super.onBackPressed();
-                        // TODO try to close connection here
+                        // close connection here
                         try {
                             th.interrupt();
                             socket.close();

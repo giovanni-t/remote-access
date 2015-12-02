@@ -70,7 +70,7 @@ class Chat(LineReceiver):
 
     def handle_Command(self, msg_array, raw_msg):
         print "clients are %s " %self.clients
-        if len(msg_array)>=3 and (msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec'):
+        if len(msg_array)>=3 and (msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec' or msg_array[2] == 'OK'):
             if self.clients.has_key(msg_array[1]):
                 print "fowarding msg to %s " % self.clients[msg_array[1]].name
                 self.message(msg_array[1], raw_msg)
