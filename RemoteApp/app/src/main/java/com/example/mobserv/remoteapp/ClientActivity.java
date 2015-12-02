@@ -1,11 +1,20 @@
 package com.example.mobserv.remoteapp;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Layout;
 import android.text.TextUtils;
@@ -27,7 +36,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  * Created by pacel_000 on 22/10/2015.
  */
-public class ClientActivity extends Activity {
+public class ClientActivity extends Activity implements LocationListener {
 
     private Socket socket = null;
     private static final int serverport = 45678;
@@ -37,6 +46,8 @@ public class ClientActivity extends Activity {
     private EditText et;
     private Thread th;
     private String myName;
+    private Location location;
+    private String provider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +81,7 @@ public class ClientActivity extends Activity {
         sendMsg(str);
         if (myName == null){
             myName = str;
-            Log.d("debug", "My name as client: " +myName);
+            Log.d("debug", "My name as client: " + myName);
         }
     }
 
@@ -207,7 +218,7 @@ public class ClientActivity extends Activity {
         public void messageDispatch(String senderName, String[] args){
             boolean isBroadcast = false;
 
-            if(! args[1].equals(myName))
+            if(!args[1].equals(myName))
                 isBroadcast = true;
 
             if(!isBroadcast){
@@ -238,9 +249,30 @@ public class ClientActivity extends Activity {
                 case "gps":
                     // TODO: 12/1/15
                     // temporary fake position
+                    //reply.add("OK");
+                    //reply.add("12234");
+                    //reply.add("56789");
+                    // TODO check if the geo service actually works
+                    if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                            ContextCompat.checkSelfPermission(getApplicationContext(),
+                                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        Log.i("Permission: ", "To be checked");
+                        ActivityCompat.requestPermissions(getParent(),
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                                        Manifest.permission.ACCESS_COARSE_LOCATION},
+                                0);
+                        return;
+                    } else
+                        Log.i("Permission: ", "GRANTED");
+                    Criteria criteria = new Criteria();
+                    LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+                    provider = locationManager.getBestProvider(criteria, false);
+                    //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+                    location = locationManager.getLastKnownLocation(provider);
                     reply.add("OK");
-                    reply.add("12234");
-                    reply.add("56789");
+                    reply.add(String.valueOf(location.getLatitude()));
+                    reply.add(String.valueOf(location.getLongitude()));
                     break;
                 default:
                     runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
@@ -316,6 +348,28 @@ public class ClientActivity extends Activity {
                         }
                     }
                 }).create().show();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.i("Location", "LOCATION CHANGED!!!");
+        this.location = location;
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Toast.makeText(this, "Enabled new provider " + provider,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Toast.makeText(this, "Disabled provider " + provider,
+                Toast.LENGTH_SHORT).show();
     }
 
 
