@@ -62,9 +62,10 @@ class Chat(LineReceiver):
         names = ''
         count = 0
         for name, protocol in self.clients.iteritems():
-            names = protocol.name + '/ '+ names
+            names += '/' + protocol.name
             count +=1
-        message = "<server> there are %s clients. %s" %(str(count), names)
+        #message = "<server> there are %s clients. %s" %(str(count), names)
+        message = "<server> /broadcast/read/clientlist/%s%s" %(str(count), names)
         for name, protocol in self.clients.iteritems():
             protocol.sendLine(message)
 

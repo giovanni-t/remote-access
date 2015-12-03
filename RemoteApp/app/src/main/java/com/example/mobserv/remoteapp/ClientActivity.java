@@ -27,7 +27,9 @@ import android.widget.Toast;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -203,27 +205,24 @@ public class ClientActivity extends Activity implements LocationListener {
             if(!args[1].equals(myName))
                 isBroadcast = true;
 
-            if(!isBroadcast){
-                switch (args[2]){
-                    case "read":
-                        messageIsRead(senderName, args);
-                        break;
-                    case "write":
-                        // TODO: 11/30/15
-                        messageIsWrite(senderName,args);
-                        break;
-                    case "exec":
-                        // TODO: 11/30/15
-                        messageIsExec(senderName,args);
-                        break;
-                    default:
-                        // this should never happen if the server is well behaved
-                        runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
-                        break;
-                }
-            } else {
-                // isBroadcast == true
+            switch (args[2]){
+                case "read":
+                    messageIsRead(senderName, args);
+                    break;
+                case "write":
+                    // TODO: 11/30/15
+                    messageIsWrite(senderName,args);
+                    break;
+                case "exec":
+                    // TODO: 11/30/15
+                    messageIsExec(senderName,args);
+                    break;
+                default:
+                    // this should never happen if the server is well behaved
+                    runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
+                    break;
             }
+
         }
         public void messageIsWrite(String senderName, String[] args){
 
@@ -258,14 +257,23 @@ public class ClientActivity extends Activity implements LocationListener {
                     reply.add(String.valueOf(location.getLatitude()));
                     reply.add(String.valueOf(location.getLongitude()));
                     break;
+                case "clientlist":
+                    int numOfClients = Integer.parseInt(args[4]);
+                    List<String> clients = new LinkedList<>();
+                    clients.addAll(Arrays.asList(args).subList(5, args.length));
+                    Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
+                    // TODO: update list of clients
+                    break;
                 default:
                     runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
                     break;
             }
 
-            String msg = composeMsg(senderName, reply);
-            sendMsg(msg);
-            // Log.d("SendMsg", msg);
+            if(reply.size() != 0) {
+                String msg = composeMsg(senderName, reply);
+                sendMsg(msg);
+                // Log.d("SendMsg", msg);
+            }
         }
 
         public String composeMsg(String to, LinkedList<String> content){
