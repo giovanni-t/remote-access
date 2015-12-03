@@ -11,21 +11,27 @@
         android:id="@+id/idClientText"
         android:scrollbars="vertical"
         />
-    <EditText
-        android:hint="Write here"
-        android:layout_width="fill_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/idClientEditText"
-        />
-    <Button
-        android:id="@+id/sendButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClick"
-        android:text="Send"
-        android:layout_gravity="center"
+        android:orientation="horizontal"
         >
-    </Button>
+        <EditText
+            android:hint="Write here"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/idClientEditText"
+            />
+        <Button
+            android:id="@+id/sendButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Send"
+            >
+        </Button>
+    </LinearLayout>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -60,5 +66,11 @@
 
     </LinearLayout>
 
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/clientsListView"
+        >
+    </ListView>
 
 </LinearLayout>

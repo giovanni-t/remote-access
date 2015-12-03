@@ -359,6 +359,12 @@ public class ClientActivity extends Activity implements LocationListener {
                 Toast.LENGTH_SHORT).show();
     }
 
+    public void updateClientsListView(Integer numOfClients, List<String> clientsList){
+        // TODO: fill in the clientListView with buttons
+        // when clicked, these buttons should insert into the editText
+        // the name of the client to whom we want to send the command
+    }
+
 
     /*
     // try if the two overrides wold preserve the connection, but they don't
