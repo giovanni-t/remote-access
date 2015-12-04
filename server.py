@@ -1,6 +1,7 @@
 from twisted.internet.protocol import Factory, Protocol
 from twisted.internet import reactor
 from twisted.protocols.basic import LineReceiver
+import socket,os
 
 class Chat(LineReceiver):
     def __init__(self, clients):
@@ -31,17 +32,26 @@ class Chat(LineReceiver):
         self.sendLine(send_msg )
         self.send_clients_lists()
 
-
     def dataReceived(self, data):
-        a = data.split('/')
-        print a
-        if len(a) >= 1:
-            msg = ""
-            if self.state == "GETNAME":
-                self.handle_getname(a[0])
+        if self.state == "READATA":
+            print data[-6:]
+            if data[-6:] == "_end_":
+                print "change_state"
+                self.state = "GETCOMMAND"
+                #self.read_data(data[-6:])
+            else:
+                self.read_data(data)
+        else:
+            #strip the endings if they are '\n' and/or '\r'
+            a = data.rstrip(os.linesep).split('/')
+            print a
+            if len(a) >= 1:
+                msg = ""
+                if self.state == "GETNAME":
+                    self.handle_getname(a[0])
 
-            elif self.state =="GETCOMMAND":
-                self.handle_Command(a, data)
+                elif self.state =="GETCOMMAND":
+                    self.handle_Command(a, data)
 
 
     #send to specific client
@@ -58,6 +68,12 @@ class Chat(LineReceiver):
             if protocol != self:
                 protocol.sendLine(message)
 
+    def read_data(self,data):
+        #print data
+        for name, protocol in self.clients.iteritems():
+            if protocol == self.clients[self.dest] :
+                protocol.sendLine(data)
+
     def send_clients_lists(self):
         names = ''
         count = 0
@@ -73,8 +89,13 @@ class Chat(LineReceiver):
         print "clients are %s " %self.clients
         if len(msg_array)>=3 and (msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec' or msg_array[2] == 'OK'):
             if self.clients.has_key(msg_array[1]):
-                print "fowarding msg to %s " % self.clients[msg_array[1]].name
-                self.message(msg_array[1], raw_msg)
+                print "fowarding msg to %s " % self.clients[msg_array[1]].name 
+                if msg_array[2] == 'write' and msg_array[3] == 'photo':
+                    print "state Changed to READATA"
+                    self.state = "READATA"
+                    self.dest = msg_array[1]
+                else:
+                    self.message(msg_array[1], raw_msg)
             else :
                 #print "client %s not found. Broadcasting the message" % msg_array[1]
                 #self.broadcast(raw_msg)
@@ -95,5 +116,7 @@ class ChatFactory(Factory):
 
 
 reactor.listenTCP(45678, ChatFactory())
+#3/12 by Alessio
+print "IP:", socket.gethostbyname(socket.gethostname()) 
 print "Chat server started"
 reactor.run()

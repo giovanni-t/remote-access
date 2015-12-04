@@ -7,31 +7,41 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.ImageFormat;
+import android.hardware.Camera;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Base64;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.regex.PatternSyntaxException;
-
 /**
  * Created by pacel_000 on 22/10/2015.
  */
@@ -225,7 +235,17 @@ public class ClientActivity extends Activity implements LocationListener {
 
         }
         public void messageIsWrite(String senderName, String[] args){
-
+            LinkedList<String> reply = new LinkedList<>();
+            switch (args[3]){
+                case "photo":
+                    //TODO: show the received photo
+                    /*String encodedImage = Arrays.asList(args).subList(4, args.length).toString();
+                    byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    ImageView contactImage = (ImageView) findViewById(R.id.photo);
+                    contactImage.setImageBitmap(decodedByte);*/
+                    break;
+            }
         }
         public void messageIsExec(String senderName, String[] args){
 
@@ -233,6 +253,7 @@ public class ClientActivity extends Activity implements LocationListener {
         public void messageIsRead(String senderName, String[] args){
             // TODO: 11/30/15
             LinkedList<String> reply = new LinkedList<>();
+            String data = null;
             switch (args[3]){
                 case "gps":
                     // TODO check if the geo service actually works
@@ -264,6 +285,107 @@ public class ClientActivity extends Activity implements LocationListener {
                     Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
                     // TODO: update list of clients
                     break;
+                case "photo":
+                    //PHOTO Part
+                    final Camera[] mCamera = new Camera[1];
+                    final Looper[] mLooper = new Looper[1];
+                    SurfaceView mSurfaceView;
+                    final Semaphore semaphore;
+
+                    semaphore = new Semaphore(0);
+                    // do we have a camera?
+                    if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                            new makeToast("No camera on this device");
+                    } else {
+                        try{
+                            //semaphore.release();
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    // Set up a looper to be used by camera.
+                                    Looper.prepare();
+                                    Log.v("prova", "start loopRun");
+                                    // Save the looper so that we can terminate this thread
+                                    // after we are done with it.
+                                    mLooper[0] = Looper.myLooper();
+                                    int cameraId = 0;
+                                    int numberOfCameras = Camera.getNumberOfCameras();
+                                    for (int i = 0; i < numberOfCameras; i++) {
+                                        Camera.CameraInfo info = new Camera.CameraInfo();
+                                        Camera.getCameraInfo(i, info);
+                                        if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                                            cameraId = i;
+                                        }
+                                    }
+                                    mCamera[0] = Camera.open(cameraId);
+                                    semaphore.release();
+                                    Looper.loop();  // Blocks forever until Looper.quit() is called.
+                                }
+                            }.start();
+                            semaphore.acquire(); /* must wait for loop run */
+                            try {
+                                mCamera[0].lock(); // before using camera, lock it first
+
+                                // preview must be start before take picture
+                                mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
+                                mCamera[0].setPreviewDisplay(mSurfaceView.getHolder());
+                                mCamera[0].startPreview();
+
+                                // setting parameters, optional
+                                Camera.Parameters parameters = mCamera[0].getParameters();
+                                parameters.setPictureFormat(ImageFormat.JPEG);
+                                List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
+                                //the camera size is set to the lowest possible size
+                                Camera.Size size = sizes.get(sizes.size()-1);
+                                parameters.setPictureSize(size.width, size.height);
+                                /*if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+                                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                                }
+                                List<String> supportedFlashModes = parameters.getSupportedFlashModes();
+                                if (supportedFlashModes != null && supportedFlashModes.contains(Camera.Parameters.FLASH_MODE_ON)) {
+                                    parameters.setFocusMode(Camera.Parameters.FLASH_MODE_ON);
+                                }*/
+                                mCamera[0].setParameters(parameters);
+
+
+                                Thread.sleep(2000); // preview for 1s
+                                Log.i("debug", "start taking picture");
+                                final String[] encodedImage = new String[1];
+                                mCamera[0].takePicture(null, null, new Camera.PictureCallback() {
+                                    @Override
+                                    public void onPictureTaken(byte[] data, Camera camera) {
+                                        encodedImage[0] = Base64.encodeToString(data, Base64.DEFAULT);
+                                        semaphore.release();
+                                    }
+                                });
+                                semaphore.acquire(); // should wait for taking picture done
+                                //TODO: the reply is supposed to have the following format: /senderName/write/photo/encoded_photo
+                                reply.add("write");
+                                reply.add("photo");
+                                data = encodedImage[0];
+
+                                // keep preview for 1s after take picture
+                                Thread.sleep(1000);
+                                mCamera[0].stopPreview();
+                            } catch(Exception e) {
+                                Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
+                            } finally {
+            /* clean up */
+                                mCamera[0].stopPreview();
+                                if (mCamera[0] != null) {
+                                    mCamera[0].unlock();
+                                    mCamera[0].release();
+                                    mCamera[0] = null;
+                                }
+
+                                mLooper[0].quit();
+                                mLooper[0].getThread().join();
+                            }
+                        } catch (Exception e) {
+                            Log.d("ERROR", "Failed to get camera: " + e.getMessage());
+                        }
+                    }
+                    break;
                 default:
                     runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
                     break;
@@ -272,7 +394,17 @@ public class ClientActivity extends Activity implements LocationListener {
             if(reply.size() != 0) {
                 String msg = composeMsg(senderName, reply);
                 sendMsg(msg);
-                // Log.d("SendMsg", msg);
+                if(data != null){
+                    try {
+                        OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream());
+                        out.write(data);
+                        out.flush();
+                        sendMsg("_end_");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("SendMsg", msg);
             }
         }
 
