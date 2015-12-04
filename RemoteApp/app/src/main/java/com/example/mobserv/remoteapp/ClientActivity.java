@@ -65,6 +65,7 @@ public class ClientActivity extends Activity implements LocationListener {
     private String myName;
     private Location location;
     private String provider;
+    private SurfaceView mSurfaceView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +77,8 @@ public class ClientActivity extends Activity implements LocationListener {
 
         et = (EditText) findViewById(R.id.idClientEditText);
         updateConversationHandler = new Handler();
+
+        mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
 
         if(this.serverip.isEmpty()) {
             this.serverip = it.getStringExtra("serverip");
@@ -314,7 +317,6 @@ public class ClientActivity extends Activity implements LocationListener {
                     //PHOTO Part
                     final Camera[] mCamera = new Camera[1];
                     final Looper[] mLooper = new Looper[1];
-                    SurfaceView mSurfaceView;
                     final Semaphore semaphore;
 
                     semaphore = new Semaphore(0);
@@ -352,7 +354,6 @@ public class ClientActivity extends Activity implements LocationListener {
                                 mCamera[0].lock(); // before using camera, lock it first
 
                                 // preview must be start before take picture
-                                mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
                                 mCamera[0].setPreviewDisplay(mSurfaceView.getHolder());
                                 mCamera[0].startPreview();
 
@@ -421,9 +422,11 @@ public class ClientActivity extends Activity implements LocationListener {
                 sendMsg(msg);
                 if(data != null){
                     try {
-                        OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream());
+                        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                        out.newLine();
                         out.write(data);
                         out.flush();
+                        out.newLine();
                         out.write("_end_");
                         out.flush();
                     } catch (IOException e) {
