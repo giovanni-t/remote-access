@@ -425,8 +425,6 @@ public class ClientActivity extends Activity implements LocationListener {
                         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                         out.newLine();
                         out.write(data);
-                        out.flush();
-                        out.newLine();
                         out.write("_end_");
                         out.flush();
                     } catch (IOException e) {
