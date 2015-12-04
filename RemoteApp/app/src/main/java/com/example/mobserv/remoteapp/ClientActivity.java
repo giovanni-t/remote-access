@@ -56,6 +56,7 @@ import java.util.regex.PatternSyntaxException;
 public class ClientActivity extends Activity implements LocationListener {
 
     private Socket socket = null;
+    private PrintWriter out;
     private static final int serverport = 45678;
     private String serverip = "";
     private TextView text;
@@ -66,7 +67,6 @@ public class ClientActivity extends Activity implements LocationListener {
     private Location location;
     private String provider;
     private SurfaceView mSurfaceView;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,16 +111,9 @@ public class ClientActivity extends Activity implements LocationListener {
      * @param msg
      */
     public void sendMsg(String msg){
-        try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),
-                    true);
-            out.write(msg);
-            out.flush();
-            updateConversationHandler.post(new updateUIThread(msg));
-        } catch (IOException e) {
-            e.printStackTrace();
-            runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
-        }
+        out.write(msg);
+        out.flush();
+        updateConversationHandler.post(new updateUIThread(msg));
     }
 
     public void onClickWrite(View view){
@@ -154,6 +147,8 @@ public class ClientActivity extends Activity implements LocationListener {
                 InetAddress serverAddr = InetAddress.getByName(serverip);
                 socket = new Socket(serverAddr, serverport);
                 this.inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),
+                        true);
 
              // success =)
                 runOnUiThread(new makeToast("Connected to " + serverAddr + " " + serverport));
@@ -397,9 +392,9 @@ public class ClientActivity extends Activity implements LocationListener {
                                 Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
                             } finally {
             /* clean up */
-                                mCamera[0].stopPreview();
                                 if (mCamera[0] != null) {
                                     mCamera[0].unlock();
+                                    mCamera[0].stopPreview();
                                     mCamera[0].release();
                                     mCamera[0] = null;
                                 }
@@ -422,12 +417,16 @@ public class ClientActivity extends Activity implements LocationListener {
                 sendMsg(msg);
                 if(data != null){
                     try {
+                        Thread.sleep(1000);
                         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                        out.newLine();
                         out.write(data);
+                        out.flush();
+                        Thread.sleep(1000);
                         out.write("_end_");
                         out.flush();
                     } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
