@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.location.Criteria;
@@ -14,8 +16,10 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.Layout;
@@ -31,8 +35,12 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -221,15 +229,15 @@ public class ClientActivity extends Activity implements LocationListener {
                     break;
                 case "write":
                     // TODO: 11/30/15
-                    messageIsWrite(senderName,args);
+                    messageIsWrite(senderName, args);
                     break;
                 case "exec":
                     // TODO: 11/30/15
-                    messageIsExec(senderName,args);
+                    messageIsExec(senderName, args);
                     break;
                 default:
                     // this should never happen if the server is well behaved
-                    runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
+                    runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
                     break;
             }
 
@@ -239,11 +247,28 @@ public class ClientActivity extends Activity implements LocationListener {
             switch (args[3]){
                 case "photo":
                     //TODO: show the received photo
-                    /*String encodedImage = Arrays.asList(args).subList(4, args.length).toString();
+                    String encodedImage = Arrays.asList(args).subList(4, args.length).toString();
                     byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
                     Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                    ImageView contactImage = (ImageView) findViewById(R.id.photo);
-                    contactImage.setImageBitmap(decodedByte);*/
+                    //ImageView contactImage = (ImageView) findViewById(R.id.photo);
+                    //contactImage.setImageBitmap(decodedByte);
+
+                    String path = Environment.getExternalStorageDirectory().toString();
+                    OutputStream fOut = null;
+                    try {
+                        File file = new File(path, "FitnessGirl.jpg"); // the File to save to
+                        fOut = new FileOutputStream(file);
+
+                        decodedByte.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
+                        fOut.flush();
+                        fOut.close(); // do not forget to close the stream
+
+                        MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
         }
@@ -399,7 +424,8 @@ public class ClientActivity extends Activity implements LocationListener {
                         OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream());
                         out.write(data);
                         out.flush();
-                        sendMsg("_end_");
+                        out.write("_end_");
+                        out.flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

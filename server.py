@@ -35,7 +35,7 @@ class Chat(LineReceiver):
     def dataReceived(self, data):
         if self.state == "READATA":
             print data[-6:]
-            if data[-6:] == "_end_":
+            if data[-6:].rstrip(os.linesep) == "_end_":
                 print "change_state"
                 self.state = "GETCOMMAND"
                 #self.read_data(data[-6:])
