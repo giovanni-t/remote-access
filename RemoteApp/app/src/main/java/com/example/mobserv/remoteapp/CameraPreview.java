@@ -58,9 +58,9 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             Camera.Size size = sizes.get(sizes.size() - 1);
             params.setPictureSize(size.width, size.height);
             List<String> focusModes = params.getSupportedFocusModes();
-            if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+            if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
                 // set the focus mode
-                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
                 // set Camera parameters
             }
             mCamera.setParameters(params);
@@ -103,7 +103,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         mCamera.autoFocus(new Camera.AutoFocusCallback() {
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
-                Toast.makeText(context, String.valueOf(success), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Focus success: " + String.valueOf(success), Toast.LENGTH_LONG).show();
                 mCamera.takePicture(null, null, new Camera.PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
