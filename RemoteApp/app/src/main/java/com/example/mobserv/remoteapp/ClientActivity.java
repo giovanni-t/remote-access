@@ -1,9 +1,7 @@
 package com.example.mobserv.remoteapp;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,15 +9,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
@@ -49,7 +41,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  * Created by pacel_000 on 22/10/2015.
  */
-public class ClientActivity extends Activity implements LocationListener {
+public class ClientActivity extends Activity {
 
     private Socket socket = null;
     private PrintWriter out;
@@ -60,8 +52,6 @@ public class ClientActivity extends Activity implements LocationListener {
     private EditText et;
     private Thread th;
     private String myName;
-    private Location location;
-    private String provider;
     private SurfaceView mSurfaceView;
     private ImageView contactImage;
     GPSTracker gpsTracker;
@@ -110,7 +100,7 @@ public class ClientActivity extends Activity implements LocationListener {
 
     /** Write the string on the socket, no matter what is the format.
      *  So the 'msg' string received need to be already in the right format
-     * @param msg
+     * @param msg the message to send
      */
     public void sendMsg(String msg){
         out.write(msg);
@@ -519,28 +509,6 @@ public class ClientActivity extends Activity implements LocationListener {
                         }
                     }
                 }).create().show();
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.i("Location", "LOCATION CHANGED!!!");
-        this.location = location;
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        Toast.makeText(this, "Enabled new provider " + provider,
-                Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Toast.makeText(this, "Disabled provider " + provider,
-                Toast.LENGTH_SHORT).show();
     }
 
     public void updateClientsListView(Integer numOfClients, List<String> clientsList){
