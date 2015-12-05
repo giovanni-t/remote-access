@@ -41,7 +41,8 @@ class Chat(LineReceiver):
                 self.state = "GETCOMMAND"
         else:
             #strip the endings if they are '\n' and/or '\r'
-            a = data.rstrip(os.linesep).split('/')
+            data = data.rstrip(os.linesep)
+            a = data.split('/')
             print a
             if len(a) >= 1:
                 msg = ""
@@ -116,6 +117,6 @@ class ChatFactory(Factory):
 
 reactor.listenTCP(45678, ChatFactory())
 #3/12 by Alessio
-#print "IP:", socket.gethostbyname(socket.gethostname()) 
+print "IP:", socket.gethostbyname(socket.gethostname()) 
 print "Chat server started"
 reactor.run()
