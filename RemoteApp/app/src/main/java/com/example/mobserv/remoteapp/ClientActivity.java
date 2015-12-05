@@ -321,7 +321,7 @@ public class ClientActivity extends Activity {
                             preview.setCamera();
                             preview.openSurface();
 
-                            String encodedImage = preview.takePicture();
+                            String encodedImage = preview.takePicture(getApplicationContext());
                             reply.add("write");
                             reply.add("photo");
                             data = encodedImage;

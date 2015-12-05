@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
@@ -97,13 +98,19 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         }
     }
 
-    public String takePicture(){
+    public String takePicture(final Context context){
         final String[] encodedImage = new String[1];
-        mCamera.takePicture(null, null, new Camera.PictureCallback() {
+        mCamera.autoFocus(new Camera.AutoFocusCallback() {
             @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-                encodedImage[0] = Base64.encodeToString(data, Base64.DEFAULT);
-                semaphore.release();
+            public void onAutoFocus(boolean success, Camera camera) {
+                Toast.makeText(context, String.valueOf(success), Toast.LENGTH_SHORT).show();
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        encodedImage[0] = Base64.encodeToString(data, Base64.DEFAULT);
+                        semaphore.release();
+                    }
+                });
             }
         });
         semaphore.acquireUninterruptibly();
