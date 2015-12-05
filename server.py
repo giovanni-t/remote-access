@@ -18,7 +18,9 @@ class Chat(LineReceiver):
         if self.clients.has_key(self.name):
             left_name = self.name
             del self.clients[self.name]
-            self.broadcast( left_name + ' has left')
+            print left_name + ' has left'
+            #self.broadcast( left_name + ' has left')
+            self.send_clients_lists()
 
 
     def handle_getname(self, name):

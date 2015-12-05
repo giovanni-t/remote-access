@@ -20,8 +20,11 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +36,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -108,6 +112,7 @@ public class ClientActivity extends Activity {
         updateConversationHandler.post(new updateUIThread(msg));
     }
 
+    /*
     public void onClickWrite(View view){
         String tmp = et.getText().toString();
         tmp += "/write/";
@@ -125,6 +130,14 @@ public class ClientActivity extends Activity {
     public void onClickExec(View view){
         String tmp = et.getText().toString();
         tmp += "/exec/";
+        et.setText(tmp);
+        et.setSelection(et.getText().toString().length());
+    }
+    */
+
+    public void onClickEnterText(View view){
+        String tmp = et.getText().toString();
+        tmp += "/" + ((Button)view).getText().toString();
         et.setText(tmp);
         et.setSelection(et.getText().toString().length());
     }
@@ -219,11 +232,9 @@ public class ClientActivity extends Activity {
                     messageIsRead(senderName, args);
                     break;
                 case "write":
-                    // TODO: 11/30/15
                     messageIsWrite(senderName, args);
                     break;
                 case "exec":
-                    // TODO: 11/30/15
                     messageIsExec(senderName, args);
                     break;
                 default:
@@ -280,7 +291,6 @@ public class ClientActivity extends Activity {
 
         }
         public void messageIsRead(String senderName, String[] args){
-            // TODO: 11/30/15
             LinkedList<String> reply = new LinkedList<>();
             String data = null;
             switch (args[3]){
@@ -299,7 +309,7 @@ public class ClientActivity extends Activity {
                     List<String> clients = new LinkedList<>();
                     clients.addAll(Arrays.asList(args).subList(5, args.length));
                     Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
-                    // TODO: update list of clients
+                    runOnUiThread(new updateUIClientsList(numOfClients, clients));
                     break;
                 case "photo":
                     //PHOTO Part
@@ -511,10 +521,31 @@ public class ClientActivity extends Activity {
                 }).create().show();
     }
 
-    public void updateClientsListView(Integer numOfClients, List<String> clientsList){
-        // TODO: fill in the clientListView with buttons
-        // when clicked, these buttons should insert into the editText
-        // the name of the client to whom we want to send the command
+    class updateUIClientsList implements Runnable{
+        Integer numOfClients;
+        List<String> clientsList;
+        public updateUIClientsList(Integer numOfClients, List<String> clientsList) {
+            this.clientsList = clientsList;
+            this.numOfClients = numOfClients;
+        }
+
+        @Override
+        public void run() {
+            ViewGroup linearLayout = (ViewGroup) findViewById(R.id.clientsLinearLayout);
+            linearLayout.removeAllViews();
+            for (String clientName : clientsList){
+                Button bt = new Button(getApplicationContext());
+                bt.setText(clientName);
+                bt.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onClickEnterText(v);
+                    }
+                });
+                bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                linearLayout.addView(bt);
+            }
+        }
     }
 
 
