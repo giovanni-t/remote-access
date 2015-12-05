@@ -71,7 +71,7 @@ public class ClientActivity extends Activity {
         contactImage = (ImageView) findViewById(R.id.photo);
         preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
         preview.setKeepScreenOn(true);
-
+        mSurfaceView.setZOrderOnTop(true);
         if(this.serverip.isEmpty()) {
             this.serverip = it.getStringExtra("serverip");
             et.setFocusable(false);

@@ -56,6 +56,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             List<Camera.Size> sizes = params.getSupportedPictureSizes();
             //the camera size is set to the lowest possible size
             Camera.Size size = sizes.get(sizes.size() - 1);
+            
             params.setPictureSize(size.width, size.height);
             List<String> focusModes = params.getSupportedFocusModes();
             if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
