@@ -1,6 +1,5 @@
 package com.example.mobserv.remoteapp;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -8,17 +7,22 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+<<<<<<< HEAD
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.graphics.ImageFormat;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+=======
+import android.graphics.ImageFormat;
+import android.hardware.Camera;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
+>>>>>>> 221e1f80d1c3948cb0ae969ecbba80a5c187d72e
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
@@ -63,9 +67,12 @@ public class ClientActivity extends Activity {
     private String myName;
     private SurfaceView mSurfaceView;
     private ImageView contactImage;
+<<<<<<< HEAD
     CameraPreview preview;
+=======
     GPSTracker gpsTracker;
 
+>>>>>>> 221e1f80d1c3948cb0ae969ecbba80a5c187d72e
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
