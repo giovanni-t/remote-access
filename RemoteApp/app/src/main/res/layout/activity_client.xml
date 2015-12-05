@@ -81,13 +81,13 @@
         android:layout_gravity="center">
 
         <SurfaceView
-            android:layout_width="1dp"
-            android:layout_height="1dp"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:id="@+id/surfaceView" />
 
         <ImageView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
             android:id="@+id/photo"/>
 
     </LinearLayout>

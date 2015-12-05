@@ -1,6 +1,5 @@
 package com.example.mobserv.remoteapp;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -8,17 +7,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.graphics.ImageFormat;
-import android.hardware.Camera;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.os.Looper;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
@@ -42,7 +33,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -273,6 +263,9 @@ public class ClientActivity extends Activity {
                         encodedImage = total.toString();
                         byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
                         Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                        Matrix matrix = new Matrix();
+                        matrix.postRotate(90);
+                        decodedByte = Bitmap.createBitmap(decodedByte, 0, 0, decodedByte.getWidth(), decodedByte.getHeight(), matrix, true);
                         updateConversationHandler.post(new updateUIImage(decodedByte));
 
                         /*File file = new File(Environment.getExternalStorageDirectory() + File.separator + "test.jpg");
@@ -321,7 +314,6 @@ public class ClientActivity extends Activity {
                     break;
                 case "photo":
                     //PHOTO Part
-                    //final Looper[] mLooper = new Looper[1];
                     if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
                             new makeToast("No camera on this device");
                     } else {
