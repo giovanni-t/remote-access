@@ -63,6 +63,8 @@ public class ClientActivity extends Activity implements LocationListener {
     private String provider;
     private SurfaceView mSurfaceView;
     private ImageView contactImage;
+    GPSTracker gpsTracker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +93,8 @@ public class ClientActivity extends Activity implements LocationListener {
             // TODO: rotation also erases the text in the textview, which is the 'current conversation'
             // temporary fix: forbid rotation
         }
+
+        gpsTracker = new GPSTracker(this, getParent());
     }
 
     public void onClick(View view) {
@@ -290,27 +294,14 @@ public class ClientActivity extends Activity implements LocationListener {
             String data = null;
             switch (args[3]){
                 case "gps":
-                    // TODO check if the geo service actually works
-                    if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                            Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                            ContextCompat.checkSelfPermission(getApplicationContext(),
-                                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        Log.i("Permission: ", "To be checked");
-                        ActivityCompat.requestPermissions(getParent(),
-                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION},
-                                0);
-                        return;
-                    } else
-                        Log.i("Permission: ", "GRANTED");
-                    Criteria criteria = new Criteria();
-                    LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-                    provider = locationManager.getBestProvider(criteria, false);
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) getBaseContext());
-                    location = locationManager.getLastKnownLocation(provider);
-                    reply.add("OK");
-                    reply.add(String.valueOf(location.getLatitude()));
-                    reply.add(String.valueOf(location.getLongitude()));
+                    if (gpsTracker.getIsGPSTrackingEnabled()) {
+                        reply.add("OK");
+                        reply.add(String.valueOf(gpsTracker.longitude));
+                        reply.add(String.valueOf(gpsTracker.latitude));
+                    } else {
+                        Log.d("GPS ERROR", "GPS is not enabled");
+                        runOnUiThread(new makeToast("GPS ERROR: GPS is not enabled"));
+                    }
                     break;
                 case "clientlist":
                     int numOfClients = Integer.parseInt(args[4]);
