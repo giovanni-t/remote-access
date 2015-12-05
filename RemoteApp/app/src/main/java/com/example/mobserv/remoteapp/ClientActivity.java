@@ -16,10 +16,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.Layout;
@@ -30,17 +28,14 @@ import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -67,6 +62,7 @@ public class ClientActivity extends Activity implements LocationListener {
     private Location location;
     private String provider;
     private SurfaceView mSurfaceView;
+    private ImageView contactImage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +75,7 @@ public class ClientActivity extends Activity implements LocationListener {
         updateConversationHandler = new Handler();
 
         mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
+        contactImage = (ImageView) findViewById(R.id.photo);
 
         if(this.serverip.isEmpty()) {
             this.serverip = it.getStringExtra("serverip");
@@ -208,6 +205,7 @@ public class ClientActivity extends Activity implements LocationListener {
                     return false;
                 }
             } catch (NullPointerException | IndexOutOfBoundsException | PatternSyntaxException e){
+                //TODO: it enters here when image is being transferring, although the image is retrieved in messageIsWrite
                 Log.d("ReceivedMessageFormat", "Exception: " + e.getClass().getName() + " " + e.getMessage());
                 Log.d("ReceivedMessageFormat", "Exception :: " + msg);
                 return false;
@@ -245,25 +243,38 @@ public class ClientActivity extends Activity implements LocationListener {
             switch (args[3]){
                 case "photo":
                     //TODO: show the received photo
-                    String encodedImage = Arrays.asList(args).subList(4, args.length).toString();
-                    byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
-                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                    //ImageView contactImage = (ImageView) findViewById(R.id.photo);
-                    //contactImage.setImageBitmap(decodedByte);
-
-                    String path = Environment.getExternalStorageDirectory().toString();
-                    OutputStream fOut = null;
+                    String encodedImage;
+                    StringBuilder total = new StringBuilder();
+                    String line;
                     try {
-                        File file = new File(path, "FitnessGirl.jpg"); // the File to save to
-                        fOut = new FileOutputStream(file);
+                        while ((line = inputStream.readLine()) != null) {
+                            if (line.length() >= 5){
+                                if(line.substring(line.length() - 5,line.length()).compareTo("_end_") == 0) {
+                                    //total.append(total.substring(0,total.length()-6));
+                                    break;
+                                }
+                            }
+                            total.append(line+"\n");
+                        }
+                        encodedImage = total.toString();
+                        byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
+                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                        updateConversationHandler.post(new updateUIImage(decodedByte));
 
-                        decodedByte.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
-                        fOut.flush();
-                        fOut.close(); // do not forget to close the stream
+                        /*File file = new File(Environment.getExternalStorageDirectory() + File.separator + "test.jpg");
+                        file.createNewFile();
+                        try {
+                            OutputStream fOut = new FileOutputStream(file);
 
-                        MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                            decodedByte.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
+                            fOut.flush();
+                            fOut.close(); // do not forget to close the stream
+
+                            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        */
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -393,10 +404,10 @@ public class ClientActivity extends Activity implements LocationListener {
                             } finally {
             /* clean up */
                                 if (mCamera[0] != null) {
-                                    mCamera[0].unlock();
                                     mCamera[0].stopPreview();
+                                    mCamera[0].unlock();
                                     mCamera[0].release();
-                                    mCamera[0] = null;
+                                    //mCamera[0] = null;
                                 }
 
                                 mLooper[0].quit();
@@ -418,14 +429,11 @@ public class ClientActivity extends Activity implements LocationListener {
                 if(data != null){
                     try {
                         Thread.sleep(1000);
-                        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                         out.write(data);
                         out.flush();
                         Thread.sleep(1000);
                         out.write("_end_");
                         out.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -433,7 +441,6 @@ public class ClientActivity extends Activity implements LocationListener {
                 Log.d("SendMsg", msg);
             }
         }
-
         public String composeMsg(String to, LinkedList<String> content){
             String msg = "/"; // <-- leaving field 0 empty
             // Log.d("composeMsg", "to: "+ to+" Content: "+content.toString());
@@ -462,6 +469,23 @@ public class ClientActivity extends Activity implements LocationListener {
                 if(scrollDelta > 0)
                     text.scrollBy(0, scrollDelta);
             }
+        }
+    }
+
+    class updateUIImage implements Runnable {
+        private Bitmap bitmap;
+        public updateUIImage(Bitmap bitmap) {this.bitmap = bitmap; }
+        @Override
+        public void run() {
+            contactImage.setImageBitmap(bitmap);
+            // code below just makes the text scroll on update/receive of messages
+            /*final Layout layout = text.getLayout();
+            if(layout != null){
+                int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
+                        - text.getScrollY() - text.getHeight();
+                if(scrollDelta > 0)
+                    text.scrollBy(0, scrollDelta);
+            }*/
         }
     }
 

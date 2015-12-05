@@ -34,13 +34,11 @@ class Chat(LineReceiver):
 
     def dataReceived(self, data):
         if self.state == "READATA":
-            print "sdasdsa",data,"adasda"
+            print data
+            self.read_data(data)
             if data[-6:].rstrip(os.linesep) == "_end_":
                 print "change_state"
                 self.state = "GETCOMMAND"
-                #self.read_data(data[:-7])
-            else:
-                self.read_data(data)
         else:
             #strip the endings if they are '\n' and/or '\r'
             a = data.rstrip(os.linesep).split('/')
@@ -94,6 +92,7 @@ class Chat(LineReceiver):
                     print "state Changed to READATA"
                     self.state = "READATA"
                     self.dest = msg_array[1]
+                    self.message(msg_array[1], raw_msg)
                 else:
                     self.message(msg_array[1], raw_msg)
             else :
