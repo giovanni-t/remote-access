@@ -14,6 +14,7 @@ import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
@@ -71,7 +72,9 @@ public class ClientActivity extends Activity {
         contactImage = (ImageView) findViewById(R.id.photo);
         preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
         preview.setKeepScreenOn(true);
-        mSurfaceView.setZOrderOnTop(true);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mSurfaceView.setX(metrics.widthPixels+1);
         if(this.serverip.isEmpty()) {
             this.serverip = it.getStringExtra("serverip");
             et.setFocusable(false);
