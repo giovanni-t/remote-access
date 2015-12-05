@@ -116,6 +116,6 @@ class ChatFactory(Factory):
 
 reactor.listenTCP(45678, ChatFactory())
 #3/12 by Alessio
-print "IP:", socket.gethostbyname(socket.gethostname()) 
+#print "IP:", socket.gethostbyname(socket.gethostname()) 
 print "Chat server started"
 reactor.run()

@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.EditText;
@@ -330,7 +331,7 @@ public class ClientActivity extends Activity implements LocationListener {
                     if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
                             new makeToast("No camera on this device");
                     } else {
-                        try{
+                        try {
                             //semaphore.release();
                             new Thread() {
                                 @Override
@@ -356,73 +357,83 @@ public class ClientActivity extends Activity implements LocationListener {
                                 }
                             }.start();
                             semaphore.acquire(); /* must wait for loop run */
-                            try {
-                                mCamera[0].lock(); // before using camera, lock it first
+                            mCamera[0].lock(); // before using camera, lock it first
 
-                                // preview must be start before take picture
-                                mCamera[0].setPreviewDisplay(mSurfaceView.getHolder());
-                                mCamera[0].startPreview();
-
-                                // setting parameters, optional
-                                Camera.Parameters parameters = mCamera[0].getParameters();
-                                parameters.setPictureFormat(ImageFormat.JPEG);
-                                List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
-                                //the camera size is set to the lowest possible size
-                                Camera.Size size = sizes.get(sizes.size()-1);
-                                parameters.setPictureSize(size.width, size.height);
-                                /*if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-                                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                                }
-                                List<String> supportedFlashModes = parameters.getSupportedFlashModes();
-                                if (supportedFlashModes != null && supportedFlashModes.contains(Camera.Parameters.FLASH_MODE_ON)) {
-                                    parameters.setFocusMode(Camera.Parameters.FLASH_MODE_ON);
-                                }*/
-                                mCamera[0].setParameters(parameters);
-
-
-                                Thread.sleep(2000); // preview for 1s
-                                Log.i("debug", "start taking picture");
-                                final String[] encodedImage = new String[1];
-                                mCamera[0].takePicture(null, null, new Camera.PictureCallback() {
-                                    @Override
-                                    public void onPictureTaken(byte[] data, Camera camera) {
-                                        encodedImage[0] = Base64.encodeToString(data, Base64.DEFAULT);
+                            // preview must be start before take picture
+                            updateConversationHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        mCamera[0].setPreviewDisplay(mSurfaceView.getHolder());
+                                        mSurfaceView.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+                                        mCamera[0].startPreview();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    } finally {
                                         semaphore.release();
                                     }
-                                });
-                                semaphore.acquire(); // should wait for taking picture done
-                                //TODO: the reply is supposed to have the following format: /senderName/write/photo/encoded_photo
-                                reply.add("write");
-                                reply.add("photo");
-                                data = encodedImage[0];
-
-                                // keep preview for 1s after take picture
-                                Thread.sleep(1000);
-                                mCamera[0].stopPreview();
-                            } catch(Exception e) {
-                                Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
-                            } finally {
-            /* clean up */
-                                if (mCamera[0] != null) {
-                                    mCamera[0].stopPreview();
-                                    mCamera[0].unlock();
-                                    mCamera[0].release();
-                                    //mCamera[0] = null;
                                 }
+                            });
+                            semaphore.acquire();
+                            // setting parameters, optional
+                            Camera.Parameters parameters = mCamera[0].getParameters();
+                            parameters.setPictureFormat(ImageFormat.JPEG);
+                            List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
+                            //the camera size is set to the lowest possible size
+                            Camera.Size size = sizes.get(sizes.size() - 1);
+                            parameters.setPictureSize(size.width, size.height);
+                            /*if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+                                   parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                               }
+                            List<String> supportedFlashModes = parameters.getSupportedFlashModes();
+                            if (supportedFlashModes != null && supportedFlashModes.contains(Camera.Parameters.FLASH_MODE_ON)) {
+                                    parameters.setFocusMode(Camera.Parameters.FLASH_MODE_ON);
+                                }*/
+                            mCamera[0].setParameters(parameters);
 
-                                mLooper[0].quit();
-                                mLooper[0].getThread().join();
-                            }
+
+                            Thread.sleep(2000); // preview for 1s
+                            Log.i("debug", "start taking picture");
+                            final String[] encodedImage = new String[1];
+                            mCamera[0].takePicture(null, null, new Camera.PictureCallback() {
+                                @Override
+                                public void onPictureTaken(byte[] data, Camera camera) {
+                                    encodedImage[0] = Base64.encodeToString(data, Base64.DEFAULT);
+                                    semaphore.release();
+                                }
+                            });
+                            semaphore.acquire(); // should wait for taking picture done
+                            //TODO: the reply is supposed to have the following format: /senderName/write/photo/encoded_photo
+                            reply.add("write");
+                            reply.add("photo");
+                            data = encodedImage[0];
+
+                            // keep preview for 1s after take picture
+                            Thread.sleep(1000);
+                            mCamera[0].stopPreview();
                         } catch (Exception e) {
-                            Log.d("ERROR", "Failed to get camera: " + e.getMessage());
+                            Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
+                        } finally {
+                            /* clean up */
+                            if (mCamera[0] != null) {
+                                mCamera[0].stopPreview();
+                                mCamera[0].unlock();
+                                mCamera[0].release();
+                                mCamera[0] = null;
+                            }
+                            mLooper[0].quit();
+                            try {
+                                mLooper[0].getThread().join();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                     break;
                 default:
-                    runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
-                    break;
+                runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
+                break;
             }
-
             if(reply.size() != 0) {
                 String msg = composeMsg(senderName, reply);
                 sendMsg(msg);
