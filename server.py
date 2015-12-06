@@ -25,12 +25,12 @@ class Chat(LineReceiver):
 
     def handle_getname(self, name):
         if self.clients.has_key(name):
-            self.sendLine("name taken, please choose another.")
+            self.sendLine("<server> /broadcast/read/nametaken")
             return
         self.name = name
         self.clients[name] = self
         self.state = "GETCOMMAND"
-        send_msg = "<%s> Welcome!" % (name, )
+        send_msg = "<%s> /read/Welcome!" % (name, )
         self.sendLine(send_msg )
         self.send_clients_lists()
 

@@ -83,7 +83,7 @@ public class ClientActivity extends Activity {
             myName = null;
             th = new Thread(new ClientThread());
             th.start();
-            createNameDialog();
+            createNameDialog(false);
             // TODO avoid reconnect when activity is created again, for ex. after rotation
             // (I tried using this if statement but is not effective)
             // an idea could be keep the bg thread alive somehow, and start it only when the
@@ -315,8 +315,21 @@ public class ClientActivity extends Activity {
                         }
                     }
                     break;
+                case "nametaken":
+                    if (!nameTaken){
+                        updateConversationHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                createNameDialog(true);
+                            }
+                        }); // TODO remove
+                    }
+                    break;
+                case "Welcome!":
+                    nameTaken = true;
+                    break;
                 default:
-                    runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
+                   runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
                 break;
             }
             if(reply.size() != 0) {
@@ -436,21 +449,33 @@ public class ClientActivity extends Activity {
         }
     }
 
-    public void createNameDialog() {
+    public void createNameDialog(Boolean alreadyTaken) {
 
         final EditText name = new EditText(this);
         name.setHint("Name...");
 
-        new AlertDialog.Builder(this)
-                .setTitle("Please choose a name")
-                .setView(name)
-                .setNegativeButton(android.R.string.no, null)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface arg0, int arg1) {
-                        sendMsg(name.getText().toString());
-                    }
-                }).create().show();
-
+        if ( !alreadyTaken){
+            new AlertDialog.Builder(this)
+                    .setTitle("Please choose a username")
+                    .setView(name)
+                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            sendMsg(name.getText().toString());
+                        }
+                    }).create().show();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("Please choose another usernname")
+                    .setMessage("The name you chose had already been picked")
+                    .setView(name)
+                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            sendMsg(name.getText().toString());
+                        }
+                    }).create().show();
+        }
     }
 
 }
