@@ -10,14 +10,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.DialogPreference;
+import android.text.InputType;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,6 +57,7 @@ public class ClientActivity extends Activity {
     private ImageView contactImage;
     CameraPreview preview;
     GPSTracker gpsTracker;
+    private Boolean nameTaken = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +83,7 @@ public class ClientActivity extends Activity {
             myName = null;
             th = new Thread(new ClientThread());
             th.start();
-
+            createNameDialog();
             // TODO avoid reconnect when activity is created again, for ex. after rotation
             // (I tried using this if statement but is not effective)
             // an idea could be keep the bg thread alive somehow, and start it only when the
@@ -316,7 +316,7 @@ public class ClientActivity extends Activity {
                     }
                     break;
                 default:
-                runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
+                    runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
                 break;
             }
             if(reply.size() != 0) {
@@ -374,14 +374,6 @@ public class ClientActivity extends Activity {
         @Override
         public void run() {
             contactImage.setImageBitmap(bitmap);
-            // code below just makes the text scroll on update/receive of messages
-            /*final Layout layout = text.getLayout();
-            if(layout != null){
-                int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
-                        - text.getScrollY() - text.getHeight();
-                if(scrollDelta > 0)
-                    text.scrollBy(0, scrollDelta);
-            }*/
         }
     }
 
@@ -444,23 +436,21 @@ public class ClientActivity extends Activity {
         }
     }
 
+    public void createNameDialog() {
 
-    /*
-    // try if the two overrides wold preserve the connection, but they don't
-    // actually, it would be better to close the connection to the server on exit
-    // DONE: 11/30/15 - user is asked for a confirmation before leaving the activity,
-    //                  which closes the connection
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState){
-        savedInstanceState.putString("ipaddr", serverip);
-        super.onSaveInstanceState(savedInstanceState);
+        final EditText name = new EditText(this);
+        name.setHint("Name...");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Please choose a name")
+                .setView(name)
+                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        sendMsg(name.getText().toString());
+                    }
+                }).create().show();
+
     }
 
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        // Always call the superclass so it can restore the view hierarchy
-        serverip = (String) savedInstanceState.getString("ipaddr");
-        super.onRestoreInstanceState(savedInstanceState);
-    }
-    */
 }
