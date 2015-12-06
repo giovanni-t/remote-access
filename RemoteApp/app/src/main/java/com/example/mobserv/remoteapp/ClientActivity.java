@@ -458,7 +458,6 @@ public class ClientActivity extends Activity {
             new AlertDialog.Builder(this)
                     .setTitle("Please choose a username")
                     .setView(name)
-                    .setNegativeButton(android.R.string.no, null)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface arg0, int arg1) {
                             sendMsg(name.getText().toString());
@@ -469,7 +468,6 @@ public class ClientActivity extends Activity {
                     .setTitle("Please choose another usernname")
                     .setMessage("The name you chose had already been picked")
                     .setView(name)
-                    .setNegativeButton(android.R.string.no, null)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface arg0, int arg1) {
                             sendMsg(name.getText().toString());
