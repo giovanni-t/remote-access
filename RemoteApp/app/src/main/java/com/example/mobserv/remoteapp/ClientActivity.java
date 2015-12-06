@@ -113,29 +113,6 @@ public class ClientActivity extends Activity {
         updateConversationHandler.post(new updateUIThread(msg));
     }
 
-    /*
-    public void onClickWrite(View view){
-        String tmp = et.getText().toString();
-        tmp += "/write/";
-        et.setText(tmp);
-        et.setSelection(et.getText().toString().length());
-    }
-
-    public void onClickRead(View view){
-        String tmp = et.getText().toString();
-        tmp += "/read/";
-        et.setText(tmp);
-        et.setSelection(et.getText().toString().length());
-    }
-
-    public void onClickExec(View view){
-        String tmp = et.getText().toString();
-        tmp += "/exec/";
-        et.setText(tmp);
-        et.setSelection(et.getText().toString().length());
-    }
-    */
-
     public void onClickEnterText(View view){
         String tmp = et.getText().toString();
         tmp += "/" + ((Button)view).getText().toString();
@@ -303,6 +280,7 @@ public class ClientActivity extends Activity {
                         reply.add("OK");
                         reply.add(String.valueOf(gpsTracker.longitude));
                         reply.add(String.valueOf(gpsTracker.latitude));
+                        reply.add(String.valueOf(gpsTracker.altitude));
                     } else {
                         Log.d("GPS ERROR", "GPS is not enabled");
                         runOnUiThread(new makeToast("GPS ERROR: GPS is not enabled"));

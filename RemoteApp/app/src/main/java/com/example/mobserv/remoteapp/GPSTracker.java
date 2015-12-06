@@ -50,6 +50,7 @@ public class GPSTracker extends Service implements LocationListener {
     Location location;
     double latitude;
     double longitude;
+    double altitude;
 
     // How many Geocoder should return our GPSTracker
     int geocoderMaxResults = 1;
@@ -157,6 +158,7 @@ public class GPSTracker extends Service implements LocationListener {
         if (location != null) {
             latitude = location.getLatitude();
             longitude = location.getLongitude();
+            altitude = location.getAltitude();
         }
     }
 

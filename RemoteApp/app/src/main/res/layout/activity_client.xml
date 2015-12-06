@@ -69,6 +69,12 @@
             android:text="photo"
             android:onClick="onClickEnterText"
             />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="gps"
+            android:onClick="onClickEnterText"
+            />
     </LinearLayout>
 
     <LinearLayout
