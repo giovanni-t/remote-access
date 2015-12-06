@@ -10,12 +10,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.DialogPreference;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -314,7 +316,7 @@ public class ClientActivity extends Activity {
                     }
                     break;
                 default:
-                runOnUiThread(new makeToast("Unknown message:\n"+ TextUtils.join("/", args)));
+                runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
                 break;
             }
             if(reply.size() != 0) {
@@ -426,16 +428,18 @@ public class ClientActivity extends Activity {
             ViewGroup linearLayout = (ViewGroup) findViewById(R.id.clientsLinearLayout);
             linearLayout.removeAllViews();
             for (String clientName : clientsList){
-                Button bt = new Button(getApplicationContext());
-                bt.setText(clientName);
-                bt.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onClickEnterText(v);
-                    }
-                });
-                bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                linearLayout.addView(bt);
+                if ( !clientName.equalsIgnoreCase(myName) ) {
+                    Button bt = new Button(getApplicationContext());
+                    bt.setText(clientName);
+                    bt.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onClickEnterText(v);
+                        }
+                    });
+                    bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                    linearLayout.addView(bt);
+                }
             }
         }
     }
