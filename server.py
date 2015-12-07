@@ -30,7 +30,7 @@ class Chat(LineReceiver):
         self.name = name
         self.clients[name] = self
         self.state = "GETCOMMAND"
-        send_msg = "<%s> /read/Welcome!" % (name, )
+        send_msg = "<server> /%s/read/Welcome!" % (name, )
         self.sendLine(send_msg )
         self.send_clients_lists()
 
