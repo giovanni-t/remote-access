@@ -148,6 +148,10 @@ public class ClientActivity extends Activity {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     String read = inputStream.readLine();
+                    if(read == null || socket.isClosed()){
+                        runOnUiThread(new makeToast("Connection closed by server"));
+                        break;
+                    }
                     updateConversationHandler.post(new updateUIThread(read));
 
                     boolean isOK = checkReceivedMessageFormat(read);
@@ -170,6 +174,8 @@ public class ClientActivity extends Activity {
                     return;
                 }
             }
+
+            finish();
         }
 
         /** Check if received message should be dispatched or not
