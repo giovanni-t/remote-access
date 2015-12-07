@@ -98,7 +98,9 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         // Surface will be destroyed when we return, so stop the preview.
         if (mCamera != null) {
             mCamera.stopPreview();
+            mCamera.setPreviewCallback(null); // 7/12 Giovanni: added this line. This link could be useful: https://github.com/SanaMobile/android_plugin_camera/blob/master/Camera/src/com/sana/android/plugin/camera/CameraPreview.java
             mCamera.release();
+            mCamera = null;
         }
     }
 
