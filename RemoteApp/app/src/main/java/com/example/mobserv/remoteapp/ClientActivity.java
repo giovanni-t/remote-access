@@ -284,6 +284,19 @@ public class ClientActivity extends Activity {
                         e.printStackTrace();
                     }
                     break;
+                case "gps":
+                    try {
+                        Double lon = Double.parseDouble(args[4]);
+                        Double lat = Double.parseDouble(args[5]);
+                        Double alt = Double.parseDouble(args[6]);
+                        runOnUiThread(new makeToast("Received GPS position from "+senderName+":\n" + TextUtils.join("/", Arrays.asList(args).subList(4,7))));
+                    } catch (ArrayIndexOutOfBoundsException e){
+                        Log.d("msgIsWrite", "bad format in msg write gps: "+ TextUtils.join("/", args));
+                    }
+                    break;
+                default:
+                    runOnUiThread(new makeToast("Unknown WRITE message:\n" + TextUtils.join("/", args)));
+
             }
         }
 
@@ -299,7 +312,8 @@ public class ClientActivity extends Activity {
         switch (args[3]) {
             case "gps":
                 if (gpsTracker.getIsGPSTrackingEnabled()) {
-                    reply.add("OK");
+                    reply.add("write");
+                    reply.add("gps");
                     reply.add(String.valueOf(gpsTracker.longitude));
                     reply.add(String.valueOf(gpsTracker.latitude));
                     reply.add(String.valueOf(gpsTracker.altitude));
@@ -354,8 +368,7 @@ public class ClientActivity extends Activity {
                 runOnUiThread(new createNameDialog(false));
                 break;
             default:
-                runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
-                break;
+                runOnUiThread(new makeToast("Unknown READ message:\n" + TextUtils.join("/", args)));
         }
         if (reply.size() != 0) {
             String msg = composeMsg(senderName, reply);
@@ -459,7 +472,8 @@ public class ClientActivity extends Activity {
             ViewGroup linearLayout = (ViewGroup) findViewById(R.id.clientsLinearLayout);
             linearLayout.removeAllViews();
             for (String clientName : clientsList){
-                if ( !clientName.equalsIgnoreCase(myName) ) {
+                // let's keep also own name so we can send msgs to ourselves for debugging purposes     
+                //if ( !clientName.equalsIgnoreCase(myName) ) {
                     Button bt = new Button(getApplicationContext());
                     bt.setText(clientName);
                     bt.setOnClickListener(new View.OnClickListener() {
@@ -470,7 +484,7 @@ public class ClientActivity extends Activity {
                     });
                     bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     linearLayout.addView(bt);
-                }
+                //}
             }
         }
     }
