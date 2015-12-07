@@ -2,6 +2,7 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -76,14 +77,13 @@ public class ClientActivity extends Activity {
         preview.setKeepScreenOn(true);
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        mSurfaceView.setX(metrics.widthPixels+1);
-        if(this.serverip.isEmpty()) {
+        mSurfaceView.setX(metrics.widthPixels + 1);
+        if (this.serverip.isEmpty()) {
             this.serverip = it.getStringExtra("serverip");
             et.setFocusable(false);
             myName = null;
             th = new Thread(new ClientThread());
             th.start();
-            createNameDialog(false);
             // TODO avoid reconnect when activity is created again, for ex. after rotation
             // (I tried using this if statement but is not effective)
             // an idea could be keep the bg thread alive somehow, and start it only when the
@@ -98,26 +98,24 @@ public class ClientActivity extends Activity {
     public void onClick(View view) {
         String str = et.getText().toString();
         sendMsg(str);
-        if (myName == null){
-            myName = str;
-            Log.d("debug", "My name as client: " + myName);
-        }
         et.setText(null);
     }
 
-    /** Write the string on the socket, no matter what is the format.
-     *  So the 'msg' string received need to be already in the right format
+    /**
+     * Write the string on the socket, no matter what is the format.
+     * So the 'msg' string received need to be already in the right format
+     *
      * @param msg the message to send
      */
-    public void sendMsg(String msg){
+    public void sendMsg(String msg) {
         out.write(msg);
         out.flush();
         updateConversationHandler.post(new updateUIThread(msg));
     }
 
-    public void onClickEnterText(View view){
+    public void onClickEnterText(View view) {
         String tmp = et.getText().toString();
-        tmp += "/" + ((Button)view).getText().toString();
+        tmp += "/" + ((Button) view).getText().toString();
         et.setText(tmp);
         et.setSelection(et.getText().toString().length());
     }
@@ -135,9 +133,14 @@ public class ClientActivity extends Activity {
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),
                         true);
 
-             // success =)
+                // success =)
                 runOnUiThread(new makeToast("Connected to " + serverAddr + " " + serverport));
-                runOnUiThread(new Runnable() {@Override public void run() {et.setFocusableInTouchMode(true);}});
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        et.setFocusableInTouchMode(true);
+                    }
+                });
             } catch (IOException e) {
                 e.printStackTrace();
                 runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
@@ -148,25 +151,25 @@ public class ClientActivity extends Activity {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     String read = inputStream.readLine();
-                    if(read == null || socket.isClosed()){
+                    if (read == null || socket.isClosed()) {
                         runOnUiThread(new makeToast("Connection closed by server"));
                         break;
                     }
                     updateConversationHandler.post(new updateUIThread(read));
 
                     boolean isOK = checkReceivedMessageFormat(read);
-                    if(!isOK){
+                    if (!isOK) {
                         runOnUiThread(new makeToast(read));
                     } else {
                         String senderName = read.substring(1, read.indexOf(">"));
-                        String[] args = read.substring(read.indexOf(">")+2, read.length()).split("/");
+                        String[] args = read.substring(read.indexOf(">") + 2, read.length()).split("/");
                         messageDispatch(senderName, args);
                         //runOnUiThread(new makeToast(senderName));
                         //runOnUiThread(new makeToast(TextUtils.join("/", args)));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    if(!socket.isClosed())
+                    if (!socket.isClosed())
                         runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
                     else
                         runOnUiThread(new makeToast(e.getMessage()));
@@ -178,28 +181,31 @@ public class ClientActivity extends Activity {
             finish();
         }
 
-        /** Check if received message should be dispatched or not
+        /**
+         * Check if received message should be dispatched or not
          * (if it is a protocol-like message or human-like message)
+         *
          * @param msg the message to be checked
          * @return true if it is protocol-like, false otherwise
          */
         private boolean checkReceivedMessageFormat(String msg) {
             try {
                 String splits1[] = msg.split(" ");
-                if(splits1[1] == null){
+                if (splits1[1] == null) {
                     Log.d("ReceivedMessageFormat", "second part is null :: " + msg);
                     return false;
                 }
-                if(!splits1[0].matches("^<.*>$")) {
+                if (!splits1[0].matches("^<.*>$")) {
                     Log.d("ReceivedMessageFormat", "format of first part does not match :: " + msg);
                     return false;
                 }
-                if(!splits1[1].matches("[^/]*/[^/]+/[^/]+.*")) {
+                if (!splits1[1].matches("[^/]*/[^/]*/[^/]+.*")) {
                     Log.d("ReceivedMessageFormat", "format of second part does not match :: " + msg);
                     return false;
                 }
-            } catch (NullPointerException | IndexOutOfBoundsException | PatternSyntaxException e){
-                //TODO: it enters here when image is being transferring, although the image is retrieved in messageIsWrite
+            } catch (NullPointerException | IndexOutOfBoundsException | PatternSyntaxException e) {
+                //------> it enters here when image is being transferring, although the image is retrieved in messageIsWrite
+                // TODO: should be fixed now, but double check to be sure
                 Log.d("ReceivedMessageFormat", "Exception: " + e.getClass().getName() + " " + e.getMessage());
                 Log.d("ReceivedMessageFormat", "Exception :: " + msg);
                 return false;
@@ -207,13 +213,13 @@ public class ClientActivity extends Activity {
             return true;
         }
 
-        public void messageDispatch(String senderName, String[] args){
+        public void messageDispatch(String senderName, String[] args) {
             boolean isBroadcast = false;
 
-            if(!args[1].equals(myName))
+            if (!args[1].equals(myName))
                 isBroadcast = true;
 
-            switch (args[2]){
+            switch (args[2]) {
                 case "read":
                     messageIsRead(senderName, args);
                     break;
@@ -223,6 +229,9 @@ public class ClientActivity extends Activity {
                 case "exec":
                     messageIsExec(senderName, args);
                     break;
+                case "OK":
+                    // TODO ok msg
+                    break;
                 default:
                     // this should never happen if the server is well behaved
                     runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
@@ -230,9 +239,10 @@ public class ClientActivity extends Activity {
             }
 
         }
-        public void messageIsWrite(String senderName, String[] args){
+
+        public void messageIsWrite(String senderName, String[] args) {
             LinkedList<String> reply = new LinkedList<>();
-            switch (args[3]){
+            switch (args[3]) {
                 case "photo":
                     //TODO: show the received photo
                     String encodedImage;
@@ -240,13 +250,13 @@ public class ClientActivity extends Activity {
                     String line;
                     try {
                         while ((line = inputStream.readLine()) != null) {
-                            if (line.length() >= 5){
-                                if(line.substring(line.length() - 5,line.length()).compareTo("_end_") == 0) {
+                            if (line.length() >= 5) {
+                                if (line.substring(line.length() - 5, line.length()).compareTo("_end_") == 0) {
                                     //total.append(total.substring(0,total.length()-6));
                                     break;
                                 }
                             }
-                            total.append(line+"\n");
+                            total.append(line + "\n");
                         }
                         encodedImage = total.toString();
                         byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
@@ -276,99 +286,109 @@ public class ClientActivity extends Activity {
                     break;
             }
         }
-        public void messageIsExec(String senderName, String[] args){
+
+        public void messageIsExec(String senderName, String[] args) {
 
         }
-        public void messageIsRead(String senderName, String[] args){
-            LinkedList<String> reply = new LinkedList<>();
-            String data = null;
-            switch (args[3]){
-                case "gps":
-                    if (gpsTracker.getIsGPSTrackingEnabled()) {
-                        reply.add("OK");
-                        reply.add(String.valueOf(gpsTracker.longitude));
-                        reply.add(String.valueOf(gpsTracker.latitude));
-                        reply.add(String.valueOf(gpsTracker.altitude));
-                    } else {
-                        Log.d("GPS ERROR", "GPS is not enabled");
-                        runOnUiThread(new makeToast("GPS ERROR: GPS is not enabled"));
-                    }
-                    break;
-                case "clientlist":
-                    int numOfClients = Integer.parseInt(args[4]);
-                    List<String> clients = new LinkedList<>();
-                    clients.addAll(Arrays.asList(args).subList(5, args.length));
-                    Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
-                    runOnUiThread(new updateUIClientsList(numOfClients, clients));
-                    break;
-                case "photo":
-                    //PHOTO Part
-                    if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-                            new makeToast("No camera on this device");
-                    } else {
-                        try {
-                            preview.setCamera();
-                            preview.openSurface();
 
-                            String encodedImage = preview.takePicture(getApplicationContext());
-                            reply.add("write");
-                            reply.add("photo");
-                            data = encodedImage;
-                        } catch (Exception e) {
-                            Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
-                        } finally {
-                            preview.closeSurface();
-                        }
-                    }
-                    break;
-                case "nametaken":
-                    if (!nameTaken){
-                        updateConversationHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                createNameDialog(true);
-                            }
-                        }); // TODO remove
-                    }
-                    break;
-                case "Welcome!":
-                    nameTaken = true;
-                    break;
-                default:
-                   runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
+
+
+    public void messageIsRead(String senderName, String[] args) {
+        LinkedList<String> reply = new LinkedList<>();
+        String data = null;
+        switch (args[3]) {
+            case "gps":
+                if (gpsTracker.getIsGPSTrackingEnabled()) {
+                    reply.add("OK");
+                    reply.add(String.valueOf(gpsTracker.longitude));
+                    reply.add(String.valueOf(gpsTracker.latitude));
+                    reply.add(String.valueOf(gpsTracker.altitude));
+                } else {
+                    Log.d("GPS ERROR", "GPS is not enabled");
+                    runOnUiThread(new makeToast("GPS ERROR: GPS is not enabled"));
+                }
                 break;
-            }
-            if(reply.size() != 0) {
-                String msg = composeMsg(senderName, reply);
-                sendMsg(msg);
-                if(data != null){
+            case "clientlist":
+                int numOfClients = Integer.parseInt(args[4]);
+                List<String> clients = new LinkedList<>();
+                clients.addAll(Arrays.asList(args).subList(5, args.length));
+                Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
+                runOnUiThread(new updateUIClientsList(numOfClients, clients));
+                break;
+            case "photo":
+                //PHOTO Part
+                if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                    new makeToast("No camera on this device");
+                } else {
                     try {
-                        Thread.sleep(500);
-                        out.write(data);
-                        out.flush();
-                        Thread.sleep(500);
-                        out.write("_end_");
-                        out.flush();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        preview.setCamera();
+                        preview.openSurface();
+
+                        String encodedImage = preview.takePicture(getApplicationContext());
+                        reply.add("write");
+                        reply.add("photo");
+                        data = encodedImage;
+                    } catch (Exception e) {
+                        Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
+                    } finally {
+                        preview.closeSurface();
                     }
                 }
-                Log.d("SendMsg", msg);
-            }
+                break;
+            case "nametaken":
+                if (!nameTaken) {
+                    updateConversationHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new createNameDialog(true));
+                        }
+                    });
+                }
+                break;
+            case "Welcome!":
+                myName = args[1];
+                Log.d("debug", "My name as client: " + myName);
+                nameTaken = true;
+                break;
+            case "Hello":
+                runOnUiThread(new createNameDialog(false));
+                break;
+            default:
+                runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
+                break;
         }
-        public String composeMsg(String to, LinkedList<String> content){
-            String msg = "/"; // <-- leaving field 0 empty
-            // Log.d("composeMsg", "to: "+ to+" Content: "+content.toString());
-            msg += to;
-            if(content == null)
-                return msg;
-            for(String arg : content){
-                msg += "/" + arg;
+        if (reply.size() != 0) {
+            String msg = composeMsg(senderName, reply);
+            sendMsg(msg);
+            if (data != null) {
+                try {
+                    Thread.sleep(500);
+                    out.write(data);
+                    out.flush();
+                    Thread.sleep(500);
+                    out.write("_end_");
+                    out.flush();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            return msg;
+            Log.d("SendMsg", msg);
         }
-
     }
+
+    public String composeMsg(String to, LinkedList<String> content) {
+        String msg = "/"; // <-- leaving field 0 empty
+        // Log.d("composeMsg", "to: "+ to+" Content: "+content.toString());
+        msg += to;
+        if (content == null)
+            return msg;
+        for (String arg : content) {
+            msg += "/" + arg;
+        }
+        return msg;
+    }
+    }
+
 
     class updateUIThread implements Runnable {
         private String msg;
@@ -455,31 +475,39 @@ public class ClientActivity extends Activity {
         }
     }
 
-    public void createNameDialog(Boolean alreadyTaken) {
+    class createNameDialog implements Runnable {
+        Boolean alreadyTaken;
+        ClientActivity activity;
 
-        final EditText name = new EditText(this);
-        name.setHint("Name...");
+        public createNameDialog(Boolean alreadyTaken) {
+            this.alreadyTaken = alreadyTaken;
+            this.activity = ClientActivity.this;
+        }
 
-        if ( !alreadyTaken){
-            new AlertDialog.Builder(this)
-                    .setTitle("Please choose a username")
-                    .setView(name)
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface arg0, int arg1) {
-                            sendMsg(name.getText().toString());
-                        }
-                    }).create().show();
-        } else {
-            new AlertDialog.Builder(this)
-                    .setTitle("Please choose another usernname")
-                    .setMessage("The name you chose had already been picked")
-                    .setView(name)
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface arg0, int arg1) {
-                            sendMsg(name.getText().toString());
-                        }
-                    }).create().show();
+        @Override
+        public void run() {
+            final EditText name = new EditText(activity);
+            name.setHint("Name...");
+            if (!alreadyTaken) {
+                new AlertDialog.Builder(activity)
+                        .setTitle("Please choose a username")
+                        .setView(name)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                sendMsg(name.getText().toString());
+                            }
+                        }).create().show();
+            } else {
+                new AlertDialog.Builder(activity)
+                        .setTitle("Please choose another usernname")
+                        .setMessage("The name you chose had already been picked")
+                        .setView(name)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                sendMsg(name.getText().toString());
+                            }
+                        }).create().show();
+            }
         }
     }
-
 }

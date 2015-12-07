@@ -10,8 +10,8 @@ class Chat(LineReceiver):
         self.state = "GETNAME"
 
     def connectionMade(self):
-        print "clients make connection "
-        self.sendLine("Hello, please choose a name")
+        print "New client connecting..."
+        self.sendLine("<server> //read/Hello/whatsyourname")
 
 
     def connectionLost(self, reason):
@@ -25,7 +25,7 @@ class Chat(LineReceiver):
 
     def handle_getname(self, name):
         if self.clients.has_key(name):
-            self.sendLine("<server> /broadcast/read/nametaken")
+            self.sendLine("<server> //read/nametaken")
             return
         self.name = name
         self.clients[name] = self
