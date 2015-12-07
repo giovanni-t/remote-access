@@ -112,13 +112,14 @@ class ChatFactory(Factory):
 
     def __init__(self):
         self.clients = {} # maps user names to Chat instances
-
     def buildProtocol(self, addr):
         return Chat(self.clients)
 
 
-reactor.listenTCP(45678, ChatFactory())
+ifaceListeningPort = reactor.listenTCP(45678, ChatFactory())
 #3/12 by Alessio
-print "IP:", socket.gethostbyname(socket.gethostname()) 
-print "Chat server started"
+#print "IP:", socket.gethostbyname(socket.gethostname()) 
+#7/12 by Giovanni: found this huge oneliner to get the correct ip address instead of localhost/loopback address
+ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0]
+print "Chat server started on", socket.gethostname()+"/"+ip
 reactor.run()
