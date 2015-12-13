@@ -45,9 +45,11 @@ import java.util.regex.PatternSyntaxException;
  */
 public class ClientActivity extends Activity {
 
+    private static final int serverport = 45678;
+    private static final String CHAT_HISTORY = "chatHistory";
+
     private Socket socket = null;
     private PrintWriter out;
-    private static final int serverport = 45678;
     private String serverip = "";
     private TextView text;
     private Handler updateConversationHandler;
@@ -60,39 +62,44 @@ public class ClientActivity extends Activity {
     GPSTracker gpsTracker;
     private Boolean nameTaken = false;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
-        Intent it = getIntent();
         text = (TextView) findViewById(R.id.idClientText);
         text.setMovementMethod(new ScrollingMovementMethod());
-
         et = (EditText) findViewById(R.id.idClientEditText);
-        updateConversationHandler = new Handler();
-
         mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         contactImage = (ImageView) findViewById(R.id.photo);
-        preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
-        preview.setKeepScreenOn(true);
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        mSurfaceView.setX(metrics.widthPixels + 1);
-        if (this.serverip.isEmpty()) {
-            this.serverip = it.getStringExtra("serverip");
-            et.setFocusable(false);
-            myName = null;
-            th = new Thread(new ClientThread());
-            th.start();
-            // TODO avoid reconnect when activity is created again, for ex. after rotation
-            // (I tried using this if statement but is not effective)
-            // an idea could be keep the bg thread alive somehow, and start it only when the
-            // 'connect' button in the main activity is pressed
-            // TODO: rotation also erases the text in the textview, which is the 'current conversation'
-            // temporary fix: forbid rotation
-        }
 
-        gpsTracker = new GPSTracker(this, getParent());
+        if(savedInstanceState == null) { // IF first launch of the activity
+            Intent it = getIntent();
+
+            updateConversationHandler = new Handler();
+
+            preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
+            preview.setKeepScreenOn(true);
+            DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            mSurfaceView.setX(metrics.widthPixels + 1);
+            if (this.serverip.isEmpty()) {
+                this.serverip = it.getStringExtra("serverip");
+                et.setFocusable(false);
+                myName = null;
+                th = new Thread(new ClientThread());
+                th.start();
+                // TODO avoid reconnect when activity is created again, for ex. after rotation
+                // (I tried using this if statement but is not effective)
+                // an idea could be keep the bg thread alive somehow, and start it only when the
+                // 'connect' button in the main activity is pressed
+                // TODO: rotation also erases the text in the textview, which is the 'current conversation'
+                // temporary fix: forbid rotation
+            }
+
+            gpsTracker = new GPSTracker(this, getParent());
+        }
     }
 
     public void onClick(View view) {
@@ -472,7 +479,7 @@ public class ClientActivity extends Activity {
             ViewGroup linearLayout = (ViewGroup) findViewById(R.id.clientsLinearLayout);
             linearLayout.removeAllViews();
             for (String clientName : clientsList){
-                // let's keep also own name so we can send msgs to ourselves for debugging purposes     
+                // let's keep also own name so we can send msgs to ourselves for debugging purposes
                 //if ( !clientName.equalsIgnoreCase(myName) ) {
                     Button bt = new Button(getApplicationContext());
                     bt.setText(clientName);
@@ -523,5 +530,23 @@ public class ClientActivity extends Activity {
                         }).create().show();
             }
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putCharSequence(CHAT_HISTORY, text.getText());
+        // updateConversationHandler
+        outState.putString("myName", myName);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        text.setText(savedInstanceState.getCharSequence(CHAT_HISTORY));
+        myName = savedInstanceState.getString("myName");
     }
 }
