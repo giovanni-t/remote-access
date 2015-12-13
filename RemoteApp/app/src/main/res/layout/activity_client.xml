@@ -6,6 +6,7 @@
 
     <TextView
         android:hint="Received commands will be shown here\n"
+        android:freezesText="true"
         android:layout_width="match_parent"
         android:layout_height="173dp"
         android:id="@+id/idClientText"
