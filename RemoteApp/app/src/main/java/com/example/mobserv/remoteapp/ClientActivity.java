@@ -2,7 +2,6 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,7 +10,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.InputType;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
@@ -93,6 +91,20 @@ public class ClientActivity extends Activity {
         }
 
         gpsTracker = new GPSTracker(this, getParent());
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(preview != null) preview.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        preview.releaseMWakeLock();
+        super.onPause();
+        preview.onPause();
     }
 
     public void onClick(View view) {
@@ -330,7 +342,6 @@ public class ClientActivity extends Activity {
                 runOnUiThread(new updateUIClientsList(numOfClients, clients));
                 break;
             case "photo":
-                //PHOTO Part
                 if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
                     new makeToast("No camera on this device");
                 } else {
@@ -338,7 +349,7 @@ public class ClientActivity extends Activity {
                         preview.setCamera();
                         preview.openSurface();
 
-                        String encodedImage = preview.takePicture(getApplicationContext());
+                        String encodedImage = preview.takePicture();
                         reply.add("write");
                         reply.add("photo");
                         data = encodedImage;
@@ -347,6 +358,15 @@ public class ClientActivity extends Activity {
                     } finally {
                         preview.closeSurface();
                     }
+                }
+                break;
+            case "live":
+                if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                    new makeToast("No camera on this device");
+                } else {
+                    preview.liveSetId();
+                    preview.openSurface();
+                    preview.onResume();
                 }
                 break;
             case "nametaken":
