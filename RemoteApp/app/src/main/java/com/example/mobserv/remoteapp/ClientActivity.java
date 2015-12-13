@@ -129,6 +129,7 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
 
     class updateUIImage implements Runnable {
         private Bitmap bitmap;
+
         public updateUIImage(Bitmap bitmap) {this.bitmap = bitmap; }
         @Override
         public void run() {
@@ -321,7 +322,7 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
             try {
                 preview.setCamera();
                 preview.openSurface();
-                result = preview.takePicture(getApplicationContext());
+                result = preview.takePicture();
             } catch (Exception e) {
                 Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
             } finally {

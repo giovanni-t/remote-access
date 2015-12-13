@@ -2,6 +2,7 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -268,6 +269,7 @@ public class TaskFragment extends Fragment {
                         Double lon = Double.parseDouble(args[4]);
                         Double lat = Double.parseDouble(args[5]);
                         Double alt = Double.parseDouble(args[6]);
+                        onGpsReceived(lat,lon,senderName);
                         mCallbacks.onShowToast("Received GPS position from " + senderName + ":\n" + TextUtils.join("/", Arrays.asList(args).subList(4, 7)));
                     } catch (ArrayIndexOutOfBoundsException e){
                         Log.d("msgIsWrite", "bad format in msg write gps: "+ TextUtils.join("/", args));
@@ -419,4 +421,13 @@ public class TaskFragment extends Fragment {
         if (DEBUG) Log.i(TAG, "onStop()");
         super.onStop();
     }
+
+    private void onGpsReceived(Double lat, Double lon, String senderName) {
+        Intent it = new Intent("com.example.mobserv.remoteapp.MapActivity");
+        it.putExtra("latitude", lat);
+        it.putExtra("longitude", lon);
+        it.putExtra("nametoshow", senderName);
+        startActivity(it);
+    }
+
 }
