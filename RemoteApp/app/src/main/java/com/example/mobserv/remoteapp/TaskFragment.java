@@ -1,20 +1,15 @@
 package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.support.v4.app.Fragment;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-import android.view.Menu;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -46,11 +41,15 @@ public class TaskFragment extends Fragment {
      * task's progress and results back to the Activity.
      */
     interface TaskCallbacks {
-        //void onConnected();
-        //void onProgressUpdate(int percent);
-        //void onCancelled();
-        //void onTextReceived();
+        void onConnected();
+        void onFragmentCancel();
+        void onTextReceived(String str);
         void onShowToast(String str);
+        void onChooseName(Boolean taken);
+        void onImageReceived(Bitmap decodedByte);
+        void onClientListReceived(int numOfClients, List<String> clients);
+        void onWelcome();
+        String onImageRequested();
     }
 
     private TaskCallbacks mCallbacks;
@@ -59,6 +58,13 @@ public class TaskFragment extends Fragment {
     private String myName;
     private String serverip = "dummy IP";
     private static final int serverport = 45678;
+    private Socket socket;
+    private PrintWriter out;
+    private Boolean nameTaken = false;
+    private GPSTracker gpsTracker;
+    private Activity attachedActivity;
+
+
 
     /**
      * Hold a reference to the parent Activity so we can report the
@@ -70,6 +76,7 @@ public class TaskFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         mCallbacks = (TaskCallbacks) activity;
+        attachedActivity = activity;
     }
 
     /**
@@ -91,6 +98,9 @@ public class TaskFragment extends Fragment {
         mTask = new ClientThread();
         th = new Thread(mTask);
         th.start();
+
+        // Instantiate needed tools
+        gpsTracker = new GPSTracker(getContext(), attachedActivity);
     }
 
     /**
@@ -103,18 +113,13 @@ public class TaskFragment extends Fragment {
         mCallbacks = null;
     }
 
-    public void onShowToast(String str){
-        Log.d("taskfragment", "onShowToast -- "+str);
-    }
-
     private class ClientThread implements Runnable {
-
         BufferedReader inputStream;
 
         @Override
         public void run() {
             mCallbacks.onShowToast("Connecting to " + serverip + ":" + serverport + "...");
-            /*try {
+            try {
                 InetAddress serverAddr = InetAddress.getByName(serverip);
                 socket = new Socket(serverAddr, serverport);
                 this.inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -122,17 +127,12 @@ public class TaskFragment extends Fragment {
                         true);
 
                 // success =)
-                mCallbacks.onShowToast("Connected to " + serverAddr + " " + serverport);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        et.setFocusableInTouchMode(true);
-                    }
-                });
+                mCallbacks.onConnected();
+
             } catch (IOException e) {
                 e.printStackTrace();
-                runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
-                finish();
+                mCallbacks.onShowToast("ERROR:\n" + e.getMessage());
+                mCallbacks.onFragmentCancel();
                 return;
             }
 
@@ -143,7 +143,7 @@ public class TaskFragment extends Fragment {
                         mCallbacks.onShowToast("Connection closed by server");
                         break;
                     }
-                    updateConversationHandler.post(new updateUIThread(read));
+                    mCallbacks.onTextReceived(read);
 
                     boolean isOK = checkReceivedMessageFormat(read);
                     if (!isOK) {
@@ -153,21 +153,21 @@ public class TaskFragment extends Fragment {
                         String[] args = read.substring(read.indexOf(">") + 2, read.length()).split("/");
                         messageDispatch(senderName, args);
                         //mCallbacks.onShowToast(senderName);
-                        //runOnUiThread(new makeToast(TextUtils.join("/", args)));
+                        //mCallbacks.onShowToast(TextUtils.join("/", args));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                     if (!socket.isClosed())
-                        runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
+                        mCallbacks.onShowToast("ERROR:\n" + e.getMessage());
                     else
-                        runOnUiThread(new makeToast(e.getMessage()));
-                    finish();
+                        mCallbacks.onShowToast(e.getMessage());
+                    mCallbacks.onFragmentCancel();
                     return;
                 }
             }
 
-            finish();
-            */
+            mCallbacks.onFragmentCancel();
+            return;
         }
 
         /**
@@ -194,7 +194,7 @@ public class TaskFragment extends Fragment {
                 }
             } catch (NullPointerException | IndexOutOfBoundsException | PatternSyntaxException e) {
                 //------> it enters here when image is being transferring, although the image is retrieved in messageIsWrite
-                // TODO: should be fixed now, but double check to be sure
+                // should be fixed now
                 Log.d("ReceivedMessageFormat", "Exception: " + e.getClass().getName() + " " + e.getMessage());
                 Log.d("ReceivedMessageFormat", "Exception :: " + msg);
                 return false;
@@ -202,7 +202,7 @@ public class TaskFragment extends Fragment {
             return true;
         }
 
-        /*
+
         public void messageDispatch(String senderName, String[] args) {
             boolean isBroadcast = false;
 
@@ -220,7 +220,7 @@ public class TaskFragment extends Fragment {
                     messageIsExec(senderName, args);
                     break;
                 case "OK":
-                    // TODO ok msg
+                    // ok msg
                     break;
                 default:
                     // this should never happen if the server is well behaved
@@ -234,7 +234,7 @@ public class TaskFragment extends Fragment {
             LinkedList<String> reply = new LinkedList<>();
             switch (args[3]) {
                 case "photo":
-                    //TODO: show the received photo
+                    // show the received photo
                     String encodedImage;
                     StringBuilder total = new StringBuilder();
                     String line;
@@ -254,7 +254,7 @@ public class TaskFragment extends Fragment {
                         Matrix matrix = new Matrix();
                         matrix.postRotate(90);
                         decodedByte = Bitmap.createBitmap(decodedByte, 0, 0, decodedByte.getWidth(), decodedByte.getHeight(), matrix, true);
-                        updateConversationHandler.post(new updateUIImage(decodedByte));
+                        mCallbacks.onImageReceived(decodedByte);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -264,13 +264,13 @@ public class TaskFragment extends Fragment {
                         Double lon = Double.parseDouble(args[4]);
                         Double lat = Double.parseDouble(args[5]);
                         Double alt = Double.parseDouble(args[6]);
-                        runOnUiThread(new makeToast("Received GPS position from "+senderName+":\n" + TextUtils.join("/", Arrays.asList(args).subList(4,7))));
+                        mCallbacks.onShowToast("Received GPS position from " + senderName + ":\n" + TextUtils.join("/", Arrays.asList(args).subList(4, 7)));
                     } catch (ArrayIndexOutOfBoundsException e){
                         Log.d("msgIsWrite", "bad format in msg write gps: "+ TextUtils.join("/", args));
                     }
                     break;
                 default:
-                    runOnUiThread(new makeToast("Unknown WRITE message:\n" + TextUtils.join("/", args)));
+                    mCallbacks.onShowToast("Unknown WRITE message:\n" + TextUtils.join("/", args));
 
             }
         }
@@ -302,48 +302,30 @@ public class TaskFragment extends Fragment {
                     List<String> clients = new LinkedList<>();
                     clients.addAll(Arrays.asList(args).subList(5, args.length));
                     Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
-                    runOnUiThread(new updateUIClientsList(numOfClients, clients));
+                    mCallbacks.onClientListReceived(numOfClients, clients);
                     break;
                 case "photo":
-                    //PHOTO Part
-                    if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-                        new makeToast("No camera on this device");
-                    } else {
-                        try {
-                            preview.setCamera();
-                            preview.openSurface();
-
-                            String encodedImage = preview.takePicture(getApplicationContext());
-                            reply.add("write");
-                            reply.add("photo");
-                            data = encodedImage;
-                        } catch (Exception e) {
-                            Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
-                        } finally {
-                            preview.closeSurface();
-                        }
-                    }
+                    String encodedImage = mCallbacks.onImageRequested();
+                    reply.add("write");
+                    reply.add("photo");
+                    data = encodedImage;
                     break;
                 case "nametaken":
                     if (!nameTaken) {
-                        updateConversationHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                runOnUiThread(new createNameDialog(true));
-                            }
-                        });
+                        mCallbacks.onChooseName(true);
                     }
                     break;
                 case "Welcome!":
                     myName = args[1];
                     Log.d("debug", "My name as client: " + myName);
                     nameTaken = true;
+                    mCallbacks.onWelcome();
                     break;
                 case "Hello":
-                    runOnUiThread(new createNameDialog(false));
+                    mCallbacks.onChooseName(false);
                     break;
                 default:
-                    runOnUiThread(new makeToast("Unknown READ message:\n" + TextUtils.join("/", args)));
+                    mCallbacks.onShowToast("Unknown READ message:\n" + TextUtils.join("/", args));
             }
             if (reply.size() != 0) {
                 String msg = composeMsg(senderName, reply);
@@ -375,7 +357,29 @@ public class TaskFragment extends Fragment {
             }
             return msg;
         }
-        */
+
+
+
+    }
+
+    /**
+     * Write the string on the socket, no matter what is the format.
+     * So the 'msg' string received need to be already in the right format
+     *
+     * @param msg the message to send
+     */
+    public void sendMsg(String msg) {
+        out.write(msg);
+        out.flush();
+        mCallbacks.onTextReceived(msg); // would be better to have a "onTextSent" to have a different handling
+    }
+
+    public void closeSocket(){
+        try {
+            socket.close();
+        } catch (NullPointerException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /************************/

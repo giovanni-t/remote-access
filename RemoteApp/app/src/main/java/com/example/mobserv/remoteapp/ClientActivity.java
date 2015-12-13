@@ -1,26 +1,17 @@
 package com.example.mobserv.remoteapp;
 
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
 import android.support.v4.app.FragmentManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
-import android.text.InputType;
 import android.text.Layout;
-import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Menu;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,18 +22,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.PatternSyntaxException;
+
 /**
  * Created by pacel_000 on 22/10/2015.
  */
@@ -52,22 +35,18 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     private static final boolean DEBUG = true; // Set this to false to disable logs .
 
     private static final int serverport = 45678;
-    private static final String CHAT_HISTORY = "chatHistory";
+    private static final String CLIENTS_LIST = "clientsList";
+    private static final String TEXT_SCROLL_X = "tScrollX";
+    private static final String TEXT_SCROLL_Y = "tScrollY";
 
-    private Socket socket = null;
-    private PrintWriter out;
-    private String serverip = "";
+    private String serverip = "another dummy IP";
     private TextView text;
-    private Handler updateConversationHandler;
     private EditText et;
-    private Thread th;
-    private String myName;
+    private List<String> clientsList;
     private SurfaceView mSurfaceView;
     private ImageView contactImage;
-    CameraPreview preview;
-    GPSTracker gpsTracker;
-    private Boolean nameTaken = false;
-
+    private CameraPreview preview;
+    private boolean nameTaken;
 
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
     private TaskFragment mTaskFragment;
@@ -83,6 +62,12 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         contactImage = (ImageView) findViewById(R.id.photo);
 
+        preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
+        preview.setKeepScreenOn(true);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mSurfaceView.setX(metrics.widthPixels + 1);
+
         FragmentManager fm = getSupportFragmentManager();
         mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
 
@@ -90,7 +75,8 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         this.serverip = it.getStringExtra("serverip");
 
         // If the Fragment is non-null, then it is currently being
-        // retained across a configuration change.
+        // retained across a configuration change,
+        // but otherwise we instantiate a NEW ONE
         if (mTaskFragment == null) {
             Bundle bd = new Bundle();
             bd.putString("serverip", serverip);
@@ -101,51 +87,21 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
 
 
         if(savedInstanceState == null) { // IF first launch of the activity
-
-
-            updateConversationHandler = new Handler();
-
-            preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
-            preview.setKeepScreenOn(true);
-            DisplayMetrics metrics = new DisplayMetrics();
-            getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            mSurfaceView.setX(metrics.widthPixels + 1);
-            if (this.serverip.isEmpty()) {
-                et.setFocusable(false);
-                myName = null;
-                //th = new Thread(new ClientThread());
-                //th.start();
-
-                // TODO avoid reconnect when activity is created again, for ex. after rotation
-                // (I tried using this if statement but is not effective)
-                // an idea could be keep the bg thread alive somehow, and start it only when the
-                // 'connect' button in the main activity is pressed
-                // TODO: rotation also erases the text in the textview, which is the 'current conversation'
-                // temporary fix: forbid rotation
-            }
-
-            gpsTracker = new GPSTracker(this, getParent());
+            et.setFocusable(false);
         }
     }
 
     public void onClick(View view) {
         String str = et.getText().toString();
-        sendMsg(str);
+        mTaskFragment.sendMsg(str);
         et.setText(null);
     }
 
     /**
-     * Write the string on the socket, no matter what is the format.
-     * So the 'msg' string received need to be already in the right format
-     *
-     * @param msg the message to send
+     * Takes the name of the button and concatenates it to
+     * the current composing message
+     * @param view (the button)
      */
-    public void sendMsg(String msg) {
-        out.write(msg);
-        out.flush();
-        updateConversationHandler.post(new updateUIThread(msg));
-    }
-
     public void onClickEnterText(View view) {
         String tmp = et.getText().toString();
         tmp += "/" + ((Button) view).getText().toString();
@@ -197,17 +153,13 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
                         ClientActivity.super.onBackPressed();
-                        // close connection here
-                        try {
-                            th.interrupt();
-                            socket.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
-                        }
+                        // close connection here --> kill the fragment
+                        onFragmentCancel();
                     }
                 }).create().show();
     }
+
+    public void setClientsList(List<String> clientsList){ this.clientsList = clientsList; }
 
     class updateUIClientsList implements Runnable{
         Integer numOfClients;
@@ -216,7 +168,6 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
             this.clientsList = clientsList;
             this.numOfClients = numOfClients;
         }
-
         @Override
         public void run() {
             ViewGroup linearLayout = (ViewGroup) findViewById(R.id.clientsLinearLayout);
@@ -236,13 +187,17 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
                     linearLayout.addView(bt);
                 //}
             }
+            setClientsList(clientsList);
         }
+    }
+
+    public void setNameTaken(boolean val){
+        this.nameTaken = val;
     }
 
     class createNameDialog implements Runnable {
         Boolean alreadyTaken;
         ClientActivity activity;
-
         public createNameDialog(Boolean alreadyTaken) {
             this.alreadyTaken = alreadyTaken;
             this.activity = ClientActivity.this;
@@ -258,17 +213,17 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
                         .setView(name)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface arg0, int arg1) {
-                                sendMsg(name.getText().toString());
+                                mTaskFragment.sendMsg(name.getText().toString());
                             }
                         }).create().show();
             } else {
                 new AlertDialog.Builder(activity)
-                        .setTitle("Please choose another usernname")
+                        .setTitle("Please choose another username")
                         .setMessage("The name you chose had already been picked")
                         .setView(name)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface arg0, int arg1) {
-                                sendMsg(name.getText().toString());
+                                mTaskFragment.sendMsg(name.getText().toString());
                             }
                         }).create().show();
             }
@@ -279,9 +234,11 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putCharSequence(CHAT_HISTORY, text.getText());
-        // updateConversationHandler
-        outState.putString("myName", myName);
+        if(clientsList != null)
+            outState.putStringArrayList(CLIENTS_LIST, new ArrayList<String>(clientsList));
+        outState.putBoolean("nameTaken", nameTaken);
+        outState.putInt(TEXT_SCROLL_X, text.getScrollX());
+        outState.putInt(TEXT_SCROLL_Y, text.getScrollY());
 
     }
 
@@ -289,13 +246,98 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        text.setText(savedInstanceState.getCharSequence(CHAT_HISTORY));
-        myName = savedInstanceState.getString("myName");
+        // code below just makes the text scroll on update/receive of messages
+            /*Layout layout = text.getLayout();
+            if(layout != null){
+                int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
+                        - text.getScrollY() - text.getHeight();
+                if(scrollDelta > 0)
+                    text.scrollBy(0, scrollDelta);
+                Log.d("onRestore", "delta is "+scrollDelta);
+            }*/
+        final int x = savedInstanceState.getInt(TEXT_SCROLL_X);
+        final int y = savedInstanceState.getInt(TEXT_SCROLL_Y);
+        text.post(new Runnable() {
+            @Override
+            public void run() {
+                text.scrollTo(x, y);
+            }
+        });
+        List<String> cl = savedInstanceState.getStringArrayList(CLIENTS_LIST);
+        if(cl != null)
+            runOnUiThread(new updateUIClientsList(cl.size(), cl));
+        nameTaken = savedInstanceState.getBoolean("nameTaken");
+        if (!nameTaken)
+            runOnUiThread(new createNameDialog(false));
     }
 
     @Override
     public void onShowToast(String str){
         runOnUiThread(new makeToast(str));
+    }
+
+    @Override
+    public void onChooseName(Boolean taken) {
+        runOnUiThread(new createNameDialog(taken));
+    }
+
+    @Override
+    public void onConnected() {
+        runOnUiThread(new makeToast("Connected to " + serverip + " " + serverport));
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                et.setFocusableInTouchMode(true);
+            }
+        });
+        setNameTaken(false);
+    }
+
+    @Override
+    public void onFragmentCancel() {
+        mTaskFragment.closeSocket();
+        FragmentManager fm = getSupportFragmentManager();
+        fm.beginTransaction().remove(mTaskFragment).commit();
+        finish();
+    }
+
+    @Override
+    public void onTextReceived(String str) {
+        runOnUiThread(new updateUIThread(str));
+    }
+
+    @Override
+    public void onImageReceived(Bitmap decodedByte) {
+        runOnUiThread(new updateUIImage(decodedByte));
+    }
+
+    @Override
+    public String onImageRequested() {
+        String result = null;
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            onShowToast("No camera on this device");
+        } else {
+            try {
+                preview.setCamera();
+                preview.openSurface();
+                result = preview.takePicture(getApplicationContext());
+            } catch (Exception e) {
+                Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
+            } finally {
+                preview.closeSurface();
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void onClientListReceived(int numOfClients, List<String> clients) {
+        runOnUiThread(new updateUIClientsList(numOfClients, clients));
+    }
+
+    @Override
+    public void onWelcome(){
+        setNameTaken(true);
     }
 
     /************************/
@@ -331,5 +373,6 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         if (DEBUG) Log.i(TAG, "onDestroy()");
         super.onDestroy();
     }
+
 
 }
