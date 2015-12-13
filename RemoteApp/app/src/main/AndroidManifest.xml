@@ -46,6 +46,18 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".MapActivity"
+            android:label="Map Activity"
+            >
+            <intent-filter>
+                <action  android:name="com.example.mobserv.remoteapp.MapActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAFLDYdtQ6nMWjkEUowbywvG2FctN3Xz7E"/>
 
     </application>
 
