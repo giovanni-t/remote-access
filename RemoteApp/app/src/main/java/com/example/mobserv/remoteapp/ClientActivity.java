@@ -2,6 +2,7 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.text.InputType;
 import android.text.Layout;
 import android.text.TextUtils;
@@ -18,6 +20,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +46,10 @@ import java.util.regex.PatternSyntaxException;
 /**
  * Created by pacel_000 on 22/10/2015.
  */
-public class ClientActivity extends Activity {
+public class ClientActivity extends FragmentActivity implements TaskFragment.TaskCallbacks {
+
+    private static final String TAG = TaskFragment.class.getSimpleName();
+    private static final boolean DEBUG = true; // Set this to false to disable logs .
 
     private static final int serverport = 45678;
     private static final String CHAT_HISTORY = "chatHistory";
@@ -63,9 +69,12 @@ public class ClientActivity extends Activity {
     private Boolean nameTaken = false;
 
 
+    private static final String TAG_TASK_FRAGMENT = "task_fragment";
+    private TaskFragment mTaskFragment;
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
         text = (TextView) findViewById(R.id.idClientText);
@@ -74,8 +83,25 @@ public class ClientActivity extends Activity {
         mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         contactImage = (ImageView) findViewById(R.id.photo);
 
+        FragmentManager fm = getSupportFragmentManager();
+        mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
+
+        Intent it = getIntent();
+        this.serverip = it.getStringExtra("serverip");
+
+        // If the Fragment is non-null, then it is currently being
+        // retained across a configuration change.
+        if (mTaskFragment == null) {
+            Bundle bd = new Bundle();
+            bd.putString("serverip", serverip);
+            mTaskFragment = new TaskFragment();
+            mTaskFragment.setArguments(bd);
+            fm.beginTransaction().add(mTaskFragment, TAG_TASK_FRAGMENT).commit();
+        }
+
+
         if(savedInstanceState == null) { // IF first launch of the activity
-            Intent it = getIntent();
+
 
             updateConversationHandler = new Handler();
 
@@ -85,11 +111,11 @@ public class ClientActivity extends Activity {
             getWindowManager().getDefaultDisplay().getMetrics(metrics);
             mSurfaceView.setX(metrics.widthPixels + 1);
             if (this.serverip.isEmpty()) {
-                this.serverip = it.getStringExtra("serverip");
                 et.setFocusable(false);
                 myName = null;
-                th = new Thread(new ClientThread());
-                th.start();
+                //th = new Thread(new ClientThread());
+                //th.start();
+
                 // TODO avoid reconnect when activity is created again, for ex. after rotation
                 // (I tried using this if statement but is not effective)
                 // an idea could be keep the bg thread alive somehow, and start it only when the
@@ -126,289 +152,6 @@ public class ClientActivity extends Activity {
         et.setText(tmp);
         et.setSelection(et.getText().toString().length());
     }
-
-    class ClientThread implements Runnable {
-        BufferedReader inputStream;
-
-        @Override
-        public void run() {
-            runOnUiThread(new makeToast("Connecting to " + serverip + ":" + serverport + "..."));
-            try {
-                InetAddress serverAddr = InetAddress.getByName(serverip);
-                socket = new Socket(serverAddr, serverport);
-                this.inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),
-                        true);
-
-                // success =)
-                runOnUiThread(new makeToast("Connected to " + serverAddr + " " + serverport));
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        et.setFocusableInTouchMode(true);
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-                runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
-                finish();
-                return;
-            }
-
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    String read = inputStream.readLine();
-                    if (read == null || socket.isClosed()) {
-                        runOnUiThread(new makeToast("Connection closed by server"));
-                        break;
-                    }
-                    updateConversationHandler.post(new updateUIThread(read));
-
-                    boolean isOK = checkReceivedMessageFormat(read);
-                    if (!isOK) {
-                        runOnUiThread(new makeToast(read));
-                    } else {
-                        String senderName = read.substring(1, read.indexOf(">"));
-                        String[] args = read.substring(read.indexOf(">") + 2, read.length()).split("/");
-                        messageDispatch(senderName, args);
-                        //runOnUiThread(new makeToast(senderName));
-                        //runOnUiThread(new makeToast(TextUtils.join("/", args)));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    if (!socket.isClosed())
-                        runOnUiThread(new makeToast("ERROR:\n" + e.getMessage()));
-                    else
-                        runOnUiThread(new makeToast(e.getMessage()));
-                    finish();
-                    return;
-                }
-            }
-
-            finish();
-        }
-
-        /**
-         * Check if received message should be dispatched or not
-         * (if it is a protocol-like message or human-like message)
-         *
-         * @param msg the message to be checked
-         * @return true if it is protocol-like, false otherwise
-         */
-        private boolean checkReceivedMessageFormat(String msg) {
-            try {
-                String splits1[] = msg.split(" ");
-                if (splits1[1] == null) {
-                    Log.d("ReceivedMessageFormat", "second part is null :: " + msg);
-                    return false;
-                }
-                if (!splits1[0].matches("^<.*>$")) {
-                    Log.d("ReceivedMessageFormat", "format of first part does not match :: " + msg);
-                    return false;
-                }
-                if (!splits1[1].matches("[^/]*/[^/]*/[^/]+.*")) {
-                    Log.d("ReceivedMessageFormat", "format of second part does not match :: " + msg);
-                    return false;
-                }
-            } catch (NullPointerException | IndexOutOfBoundsException | PatternSyntaxException e) {
-                //------> it enters here when image is being transferring, although the image is retrieved in messageIsWrite
-                // TODO: should be fixed now, but double check to be sure
-                Log.d("ReceivedMessageFormat", "Exception: " + e.getClass().getName() + " " + e.getMessage());
-                Log.d("ReceivedMessageFormat", "Exception :: " + msg);
-                return false;
-            }
-            return true;
-        }
-
-        public void messageDispatch(String senderName, String[] args) {
-            boolean isBroadcast = false;
-
-            if (!args[1].equals(myName))
-                isBroadcast = true;
-
-            switch (args[2]) {
-                case "read":
-                    messageIsRead(senderName, args);
-                    break;
-                case "write":
-                    messageIsWrite(senderName, args);
-                    break;
-                case "exec":
-                    messageIsExec(senderName, args);
-                    break;
-                case "OK":
-                    // TODO ok msg
-                    break;
-                default:
-                    // this should never happen if the server is well behaved
-                    runOnUiThread(new makeToast("Unknown message:\n" + TextUtils.join("/", args)));
-                    break;
-            }
-
-        }
-
-        public void messageIsWrite(String senderName, String[] args) {
-            LinkedList<String> reply = new LinkedList<>();
-            switch (args[3]) {
-                case "photo":
-                    //TODO: show the received photo
-                    String encodedImage;
-                    StringBuilder total = new StringBuilder();
-                    String line;
-                    try {
-                        while ((line = inputStream.readLine()) != null) {
-                            if (line.length() >= 5) {
-                                if (line.substring(line.length() - 5, line.length()).compareTo("_end_") == 0) {
-                                    //total.append(total.substring(0,total.length()-6));
-                                    break;
-                                }
-                            }
-                            total.append(line + "\n");
-                        }
-                        encodedImage = total.toString();
-                        byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
-                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                        Matrix matrix = new Matrix();
-                        matrix.postRotate(90);
-                        decodedByte = Bitmap.createBitmap(decodedByte, 0, 0, decodedByte.getWidth(), decodedByte.getHeight(), matrix, true);
-                        updateConversationHandler.post(new updateUIImage(decodedByte));
-
-                        /*File file = new File(Environment.getExternalStorageDirectory() + File.separator + "test.jpg");
-                        file.createNewFile();
-                        try {
-                            OutputStream fOut = new FileOutputStream(file);
-
-                            decodedByte.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
-                            fOut.flush();
-                            fOut.close(); // do not forget to close the stream
-
-                            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        */
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case "gps":
-                    try {
-                        Double lon = Double.parseDouble(args[4]);
-                        Double lat = Double.parseDouble(args[5]);
-                        Double alt = Double.parseDouble(args[6]);
-                        runOnUiThread(new makeToast("Received GPS position from "+senderName+":\n" + TextUtils.join("/", Arrays.asList(args).subList(4,7))));
-                    } catch (ArrayIndexOutOfBoundsException e){
-                        Log.d("msgIsWrite", "bad format in msg write gps: "+ TextUtils.join("/", args));
-                    }
-                    break;
-                default:
-                    runOnUiThread(new makeToast("Unknown WRITE message:\n" + TextUtils.join("/", args)));
-
-            }
-        }
-
-        public void messageIsExec(String senderName, String[] args) {
-
-        }
-
-
-
-    public void messageIsRead(String senderName, String[] args) {
-        LinkedList<String> reply = new LinkedList<>();
-        String data = null;
-        switch (args[3]) {
-            case "gps":
-                if (gpsTracker.getIsGPSTrackingEnabled()) {
-                    reply.add("write");
-                    reply.add("gps");
-                    reply.add(String.valueOf(gpsTracker.longitude));
-                    reply.add(String.valueOf(gpsTracker.latitude));
-                    reply.add(String.valueOf(gpsTracker.altitude));
-                } else {
-                    Log.d("GPS ERROR", "GPS is not enabled");
-                    runOnUiThread(new makeToast("GPS ERROR: GPS is not enabled"));
-                }
-                break;
-            case "clientlist":
-                int numOfClients = Integer.parseInt(args[4]);
-                List<String> clients = new LinkedList<>();
-                clients.addAll(Arrays.asList(args).subList(5, args.length));
-                Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
-                runOnUiThread(new updateUIClientsList(numOfClients, clients));
-                break;
-            case "photo":
-                //PHOTO Part
-                if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-                    new makeToast("No camera on this device");
-                } else {
-                    try {
-                        preview.setCamera();
-                        preview.openSurface();
-
-                        String encodedImage = preview.takePicture(getApplicationContext());
-                        reply.add("write");
-                        reply.add("photo");
-                        data = encodedImage;
-                    } catch (Exception e) {
-                        Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
-                    } finally {
-                        preview.closeSurface();
-                    }
-                }
-                break;
-            case "nametaken":
-                if (!nameTaken) {
-                    updateConversationHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            runOnUiThread(new createNameDialog(true));
-                        }
-                    });
-                }
-                break;
-            case "Welcome!":
-                myName = args[1];
-                Log.d("debug", "My name as client: " + myName);
-                nameTaken = true;
-                break;
-            case "Hello":
-                runOnUiThread(new createNameDialog(false));
-                break;
-            default:
-                runOnUiThread(new makeToast("Unknown READ message:\n" + TextUtils.join("/", args)));
-        }
-        if (reply.size() != 0) {
-            String msg = composeMsg(senderName, reply);
-            sendMsg(msg);
-            if (data != null) {
-                try {
-                    Thread.sleep(500);
-                    out.write(data);
-                    out.flush();
-                    Thread.sleep(500);
-                    out.write("_end_");
-                    out.flush();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            Log.d("SendMsg", msg);
-        }
-    }
-
-    public String composeMsg(String to, LinkedList<String> content) {
-        String msg = "/"; // <-- leaving field 0 empty
-        // Log.d("composeMsg", "to: "+ to+" Content: "+content.toString());
-        msg += to;
-        if (content == null)
-            return msg;
-        for (String arg : content) {
-            msg += "/" + arg;
-        }
-        return msg;
-    }
-    }
-
 
     class updateUIThread implements Runnable {
         private String msg;
@@ -533,7 +276,7 @@ public class ClientActivity extends Activity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putCharSequence(CHAT_HISTORY, text.getText());
@@ -549,4 +292,44 @@ public class ClientActivity extends Activity {
         text.setText(savedInstanceState.getCharSequence(CHAT_HISTORY));
         myName = savedInstanceState.getString("myName");
     }
+
+    @Override
+    public void onShowToast(String str){
+        runOnUiThread(new makeToast(str));
+    }
+
+    /************************/
+    /***** LOGS & STUFF *****/
+    /************************/
+
+    @Override
+    protected void onStart() {
+        if (DEBUG) Log.i(TAG, "onStart()");
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        if (DEBUG) Log.i(TAG, "onResume()");
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        if (DEBUG) Log.i(TAG, "onPause()");
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        if (DEBUG) Log.i(TAG, "onStop()");
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (DEBUG) Log.i(TAG, "onDestroy()");
+        super.onDestroy();
+    }
+
 }
