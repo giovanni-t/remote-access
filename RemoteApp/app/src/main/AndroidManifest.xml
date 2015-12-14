@@ -29,14 +29,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ServerActivity"
-                  android:label="Server Activity">
-            <intent-filter>
-                <action android:name="com.example.mobserv.remoteapp.ServerActivity" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <activity android:name=".ClientActivity"
                   android:label="Client Activity"
                   android:screenOrientation="portrait"

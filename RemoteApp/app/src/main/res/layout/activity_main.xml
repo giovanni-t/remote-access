@@ -11,19 +11,13 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
-        android:text="Server"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:onClick="onClickServer"
-        />
     <EditText
         android:hint="IP address to connect to"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/idIpAddrEditText"
         android:inputType="text" />
+
     <Button
         android:text="Connect as Client"
         android:layout_width="wrap_content"

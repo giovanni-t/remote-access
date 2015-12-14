@@ -14,10 +14,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    public void onClickServer (View view ){
-        startActivity(new Intent("com.example.mobserv.remoteapp.ServerActivity")); // TODO manifest
-    }
-
     public void onClickClient (View view ){
         Intent it = new Intent("com.example.mobserv.remoteapp.ClientActivity");
         EditText etIpaddr = (EditText) findViewById(R.id.idIpAddrEditText);
