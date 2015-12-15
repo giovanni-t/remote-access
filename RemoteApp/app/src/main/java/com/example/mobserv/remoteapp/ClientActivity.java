@@ -1,28 +1,27 @@
 package com.example.mobserv.remoteapp;
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.support.v4.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Layout;
-import android.text.method.ScrollingMovementMethod;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.SurfaceView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.mobserv.remoteapp.fragments.OneFragment;
+import com.example.mobserv.remoteapp.fragments.PagerAdapter;
+import com.example.mobserv.remoteapp.fragments.ThreeFragment;
+import com.example.mobserv.remoteapp.fragments.TwoFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,50 +29,65 @@ import java.util.List;
 /**
  * Created by pacel_000 on 22/10/2015.
  */
-public class ClientActivity extends FragmentActivity implements TaskFragment.TaskCallbacks {
-
+public class ClientActivity extends AppCompatActivity implements TaskFragment.TaskCallbacks{
+    private List<String> clientsList;
     private static final String TAG = TaskFragment.class.getSimpleName();
     private static final boolean DEBUG = true; // Set this to false to disable logs .
 
     private static final int serverport = 45678;
     private static final String CLIENTS_LIST = "clientsList";
-    private static final String TEXT_SCROLL_X = "tScrollX";
-    private static final String TEXT_SCROLL_Y = "tScrollY";
 
     private String serverip = "another dummy IP";
-    private TextView text;
-    private EditText et;
-    private List<String> clientsList;
-    private SurfaceView mSurfaceView;
-    private ImageView contactImage;
-    private CameraPreview preview;
-    private boolean nameTaken;
 
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
     private TaskFragment mTaskFragment;
 
-
+    private OneFragment oneFragment;
+    private TwoFragment twoFragment;
+    private ThreeFragment threeFragment;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
-        text = (TextView) findViewById(R.id.idClientText);
-        text.setMovementMethod(new ScrollingMovementMethod());
-        et = (EditText) findViewById(R.id.idClientEditText);
-        mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView);
-        contactImage = (ImageView) findViewById(R.id.photo);
 
-        preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceView));
-        preview.setKeepScreenOn(true);
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        mSurfaceView.setX(metrics.widthPixels + 1);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
+        final PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager());
+        oneFragment = new OneFragment();
+        twoFragment = new TwoFragment();
+        threeFragment = new ThreeFragment();
+        adapter.addFragment(oneFragment, "Home");
+        adapter.addFragment(twoFragment, "Live");
+        adapter.addFragment(threeFragment, "Photo");
+        viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
         FragmentManager fm = getSupportFragmentManager();
         mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
 
         Intent it = getIntent();
-        this.serverip = it.getStringExtra("serverip");
+        serverip = it.getStringExtra("serverip");
 
         // If the Fragment is non-null, then it is currently being
         // retained across a configuration change,
@@ -85,65 +99,40 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
             mTaskFragment.setArguments(bd);
             fm.beginTransaction().add(mTaskFragment, TAG_TASK_FRAGMENT).commit();
         }
-
-
-        if(savedInstanceState == null) { // IF first launch of the activity
-            et.setFocusable(false);
-        }
     }
 
-    public void onClick(View view) {
-        String str = et.getText().toString();
-        mTaskFragment.sendMsg(str);
-        et.setText(null);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
     }
 
-    /**
-     * Takes the name of the button and concatenates it to
-     * the current composing message
-     * @param view (the button)
-     */
-    public void onClickEnterText(View view) {
-        String tmp = et.getText().toString();
-        tmp += "/" + ((Button) view).getText().toString();
-        et.setText(tmp);
-        et.setSelection(et.getText().toString().length());
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        /*if (id == R.id.action_settings) {
+            return true;
+        }*/
+
+        return super.onOptionsItemSelected(item);
     }
 
-    class updateUIThread implements Runnable {
-        private String msg;
-        public updateUIThread(String str) { this.msg = str; }
-        @Override
-        public void run() {
-            text.setText(text.getText().toString() + msg + "\n");
-            // code below just makes the text scroll on update/receive of messages
-            final Layout layout = text.getLayout();
-            if(layout != null){
-                int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
-                        - text.getScrollY() - text.getHeight();
-                if(scrollDelta > 0)
-                    text.scrollBy(0, scrollDelta);
-            }
-        }
+    public List<String> getClientsList() {
+        return clientsList;
     }
 
-    class updateUIImage implements Runnable {
-        private Bitmap bitmap;
-
-        public updateUIImage(Bitmap bitmap) {this.bitmap = bitmap; }
-        @Override
-        public void run() {
-            contactImage.setImageBitmap(bitmap);
-        }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(clientsList != null)
+            outState.putStringArrayList(CLIENTS_LIST, new ArrayList<String>(clientsList));
     }
 
-    class makeToast implements Runnable{
-        private String msg;
-        public makeToast(String msg){ this.msg = msg; }
-        @Override
-        public void run() {
-            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-        }
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        setClientsList(savedInstanceState.getStringArrayList(CLIENTS_LIST));
+
     }
 
     @Override
@@ -161,116 +150,51 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
                 }).create().show();
     }
 
+    public void onClick(View view) {
+        String str = oneFragment.getEt().getText().toString();
+        mTaskFragment.sendMsg(str);
+        oneFragment.getEt().setText(null);
+    }
+
+    class updateUIThread implements Runnable {
+        private String msg;
+        public updateUIThread(String str) { this.msg = str; }
+        @Override
+        public void run() {
+            oneFragment.gettext().setText(oneFragment.gettext().getText().toString() + msg + "\n");
+            // code below just makes the text scroll on update/receive of messages
+            final Layout layout = oneFragment.gettext().getLayout();
+            if(layout != null){
+                int scrollDelta = layout.getLineBottom(oneFragment.gettext().getLineCount() - 1)
+                        - oneFragment.gettext().getScrollY() - oneFragment.gettext().getHeight();
+                if(scrollDelta > 0)
+                    oneFragment.gettext().scrollBy(0, scrollDelta);
+            }
+        }
+    }
+
+    class updateUIImage implements Runnable {
+        private Bitmap bitmap;
+        public updateUIImage(Bitmap bitmap) {this.bitmap = bitmap; }
+        @Override
+        public void run() {
+            threeFragment.setBitmap(bitmap);
+        }
+    }
+
+    class makeToast implements Runnable{
+        private String msg;
+        public makeToast(String msg){ this.msg = msg; }
+        @Override
+        public void run() {
+            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void setClientsList(List<String> clientsList){ this.clientsList = clientsList; }
 
-    class updateUIClientsList implements Runnable{
-        Integer numOfClients;
-        List<String> clientsList;
-        public updateUIClientsList(Integer numOfClients, List<String> clientsList) {
-            this.clientsList = clientsList;
-            this.numOfClients = numOfClients;
-        }
-        @Override
-        public void run() {
-            ViewGroup linearLayout = (ViewGroup) findViewById(R.id.clientsLinearLayout);
-            linearLayout.removeAllViews();
-            for (String clientName : clientsList){
-                // let's keep also own name so we can send msgs to ourselves for debugging purposes
-                //if ( !clientName.equalsIgnoreCase(myName) ) {
-                    Button bt = new Button(getApplicationContext());
-                    bt.setText(clientName);
-                    bt.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onClickEnterText(v);
-                        }
-                    });
-                    bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    linearLayout.addView(bt);
-                //}
-            }
-            setClientsList(clientsList);
-        }
-    }
-
-    public void setNameTaken(boolean val){
-        this.nameTaken = val;
-    }
-
-    class createNameDialog implements Runnable {
-        Boolean alreadyTaken;
-        ClientActivity activity;
-        public createNameDialog(Boolean alreadyTaken) {
-            this.alreadyTaken = alreadyTaken;
-            this.activity = ClientActivity.this;
-        }
-
-        @Override
-        public void run() {
-            final EditText name = new EditText(activity);
-            name.setHint("Name...");
-            if (!alreadyTaken) {
-                new AlertDialog.Builder(activity)
-                        .setTitle("Please choose a username")
-                        .setView(name)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface arg0, int arg1) {
-                                mTaskFragment.sendMsg(name.getText().toString());
-                            }
-                        }).create().show();
-            } else {
-                new AlertDialog.Builder(activity)
-                        .setTitle("Please choose another username")
-                        .setMessage("The name you chose had already been picked")
-                        .setView(name)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface arg0, int arg1) {
-                                mTaskFragment.sendMsg(name.getText().toString());
-                            }
-                        }).create().show();
-            }
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        if(clientsList != null)
-            outState.putStringArrayList(CLIENTS_LIST, new ArrayList<String>(clientsList));
-        outState.putBoolean("nameTaken", nameTaken);
-        outState.putInt(TEXT_SCROLL_X, text.getScrollX());
-        outState.putInt(TEXT_SCROLL_Y, text.getScrollY());
-
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        // code below just makes the text scroll on update/receive of messages
-            /*Layout layout = text.getLayout();
-            if(layout != null){
-                int scrollDelta = layout.getLineBottom(text.getLineCount() - 1)
-                        - text.getScrollY() - text.getHeight();
-                if(scrollDelta > 0)
-                    text.scrollBy(0, scrollDelta);
-                Log.d("onRestore", "delta is "+scrollDelta);
-            }*/
-        final int x = savedInstanceState.getInt(TEXT_SCROLL_X);
-        final int y = savedInstanceState.getInt(TEXT_SCROLL_Y);
-        text.post(new Runnable() {
-            @Override
-            public void run() {
-                text.scrollTo(x, y);
-            }
-        });
-        List<String> cl = savedInstanceState.getStringArrayList(CLIENTS_LIST);
-        if(cl != null)
-            runOnUiThread(new updateUIClientsList(cl.size(), cl));
-        nameTaken = savedInstanceState.getBoolean("nameTaken");
-        if (!nameTaken)
-            runOnUiThread(new createNameDialog(false));
+    public TaskFragment getmTaskFragment() {
+        return mTaskFragment;
     }
 
     @Override
@@ -280,7 +204,8 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
 
     @Override
     public void onChooseName(Boolean taken) {
-        runOnUiThread(new createNameDialog(taken));
+        oneFragment.createNameDialog(taken);
+        //runOnUiThread(new createNameDialog(taken));
     }
 
     @Override
@@ -289,10 +214,10 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                et.setFocusableInTouchMode(true);
+                oneFragment.getEt().setFocusableInTouchMode(true);
             }
         });
-        setNameTaken(false);
+        oneFragment.setNameTaken(false);
     }
 
     @Override
@@ -320,26 +245,41 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
             onShowToast("No camera on this device");
         } else {
             try {
-                preview.setCamera();
-                preview.openSurface();
-                result = preview.takePicture();
+                oneFragment.getPreview().setCamera();
+                oneFragment.getPreview().openSurface();
+                result = oneFragment.getPreview().takePicture();
             } catch (Exception e) {
                 Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
             } finally {
-                preview.closeSurface();
+                oneFragment.getPreview().closeSurface();
             }
         }
         return result;
     }
 
     @Override
-    public void onClientListReceived(int numOfClients, List<String> clients) {
-        runOnUiThread(new updateUIClientsList(numOfClients, clients));
+    public String onLiveRequested() {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            new makeToast("No camera on this device");
+        } else {
+            oneFragment.getPreview().liveSetId();
+            oneFragment.getPreview().openSurface();
+            oneFragment.getPreview().onResume();
+            return oneFragment.getPreview().getIpServer() + ":" + String.valueOf(oneFragment.getPreview().getPortServer());
+        }
+        return null;
     }
 
     @Override
-    public void onWelcome(){
-        setNameTaken(true);
+    public void onClientListReceived(int numOfClients, List<String> clients) {
+        setClientsList(clients);
+        oneFragment.updateUIClientsListButtons(numOfClients, clientsList);
+        //runOnUiThread(new OneFragment.updateUIClientsList(numOfClients, clientsList));
+    }
+
+    @Override
+    public void onWelcome() {
+        oneFragment.setNameTaken(true);
     }
 
     /************************/
@@ -347,34 +287,47 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     /************************/
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         if (DEBUG) Log.i(TAG, "onStart()");
         super.onStart();
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         if (DEBUG) Log.i(TAG, "onResume()");
         super.onResume();
+        if(oneFragment.getPreview() != null)
+            oneFragment.getPreview().onResume();
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         if (DEBUG) Log.i(TAG, "onPause()");
+        if(oneFragment.getPreview() != null)
+            oneFragment.getPreview().releaseMWakeLock();
         super.onPause();
+        if(oneFragment.getPreview() != null)
+            oneFragment.getPreview().onPause();
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         if (DEBUG) Log.i(TAG, "onStop()");
+        if(oneFragment.getPreview() != null)
+            oneFragment.getPreview().releaseMWakeLock();
         super.onStop();
+        if(oneFragment.getPreview() != null)
+            oneFragment.getPreview().onPause();
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         if (DEBUG) Log.i(TAG, "onDestroy()");
+        if (oneFragment.getPreview() != null)
+            oneFragment.getPreview().releaseMWakeLock();
         super.onDestroy();
+        if (oneFragment.getPreview() != null)
+            oneFragment.getPreview().onPause();
     }
-
 
 }

@@ -26,3 +26,4 @@ public class MainActivity extends AppCompatActivity {
         startActivity(it); // TODO manifest
     }
 }
+

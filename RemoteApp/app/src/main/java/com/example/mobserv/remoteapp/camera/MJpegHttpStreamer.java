@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /* package */ public final class MJpegHttpStreamer
 {
@@ -73,12 +75,37 @@ import java.net.SocketTimeoutException;
         } // if
 
         mRunning = true;
+        final ExecutorService clientProcessingPool = Executors.newFixedThreadPool(10);
         mWorker = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
-                workerRun();
+                ServerSocket serverSocket = null;
+                Socket clientSocket = null;
+                try {
+                    serverSocket = new ServerSocket(mPort);
+                    //serverSocket.setSoTimeout(1000 /* milliseconds */);
+                    System.out.println("Waiting for clients to connect...");
+                    while(true)
+                    {
+                        try
+                        {
+                            clientSocket = serverSocket.accept();
+                            clientProcessingPool.submit(new ClientTask(clientSocket));
+                        } // try
+                        catch (final SocketTimeoutException e)
+                        {
+                            if (!mRunning)
+                            {
+                                return;
+                            } // if
+                        } // catch
+                    }
+                } catch (IOException e) {
+                    System.err.println("Unable to process client request");
+                    e.printStackTrace();
+                }
             } // run()
         });
         mWorker.start();
@@ -124,7 +151,7 @@ import java.net.SocketTimeoutException;
         {
             try
             {
-                acceptAndStream();
+                startServer();
             } // try
             catch (final IOException exceptionWhileStreaming)
             {
@@ -133,126 +160,137 @@ import java.net.SocketTimeoutException;
         } // while
     } // mainLoop()
 
-    private void acceptAndStream() throws IOException
-    {
-        ServerSocket serverSocket = null;
-        Socket socket = null;
-        DataOutputStream stream = null;
+    public void startServer() throws IOException{
+        final ExecutorService clientProcessingPool = Executors.newFixedThreadPool(10);
 
-        try
-        {
-            serverSocket = new ServerSocket(mPort);
-            serverSocket.setSoTimeout(1000 /* milliseconds */);
-
-            do
-            {
-                try
-                {
-                    socket = serverSocket.accept();
-                } // try
-                catch (final SocketTimeoutException e)
-                {
-                    if (!mRunning)
-                    {
-                        return;
-                    } // if
-                } // catch
-            } while (socket == null);
-
-            serverSocket.close();
-            serverSocket = null;
-            stream = new DataOutputStream(socket.getOutputStream());
-            stream.writeBytes(HTTP_HEADER);
-            stream.flush();
-
-            while (mRunning)
-            {
-                final byte[] buffer;
-                final int length;
-                final long timestamp;
-
-                synchronized (mBufferLock)
-                {
-                    while (!mNewJpeg)
+        Runnable serverTask = new Runnable() {
+            @Override
+            public void run() {
+                ServerSocket serverSocket = null;
+                Socket clientSocket = null;
+                try {
+                    serverSocket = new ServerSocket(mPort);
+                    //serverSocket.setSoTimeout(1000 /* milliseconds */);
+                    System.out.println("Waiting for clients to connect...");
+                    do
                     {
                         try
                         {
-                            mBufferLock.wait();
+                            clientSocket = serverSocket.accept();
+                            clientProcessingPool.submit(new ClientTask(clientSocket));
                         } // try
-                        catch (final InterruptedException stopMayHaveBeenCalled)
+                        catch (final SocketTimeoutException e)
                         {
-                            // stop() may have been called
-                            return;
+                            if (!mRunning)
+                            {
+                                return;
+                            } // if
                         } // catch
-                    } // while
-
-                    mStreamingBufferA = !mStreamingBufferA;
-
-                    if (mStreamingBufferA)
+                    } while (clientSocket == null);
+                } catch (IOException e) {
+                    System.err.println("Unable to process client request");
+                    e.printStackTrace();
+                } finally {
+                    /*
+                    if (serverSocket != null)
                     {
-                        buffer = mBufferA;
-                        length = mLengthA;
-                        timestamp = mTimestampA;
+                        try
+                        {
+                            serverSocket.close();
+                        } // try
+                        catch (final IOException closingServerSocket)
+                        {
+                            System.err.println(closingServerSocket);
+                        } // catch
                     } // if
-                    else
-                    {
-                        buffer = mBufferB;
-                        length = mLengthB;
-                        timestamp = mTimestampB;
-                    } // else
+                    */
+                }
+            }
+        };
+        Thread serverThread = new Thread(serverTask);
+        serverThread.start();
 
-                    mNewJpeg = false;
-                } // synchronized
+    }
 
-                stream.writeBytes(
-                    "Content-type: image/jpeg\r\n"
-                    + "Content-Length: " + length + "\r\n"
-                    + "X-Timestamp:" + timestamp + "\r\n"
-                    + "\r\n"
-                );
-                stream.write(buffer, 0 /* offset */, length);
-                stream.writeBytes(BOUNDARY_LINES);
+    private class ClientTask implements Runnable {
+        private final Socket socket;
+
+        private ClientTask(Socket clientSocket) {
+            socket = clientSocket;
+        }
+
+        @Override
+        public void run() {
+            DataOutputStream stream = null;
+            try {
+                stream = new DataOutputStream(socket.getOutputStream());
+                stream.writeBytes(HTTP_HEADER);
                 stream.flush();
-            } // while
-        } // try
-        finally
-        {
-            if (stream != null)
-            {
-                try
-                {
-                    stream.close();
-                } // try
-                catch (final IOException closingStream)
-                {
-                    System.err.println(closingStream);
-                } // catch
-            } //
-            if (socket != null)
-            {
-                try
-                {
-                    socket.close();
-                } // try
-                catch (final IOException closingSocket)
-                {
-                    System.err.println(closingSocket);
-                } // catch
-            } // socket
-            if (serverSocket != null)
-            {
-                try
-                {
-                    serverSocket.close();
-                } // try
-                catch (final IOException closingServerSocket)
-                {
-                    System.err.println(closingServerSocket);
-                } // catch
-            } // if
-        } // finally
-    } // accept()
 
+                while (mRunning) {
+                    final byte[] buffer;
+                    final int length;
+                    final long timestamp;
 
-} // class MJpegHttpStreamer
+                    synchronized (mBufferLock) {
+                        while (!mNewJpeg) {
+                            try {
+                                mBufferLock.wait();
+                            } // try
+                            catch (final InterruptedException stopMayHaveBeenCalled) {
+                                // stop() may have been called
+                                return;
+                            } // catch
+                        } // while
 
+                        mStreamingBufferA = !mStreamingBufferA;
+
+                        if (mStreamingBufferA) {
+                            buffer = mBufferA;
+                            length = mLengthA;
+                            timestamp = mTimestampA;
+                        } // if
+                        else {
+                            buffer = mBufferB;
+                            length = mLengthB;
+                            timestamp = mTimestampB;
+                        } // else
+
+                        mNewJpeg = false;
+                    } // synchronized
+
+                    stream.writeBytes(
+                            "Content-type: image/jpeg\r\n"
+                                    + "Content-Length: " + length + "\r\n"
+                                    + "X-Timestamp:" + timestamp + "\r\n"
+                                    + "\r\n"
+                    );
+                    stream.write(buffer, 0 /* offset */, length);
+                    stream.writeBytes(BOUNDARY_LINES);
+                    stream.flush();
+                } // while
+            } // try
+            catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (stream != null) {
+                    try {
+                        stream.close();
+                    } // try
+                    catch (final IOException closingStream) {
+                        System.err.println(closingStream);
+                    } // catch
+                } //
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } // try
+                    catch (final IOException closingSocket) {
+                        System.err.println(closingSocket);
+                    } // catch
+                } // socket
+
+            }
+        }
+    }
+}

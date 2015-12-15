@@ -8,6 +8,7 @@ class Chat(LineReceiver):
         self.clients = clients
         self.name = None
         self.state = "GETNAME"
+        self.liveIp = []
 
     def connectionMade(self):
         print "New client connecting..."
@@ -33,6 +34,7 @@ class Chat(LineReceiver):
         send_msg = "<server> /%s/read/Welcome!" % (name, )
         self.sendLine(send_msg )
         self.send_clients_lists()
+        self.send_liveIPs_lists()
 
     def dataReceived(self, data):
         if self.state == "READATA":
@@ -86,6 +88,17 @@ class Chat(LineReceiver):
         for name, protocol in self.clients.iteritems():
             protocol.sendLine(message)
 
+    def send_liveIPs_lists(self):
+        names = ''
+        count = 0
+        for name in self.liveIp:
+            names += '/' + name
+            count +=1
+        #message = "<server> there are %s clients. %s" %(str(count), names)
+        message = "<server> /broadcast/read/liveIps/%s%s" %(str(count), names)
+        for name, protocol in self.clients.iteritems():
+            protocol.sendLine(message)
+
     def handle_Command(self, msg_array, raw_msg):
         print "clients are %s " %self.clients
         if len(msg_array)>=3 and (msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec' or msg_array[2] == 'OK'):
@@ -96,6 +109,10 @@ class Chat(LineReceiver):
                     self.state = "READATA"
                     self.dest = msg_array[1]
                     self.message(msg_array[1], raw_msg)
+                elif msg_array[2] == 'write' and msg_array[3] == 'live':
+                    self.liveIp.append(msg_array[4])
+                    print "live IPs are %s" %self.liveIp
+                    self.send_clients_lists()
                 else:
                     self.message(msg_array[1], raw_msg)
             else :
