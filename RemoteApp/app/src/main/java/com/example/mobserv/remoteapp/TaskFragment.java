@@ -47,6 +47,7 @@ public class TaskFragment extends Fragment {
         void onChooseName(Boolean taken);
         void onImageReceived(Bitmap decodedByte);
         void onClientListReceived(int numOfClients, List<String> clients);
+        void onIpListReceived(int numOfIps, List<String> ips);
         void onWelcome();
         String onLiveRequested();
         String onImageRequested();
@@ -304,6 +305,13 @@ public class TaskFragment extends Fragment {
                     clients.addAll(Arrays.asList(args).subList(5, args.length));
                     Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
                     mCallbacks.onClientListReceived(numOfClients, clients);
+                    break;
+                case "liveIps":
+                    int numOfIPs = Integer.parseInt(args[4]);
+                    List<String> ips = new LinkedList<>();
+                    ips.addAll(Arrays.asList(args).subList(5, args.length));
+                    Log.d("msgIsRead", "Parsed list of ips: " + numOfIPs + " " + ips.toString());
+                    mCallbacks.onIpListReceived(numOfIPs, ips);
                     break;
                 case "photo":
                     String encodedImage = mCallbacks.onImageRequested();

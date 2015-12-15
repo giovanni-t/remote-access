@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
@@ -19,6 +20,7 @@ import com.example.mobserv.remoteapp.CameraPreview;
 import com.example.mobserv.remoteapp.ClientActivity;
 import com.example.mobserv.remoteapp.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OneFragment extends Fragment{
@@ -34,14 +36,19 @@ public class OneFragment extends Fragment{
     private static final String TEXT_SCROLL_X = "tScrollX";
     private static final String TEXT_SCROLL_Y = "tScrollY";
     private boolean nameTaken;
-
+/*
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+*/
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_one, container, false);
-        act = (ClientActivity)getActivity();
         if(savedInstanceState == null) {
+            act = (ClientActivity)getActivity();
             text = (TextView) view.findViewById(R.id.idClientText);
             text.setMovementMethod(new ScrollingMovementMethod());
             et = (EditText) view.findViewById(R.id.idClientEditText);
@@ -64,22 +71,19 @@ public class OneFragment extends Fragment{
         if(savedInstanceState == null) { // IF first launch of the activity
             et.setFocusable(false);
         }
+        act.startConnection();
     }
 
-
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+    public void saveInstance(Bundle outState) {
         outState.putBoolean("nameTaken", nameTaken);
         outState.putInt(TEXT_SCROLL_X, text.getScrollX());
         outState.putInt(TEXT_SCROLL_Y, text.getScrollY());
+        if(act.getClientsList()!= null) {
+            outState.putStringArrayList("clientsList", new ArrayList<String>(act.getClientsList()));
+        }
     }
 
-    @Override
-    public void onViewStateRestored(Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if(savedInstanceState == null) return;
+    public void scrollText(Bundle savedInstanceState) {
         final int x = savedInstanceState.getInt(TEXT_SCROLL_X);
         final int y = savedInstanceState.getInt(TEXT_SCROLL_Y);
         text.post(new Runnable() {
@@ -88,9 +92,6 @@ public class OneFragment extends Fragment{
                 text.scrollTo(x, y);
             }
         });
-        List<String> cl = act.getClientsList();
-        if(cl != null)
-            act.runOnUiThread(new updateUIClientsList(cl.size(), cl));
         nameTaken = savedInstanceState.getBoolean("nameTaken");
         if (!nameTaken)
             act.runOnUiThread(new createNameDialog(false));
@@ -99,7 +100,6 @@ public class OneFragment extends Fragment{
     public void updateUIClientsListButtons(int numOfClients, List<String> clients) {
         act.runOnUiThread(new updateUIClientsList(numOfClients, clients));
     }
-
 
     class updateUIClientsList implements Runnable{
         Integer numOfClients;
@@ -110,8 +110,7 @@ public class OneFragment extends Fragment{
         }
         @Override
         public void run() {
-            ViewGroup linearLayout = getClientLinearLayout();
-            linearLayout.removeAllViews();
+            clientsLinearLayout.removeAllViews();
             for (String clientName : clientsList){
                 // let's keep also own name so we can send msgs to ourselves for debugging purposes
                 //if ( !clientName.equalsIgnoreCase(myName) ) {
@@ -124,7 +123,7 @@ public class OneFragment extends Fragment{
                     }
                 });
                 bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                linearLayout.addView(bt);
+                clientsLinearLayout.addView(bt);
                 //}
             }
             act.setClientsList(clientsList);
@@ -168,6 +167,13 @@ public class OneFragment extends Fragment{
             }
         }
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.i("DEBUG", "view destroyed");
+    }
+
     /**
      * Takes the name of the button and concatenates it to
      * the current composing message
@@ -185,7 +191,6 @@ public class OneFragment extends Fragment{
      *************************/
     public EditText getEt(){return et;}
     public TextView gettext(){return text;}
-    public ViewGroup getClientLinearLayout(){return clientsLinearLayout;}
     public CameraPreview getPreview(){return preview;}
     public void setNameTaken(boolean nameTaken) { this.nameTaken = nameTaken; }
 }

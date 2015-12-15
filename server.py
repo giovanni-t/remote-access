@@ -4,12 +4,12 @@ from twisted.protocols.basic import LineReceiver
 import socket,os
 
 class Chat(LineReceiver):
-    def __init__(self, clients):
+    def __init__(self, clients, liveIps):
         self.clients = clients
+        self.liveIps = liveIps
         self.name = None
         self.state = "GETNAME"
-        self.liveIp = []
-
+    
     def connectionMade(self):
         print "New client connecting..."
         self.sendLine("<server> //read/Hello/whatsyourname")
@@ -112,7 +112,7 @@ class Chat(LineReceiver):
                 elif msg_array[2] == 'write' and msg_array[3] == 'live':
                     self.liveIp.append(msg_array[4])
                     print "live IPs are %s" %self.liveIp
-                    self.send_clients_lists()
+                    self.send_liveIPs_lists()
                 else:
                     self.message(msg_array[1], raw_msg)
             else :
@@ -126,7 +126,6 @@ class Chat(LineReceiver):
         
 
 class ChatFactory(Factory):
-
     def __init__(self):
         self.clients = {} # maps user names to Chat instances
     def buildProtocol(self, addr):

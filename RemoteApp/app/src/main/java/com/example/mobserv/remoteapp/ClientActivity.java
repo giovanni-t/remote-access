@@ -30,6 +30,52 @@ import java.util.List;
  * Created by pacel_000 on 22/10/2015.
  */
 public class ClientActivity extends AppCompatActivity implements TaskFragment.TaskCallbacks{
+    /*private SmartFragmentStatePagerAdapter adapterViewPager;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_client);
+        ViewPager vpPager = (ViewPager) findViewById(R.id.vpPager);
+        adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
+        vpPager.setAdapter(adapterViewPager);
+        vpPager.setOffscreenPageLimit(3);
+    }
+
+    // Extend from SmartFragmentStatePagerAdapter now instead for more dynamic ViewPager items
+    public static class MyPagerAdapter extends SmartFragmentStatePagerAdapter {
+        private static int NUM_ITEMS = 3;
+
+        public MyPagerAdapter(FragmentManager fragmentManager) {
+            super(fragmentManager);
+        }
+
+        // Returns total number of pages
+        @Override
+        public int getCount() {
+            return NUM_ITEMS;
+        }
+
+        // Returns the fragment to display for that page
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0: // Fragment # 0 - This will show FirstFragment
+                    return TwoFragment.newInstance(0, "Page # 1");
+                case 1: // Fragment # 0 - This will show FirstFragment different title
+                    return TwoFragment.newInstance(1, "Page # 2");
+                case 2: // Fragment # 1 - This will show SecondFragment
+                    return TwoFragment.newInstance(2, "Page # 3");
+                default:
+                    return null;
+            }
+        }
+
+        // Returns the page title for the top indicator
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return "Page " + position;
+        }
+    }*/
     private List<String> clientsList;
     private static final String TAG = TaskFragment.class.getSimpleName();
     private static final boolean DEBUG = true; // Set this to false to disable logs .
@@ -65,6 +111,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         adapter.addFragment(twoFragment, "Live");
         adapter.addFragment(threeFragment, "Photo");
         viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(3);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -83,16 +130,15 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
 
             }
         });
+    }
+
+    public void startConnection(){
         FragmentManager fm = getSupportFragmentManager();
-        mTaskFragment = (TaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
+        mTaskFragment = (TaskFragment) fm.findFragmentByTag("task_fragment");
 
         Intent it = getIntent();
         serverip = it.getStringExtra("serverip");
-
-        // If the Fragment is non-null, then it is currently being
-        // retained across a configuration change,
-        // but otherwise we instantiate a NEW ONE
-        if (mTaskFragment == null) {
+        if (mTaskFragment== null) {
             Bundle bd = new Bundle();
             bd.putString("serverip", serverip);
             mTaskFragment = new TaskFragment();
@@ -110,15 +156,11 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        /*if (id == R.id.action_settings) {
-            return true;
-        }*/
+        //*if (id == R.id.action_settings) {
+        //    return true;
+        //}
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public List<String> getClientsList() {
-        return clientsList;
     }
 
     @Override
@@ -126,13 +168,19 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         super.onSaveInstanceState(outState);
         if(clientsList != null)
             outState.putStringArrayList(CLIENTS_LIST, new ArrayList<String>(clientsList));
+        oneFragment.saveInstance(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         setClientsList(savedInstanceState.getStringArrayList(CLIENTS_LIST));
-
+        List<String> cl = getClientsList();
+        if (cl != null)
+            oneFragment.updateUIClientsListButtons(cl.size(), cl);
+        if (savedInstanceState != null) {
+            oneFragment.scrollText(savedInstanceState);
+        }
     }
 
     @Override
@@ -178,7 +226,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         public updateUIImage(Bitmap bitmap) {this.bitmap = bitmap; }
         @Override
         public void run() {
-            threeFragment.setBitmap(bitmap);
+            threeFragment.getContactImage().setImageBitmap(bitmap);
         }
     }
 
@@ -192,10 +240,6 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     }
 
     public void setClientsList(List<String> clientsList){ this.clientsList = clientsList; }
-
-    public TaskFragment getmTaskFragment() {
-        return mTaskFragment;
-    }
 
     @Override
     public void onShowToast(String str){
@@ -277,12 +321,46 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         //runOnUiThread(new OneFragment.updateUIClientsList(numOfClients, clientsList));
     }
 
+    public void onIpListReceived(int numOfIps, List<String> ips){
+        //setIpList(ips);
+        twoFragment.updateUIIPsListButtons(numOfIps, ips);
+    }
+
     @Override
     public void onWelcome() {
         oneFragment.setNameTaken(true);
     }
 
+    /**
+     * Takes the name of the button and concatenates it to
+     * the current composing message
+     * @param view (the button)
+     */
+    public void onClickEnterText(View view) {
+        oneFragment.onClickEnterText(view);
+    }
+
     /************************/
+    /*** GETTER & SETTER ****/
+    /************************/
+    public List<String> getClientsList() {
+        return clientsList;
+    }
+    public void setmTaskFragment(TaskFragment mTaskFragment) {
+        this.mTaskFragment = mTaskFragment;
+    }
+
+    public void setServerip(String serverip) {
+        this.serverip = serverip;
+    }
+
+    public String getServerip() {
+        return serverip;
+    }
+
+    public TaskFragment getmTaskFragment() {
+        return mTaskFragment;
+    }
     /***** LOGS & STUFF *****/
     /************************/
 
