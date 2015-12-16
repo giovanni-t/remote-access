@@ -162,7 +162,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void startPlayback() {
-        if (mIn != null) {
+        if (mIn != null && mRun != true) {
             mRun = true;
             thread.start();
         }
@@ -176,6 +176,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 thread.join();
                 retry = false;
             } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }

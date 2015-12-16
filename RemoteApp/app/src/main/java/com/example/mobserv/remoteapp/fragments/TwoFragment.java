@@ -98,6 +98,12 @@ public class TwoFragment extends Fragment {
         }
 
         protected void onPostExecute(MjpegInputStream result) {
+            Log.i(TAG,"Start playback");
+            if(mv.isActivated() == true)
+                Log.i(TAG, "Already activated");
+            if(mv.isEnabled() == true)
+                Log.i(TAG, "Already activated");
+            //mv.startPlayback();
             mv.setSource(result);
         /*if(result!=null){
             result.setSkip(1);
@@ -148,5 +154,9 @@ public class TwoFragment extends Fragment {
     public void onClickEnterText(View view) {
         String url = "http://" + ((Button) view).getText().toString();
         new DoRead().execute(url);
+    }
+    public void stopPlayback(){
+        Log.i(TAG,"Stop playback");
+        mv.stopPlayback();
     }
 }

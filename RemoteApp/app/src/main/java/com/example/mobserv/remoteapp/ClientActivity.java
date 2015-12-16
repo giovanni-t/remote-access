@@ -122,7 +122,8 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-
+                if(tab.getPosition() == 1)
+                    twoFragment.stopPlayback();
             }
 
             @Override

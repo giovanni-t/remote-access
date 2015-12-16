@@ -14,15 +14,16 @@ class Chat(LineReceiver):
         print "New client connecting..."
         self.sendLine("<server> //read/Hello/whatsyourname")
 
-
     def connectionLost(self, reason):
         if self.clients.has_key(self.name):
             left_name = self.name
             del self.clients[self.name]
+            if self.liveIps.has_key(self.name):
+                del self.liveIps[self.name]
             print left_name + ' has left'
             #self.broadcast( left_name + ' has left')
             self.send_clients_lists()
-
+            self.send_liveIPs_lists()
 
     def handle_getname(self, name):
         if self.clients.has_key(name):
@@ -91,8 +92,8 @@ class Chat(LineReceiver):
     def send_liveIPs_lists(self):
         names = ''
         count = 0
-        for name in self.liveIp:
-            names += '/' + name
+        for name, ip in self.liveIps.iteritems():
+            names += '/' + ip
             count +=1
         #message = "<server> there are %s clients. %s" %(str(count), names)
         message = "<server> /broadcast/read/liveIps/%s%s" %(str(count), names)
@@ -110,8 +111,8 @@ class Chat(LineReceiver):
                     self.dest = msg_array[1]
                     self.message(msg_array[1], raw_msg)
                 elif msg_array[2] == 'write' and msg_array[3] == 'live':
-                    self.liveIp.append(msg_array[4])
-                    print "live IPs are %s" %self.liveIp
+                    self.liveIps[self.name] = msg_array[4]
+                    #print "live IPs are %s" %self.liveIps
                     self.send_liveIPs_lists()
                 else:
                     self.message(msg_array[1], raw_msg)
@@ -128,8 +129,9 @@ class Chat(LineReceiver):
 class ChatFactory(Factory):
     def __init__(self):
         self.clients = {} # maps user names to Chat instances
+        self.liveIps = {}
     def buildProtocol(self, addr):
-        return Chat(self.clients)
+        return Chat(self.clients, self.liveIps)
 
 
 ifaceListeningPort = reactor.listenTCP(45678, ChatFactory())
