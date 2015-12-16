@@ -9,4 +9,6 @@
     <color name="windowBackground">#FFFFFF</color>
     <color name="navigationBarColor">#000000</color>
    <!-- <color name="colorAccent">#c8e8ff</color>-->
+    <color name="main_color">#689F38</color>
+    <color name="badge_color">#ff4e4e</color>
 </resources>

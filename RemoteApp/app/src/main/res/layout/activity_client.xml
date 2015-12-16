@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-
+<!--
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -27,11 +27,20 @@
         android:elevation="6dp"
         android:minHeight="?attr/actionBarSize"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+-->
+    <com.astuetz.PagerSlidingTabStrip
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        app:pstsShouldExpand="true"
+        app:pstsIndicatorHeight="3dp"
+        app:pstsIndicatorColor="@color/badge_color"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/main_color" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@id/tab_layout"/>
+        android:layout_below="@id/tabs"/>
 
 </RelativeLayout>

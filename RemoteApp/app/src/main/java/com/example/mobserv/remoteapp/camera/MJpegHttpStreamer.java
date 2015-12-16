@@ -15,6 +15,8 @@
 
 package com.example.mobserv.remoteapp.camera;
 
+import android.util.Log;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -79,25 +81,20 @@ import java.util.concurrent.Executors;
         mWorker = new Thread(new Runnable()
         {
             @Override
-            public void run()
-            {
+            public void run() {
                 ServerSocket serverSocket = null;
                 Socket clientSocket = null;
                 try {
                     serverSocket = new ServerSocket(mPort);
-                    //serverSocket.setSoTimeout(1000 /* milliseconds */);
+                    serverSocket.setSoTimeout(2000 /* milliseconds */);
                     System.out.println("Waiting for clients to connect...");
-                    while(true)
-                    {
-                        try
-                        {
+                    while (true) {
+                        try {
                             clientSocket = serverSocket.accept();
                             clientProcessingPool.submit(new ClientTask(clientSocket));
                         } // try
-                        catch (final SocketTimeoutException e)
-                        {
-                            if (!mRunning)
-                            {
+                        catch (final SocketTimeoutException e) {
+                            if (!mRunning) {
                                 return;
                             } // if
                         } // catch
@@ -105,8 +102,17 @@ import java.util.concurrent.Executors;
                 } catch (IOException e) {
                     System.err.println("Unable to process client request");
                     e.printStackTrace();
-                }
-            } // run()
+                } finally {
+                    if (serverSocket != null) {
+                        try {
+                            serverSocket.close();
+                        } // try
+                        catch (final IOException closingServerSocket) {
+                            System.err.println(closingServerSocket);
+                        } // catch
+                    } // if
+                } // run()
+            }
         });
         mWorker.start();
     } // start()
@@ -145,21 +151,7 @@ import java.util.concurrent.Executors;
         } // synchronized
     } // streamJpeg(byte[], int, long)
 
-    private void workerRun()
-    {
-        while (mRunning)
-        {
-            try
-            {
-                startServer();
-            } // try
-            catch (final IOException exceptionWhileStreaming)
-            {
-                System.err.println(exceptionWhileStreaming);
-            } // catch
-        } // while
-    } // mainLoop()
-
+/*
     public void startServer() throws IOException{
         final ExecutorService clientProcessingPool = Executors.newFixedThreadPool(10);
 
@@ -170,7 +162,7 @@ import java.util.concurrent.Executors;
                 Socket clientSocket = null;
                 try {
                     serverSocket = new ServerSocket(mPort);
-                    //serverSocket.setSoTimeout(1000 /* milliseconds */);
+                    //serverSocket.setSoTimeout(1000);
                     System.out.println("Waiting for clients to connect...");
                     do
                     {
@@ -203,14 +195,12 @@ import java.util.concurrent.Executors;
                             System.err.println(closingServerSocket);
                         } // catch
                     } // if
-                    */
                 }
             }
         };
         Thread serverThread = new Thread(serverTask);
         serverThread.start();
-
-    }
+    }*/
 
     private class ClientTask implements Runnable {
         private final Socket socket;
@@ -275,6 +265,7 @@ import java.util.concurrent.Executors;
             } finally {
                 if (stream != null) {
                     try {
+                        Log.d("MjpegStreaming", "Streaming closed");
                         stream.close();
                     } // try
                     catch (final IOException closingStream) {
@@ -283,6 +274,7 @@ import java.util.concurrent.Executors;
                 } //
                 if (socket != null) {
                     try {
+                        Log.d("MjpegStreaming", "Socket closed");
                         socket.close();
                     } // try
                     catch (final IOException closingSocket) {
