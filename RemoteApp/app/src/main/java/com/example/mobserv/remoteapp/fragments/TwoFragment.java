@@ -75,8 +75,9 @@ public class TwoFragment extends Fragment {
         }
         return null;
         */
+            HttpURLConnection connection = null;
             try {
-                HttpURLConnection connection = (HttpURLConnection) new URL(url[0]).openConnection();
+                connection = (HttpURLConnection) new URL(url[0]).openConnection();
                 connection.setConnectTimeout(5 * 1000);
                 connection.setReadTimeout(5 * 1000);
                 Log.i(TAG, "1. Sending http request");
@@ -92,27 +93,32 @@ public class TwoFragment extends Fragment {
                 e.printStackTrace();
                 Log.i(TAG, "Request failed-IOException", e);
                 //Error connecting to camera
+            } finally {
+                try {
+                    if(connection != null) connection.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace(); //If you want further info on failure...
+                }
             }
             return null;
 
         }
 
         protected void onPostExecute(MjpegInputStream result) {
-            Log.i(TAG,"Start playback");
-            if(mv.isActivated() == true)
-                Log.i(TAG, "Already activated");
-            if(mv.isEnabled() == true)
-                Log.i(TAG, "Already activated");
-            //mv.startPlayback();
-            mv.setSource(result);
-        /*if(result!=null){
-            result.setSkip(1);
-            setTitle(R.string.app_name);
-        }else{
-            setTitle(R.string.title_disconnected);
-        }*/
-            //mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
-            mv.showFps(false);
+            if(result!=null){
+                if(mv.isActivated() == true)
+                    Log.i(TAG, "Already activated");
+                if(mv.isEnabled() == true)
+                    Log.i(TAG, "Already activated");
+                //mv.startPlayback();
+                mv.setSource(result);
+
+                mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
+                mv.showFps(true);
+                Log.i(TAG, "Start playback");
+            }else{
+                Log.i(TAG, "result is null");
+            }
         }
     }
     public void updateUIIPsListButtons(int numOfIps, List<String> ips) {

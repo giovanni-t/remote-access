@@ -6,18 +6,20 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Layout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.astuetz.PagerSlidingTabStrip;
 import com.example.mobserv.remoteapp.fragments.OneFragment;
 import com.example.mobserv.remoteapp.fragments.PagerAdapter;
 import com.example.mobserv.remoteapp.fragments.ThreeFragment;
@@ -91,11 +93,31 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     private OneFragment oneFragment;
     private TwoFragment twoFragment;
     private ThreeFragment threeFragment;
+
+    private PagerSlidingTabStrip tabs;
+    private ViewPager pager;
+    private PagerAdapter adapter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
 
+        tabs = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        pager = (ViewPager) findViewById(R.id.pager);
+
+        adapter = new PagerAdapter(getSupportFragmentManager());
+        oneFragment = new OneFragment();
+        twoFragment = new TwoFragment();
+        threeFragment = new ThreeFragment();
+        adapter.addFragment(oneFragment, "Home", 0);
+        adapter.addFragment(twoFragment, "Live", 0);
+        adapter.addFragment(threeFragment, "Photo", 0);
+        pager.setAdapter(adapter);
+        pager.setOffscreenPageLimit(3);
+        tabs.setViewPager(pager);
+
+        /*
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -131,6 +153,27 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
 
             }
         });
+        */
+    }
+
+    class notifyTabStripChanged implements Runnable{
+        int position, notificationsCount;
+        public notifyTabStripChanged(int position, int notificationsCount) {
+            this.position = position;
+            this.notificationsCount = notificationsCount;
+        }
+        @Override
+        public void run() {
+            LinearLayout tabHost = (LinearLayout) tabs.getChildAt(0);
+            RelativeLayout tabLayout = (RelativeLayout) tabHost.getChildAt(position);
+            TextView badge = (TextView) tabLayout.findViewById(R.id.badge);
+            if (notificationsCount > 0) {
+                badge.setText(String.valueOf(notificationsCount));
+                badge.setVisibility(View.VISIBLE);
+            } else {
+                badge.setVisibility(View.GONE);
+            }
+        }
     }
 
     public void startConnection(){
@@ -228,6 +271,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         @Override
         public void run() {
             threeFragment.getContactImage().setImageBitmap(bitmap);
+            runOnUiThread(new notifyTabStripChanged(2, 1));
         }
     }
 
@@ -323,7 +367,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     }
 
     public void onIpListReceived(int numOfIps, List<String> ips){
-        //setIpList(ips);
+        runOnUiThread(new notifyTabStripChanged(1, numOfIps));
         twoFragment.updateUIIPsListButtons(numOfIps, ips);
     }
 

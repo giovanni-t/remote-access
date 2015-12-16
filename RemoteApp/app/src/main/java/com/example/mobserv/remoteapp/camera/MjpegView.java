@@ -10,6 +10,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -19,6 +20,8 @@ import java.io.IOException;
  * Created by alessioalberti on 13/12/15.
  */
 public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
+    private static final String TAG = "MjpegView";
+
     public final static int POSITION_UPPER_LEFT = 9;
     public final static int POSITION_UPPER_RIGHT = 3;
     public final static int POSITION_LOWER_LEFT = 12;
@@ -177,6 +180,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 retry = false;
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Log.d(TAG, "catch IOException hit in stopPlayback", e);
             }
         }
     }
