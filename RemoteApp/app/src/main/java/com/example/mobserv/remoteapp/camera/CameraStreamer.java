@@ -29,6 +29,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 /* package */ public final class CameraStreamer extends Object
@@ -312,6 +313,105 @@ import java.util.List;
         // documentation is not clear.
         camera.addCallbackBuffer(data);
    } // sendPreviewFrame(byte[], camera, long)
+
+    final class MovingAverage
+    {
+        private final int mNumValues;
+        private final long[] mValues;
+        private int mEnd = 0;
+        private int mLength = 0;
+        private long mSum = 0L;
+
+        /* package */ MovingAverage(final int numValues)
+        {
+            super();
+            mNumValues = numValues;
+            mValues = new long[numValues];
+        } // constructor()
+
+        /* package */ void update(final long value)
+        {
+            mSum -= mValues[mEnd];
+            mValues[mEnd] = value;
+            mEnd = (mEnd + 1) % mNumValues;
+            if (mLength < mNumValues)
+            {
+                mLength++;
+            } // if
+            mSum += value;
+        } // update(long)
+
+        /* package */ double getAverage()
+        {
+            return mSum / (double) mLength;
+        } // getAverage()
+
+    } // class MovingAverage
+
+    /* package */ final class MemoryOutputStream extends OutputStream
+    {
+        private final byte[] mBuffer;
+        private int mLength = 0;
+
+        /* package */ MemoryOutputStream(final int size)
+        {
+            this(new byte[size]);
+        } // constructor(int)
+
+        /* package */ MemoryOutputStream(final byte[] buffer)
+        {
+            super();
+            mBuffer = buffer;
+        } // constructor(byte[])
+
+        @Override
+        public void write(final byte[] buffer, final int offset, final int count)
+                throws IOException
+        {
+            checkSpace(count);
+            System.arraycopy(buffer, offset, mBuffer, mLength, count);
+            mLength += count;
+        } // write(buffer, offset, count)
+
+        @Override
+        public void write(final byte[] buffer) throws IOException
+        {
+            checkSpace(buffer.length);
+            System.arraycopy(buffer, 0, mBuffer, mLength, buffer.length);
+            mLength += buffer.length;
+        } // write(byte[])
+
+        @Override
+        public void write(final int oneByte) throws IOException
+        {
+            checkSpace(1);
+            mBuffer[mLength++] = (byte) oneByte;
+        } // write(int)
+
+        private void checkSpace(final int length) throws IOException
+        {
+            if (mLength + length >= mBuffer.length)
+            {
+                throw new IOException("insufficient space in buffer");
+            } // if
+        } // checkSpace(int)
+
+        /* package */ void seek(final int index)
+        {
+            mLength = index;
+        } // seek(int)
+
+        /* package */ byte[] getBuffer()
+        {
+            return mBuffer;
+        } // getBuffer()
+
+        /* package */ int getLength()
+        {
+            return mLength;
+        } // getLength()
+
+    } // class MemoryOutputStream
 
 
 } // class CameraStreamer
