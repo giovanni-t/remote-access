@@ -70,7 +70,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     private boolean mRunning = false;
     private CameraStreamer mCameraStreamer = null;
 
-    CameraPreview(Context context, SurfaceView sv) {
+    public CameraPreview(Context context, SurfaceView sv) {
         super(context);
         this.context = context;
         mSurfaceView = sv;
@@ -373,9 +373,9 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         return null;
     }
 
-    public void releaseMWakeLock(){
-        mWakeLock.release();
-    }
+    public void releaseMWakeLock(){if(mRunning == true) mWakeLock.release();}
+    public String getIpServer(){ return mIpAddress; }
+    public int getPortServer(){ return mPort; }
 
     private final class LoadPreferencesTask extends AsyncTask<Void, Void, SharedPreferences>
     {
