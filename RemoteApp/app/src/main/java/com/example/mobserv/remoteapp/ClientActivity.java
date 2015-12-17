@@ -85,6 +85,10 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     private static final int serverport = 45678;
     private static final String CLIENTS_LIST = "clientsList";
 
+    private static final int HOME_POSITION = 1;
+    private static final int LIVE_POSITION = 2;
+    private static final int PHOTO_POSITION = 3;
+
     private String serverip = "another dummy IP";
 
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
@@ -116,7 +120,42 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         pager.setAdapter(adapter);
         pager.setOffscreenPageLimit(3);
         tabs.setViewPager(pager);
+        tabs.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position != LIVE_POSITION-1)
+                    twoFragment.stopPlayback();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+        /*
+        tabLayout.setOnTabSelectedList
+        ener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                pager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 1)
+                    twoFragment.stopPlayback();
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });*/
         /*
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
