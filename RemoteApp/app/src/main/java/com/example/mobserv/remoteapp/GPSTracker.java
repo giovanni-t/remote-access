@@ -1,10 +1,6 @@
 package com.example.mobserv.remoteapp; /**
  * Created by giovanni on 05/12/15.
  */
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.Service;
@@ -21,6 +17,10 @@ import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Create this Class from tutorial :
@@ -113,7 +113,7 @@ public class GPSTracker extends Service implements LocationListener {
                 return;
             } else
                 Log.i("Permission", "GRANTED");
-            if (!provider_info.isEmpty()) {
+            if (!provider_info.isEmpty()) {  // TODO the null is here
                 locationManager.requestLocationUpdates(
                         provider_info,
                         MIN_TIME_BW_UPDATES,

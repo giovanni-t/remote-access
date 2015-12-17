@@ -22,12 +22,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/idIpAddrEditText"
         android:inputType="text"
-<<<<<<< HEAD
-        android:text="192.168.1.47"
-        />
-=======
         android:text="172.24.11.225"/>
->>>>>>> 77818f801f70066bf5a1898a69b96847318920e3
 
     <Button
         android:text="Connect as Client"

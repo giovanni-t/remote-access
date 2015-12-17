@@ -1,5 +1,6 @@
 package com.example.mobserv.remoteapp.camera;
 
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -43,6 +44,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     private int dispWidth;
     private int dispHeight;
     private int displayMode;
+
+    private SurfaceHolder holder;
+    private Context context;
 
     public class MjpegViewThread extends Thread {
         private SurfaceHolder mSurfaceHolder;
@@ -136,7 +140,11 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                         ovl = makeFpsOverlay(overlayPaint, fps);
                                     }
                                 }
-                            } catch (IOException e) {
+                            } catch(IOException e) {
+                                Log.d(TAG, "Mjpeg View IOException generated");
+                                //stopPlayback();
+                                mRun = false;
+                                e.printStackTrace();
                             }
                         }
                     } finally {
@@ -148,8 +156,13 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void init(Context context) {
-        SurfaceHolder holder = getHolder();
+        this.context = context;
+        holder = getHolder();
         holder.addCallback(this);
+        initialize();
+    }
+
+    public void initialize(){
         thread = new MjpegViewThread(holder, context);
         setFocusable(true);
         overlayPaint = new Paint();
@@ -165,7 +178,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void startPlayback() {
-        if (mIn != null && mRun != true) {
+        if (mIn != null) {
             mRun = true;
             thread.start();
         }
