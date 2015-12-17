@@ -93,13 +93,14 @@ public class TwoFragment extends Fragment {
                 e.printStackTrace();
                 Log.i(TAG, "Request failed-IOException", e);
                 //Error connecting to camera
-            } finally {
+            } /*finally {
                 try {
+                    Log.d(TAG, "Http request is disconnecting...");
                     if(connection != null) connection.disconnect();
                 } catch (Exception e) {
                     e.printStackTrace(); //If you want further info on failure...
                 }
-            }
+            }*/
             return null;
 
         }
@@ -110,15 +111,17 @@ public class TwoFragment extends Fragment {
                     Log.i(TAG, "Already activated");
                 if(mv.isEnabled() == true)
                     Log.i(TAG, "Already activated");
-                //mv.startPlayback();
                 mv.setSource(result);
 
-                mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
+                //mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
                 mv.showFps(true);
                 Log.i(TAG, "Start playback");
             }else{
                 Log.i(TAG, "result is null");
             }
+        }
+        protected void onCloseConnection(){
+            mv.stopPlayback();
         }
     }
     public void updateUIIPsListButtons(int numOfIps, List<String> ips) {
@@ -161,8 +164,9 @@ public class TwoFragment extends Fragment {
         String url = "http://" + ((Button) view).getText().toString();
         new DoRead().execute(url);
     }
-    public void stopPlayback(){
+
+    public void stopPlayback() {
         Log.i(TAG,"Stop playback");
-        mv.stopPlayback();
+        new DoRead().onCloseConnection();
     }
 }

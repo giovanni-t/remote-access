@@ -106,6 +106,7 @@ import java.util.concurrent.Executors;
                     if (serverSocket != null) {
                         try {
                             serverSocket.close();
+                            Log.d(TAG, "serverSocked is closed");
                         } // try
                         catch (final IOException closingServerSocket) {
                             System.err.println(closingServerSocket);
