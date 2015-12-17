@@ -168,10 +168,13 @@ import java.util.List;
                 {
                     startStreamingIfRunning();
                 } //try
+                catch (IOException e){
+                    Log.d(TAG, "Camera exception");
+                    e.printStackTrace();
+                }
                 catch (final RuntimeException openCameraFailed)
                 {
-                    Log.d(TAG, "Open camera failed, retying in " + OPEN_CAMERA_POLL_INTERVAL_MS
-                            + "ms", openCameraFailed);
+                    Log.d(TAG, "Open camera failed, retying in " + OPEN_CAMERA_POLL_INTERVAL_MS + "ms", openCameraFailed);
                     Thread.sleep(OPEN_CAMERA_POLL_INTERVAL_MS);
                     continue;
                 } // catch

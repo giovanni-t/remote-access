@@ -102,6 +102,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     private ViewPager pager;
     private PagerAdapter adapter;
 
+    private boolean isStreaming = false;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,62 +138,6 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
 
             }
         });
-        /*
-        tabLayout.setOnTabSelectedList
-        ener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                pager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                if (tab.getPosition() == 1)
-                    twoFragment.stopPlayback();
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });*/
-        /*
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        final PagerAdapter adapter = new PagerAdapter(getSupportFragmentManager());
-        oneFragment = new OneFragment();
-        twoFragment = new TwoFragment();
-        threeFragment = new ThreeFragment();
-        adapter.addFragment(oneFragment, "Home");
-        adapter.addFragment(twoFragment, "Live");
-        adapter.addFragment(threeFragment, "Photo");
-        viewPager.setAdapter(adapter);
-        viewPager.setOffscreenPageLimit(3);
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                if(tab.getPosition() == 1)
-                    twoFragment.stopPlayback();
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-        */
     }
 
     class notifyTabStripChanged implements Runnable{
@@ -324,7 +269,6 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     }
 
     public void setClientsList(List<String> clientsList){ this.clientsList = clientsList; }
-
     @Override
     public void onShowToast(String str){
         runOnUiThread(new makeToast(str));
@@ -389,7 +333,9 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     public String onLiveRequested() {
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             new makeToast("No camera on this device");
-        } else {
+        } else{
+            if(isStreaming) new makeToast("This device is streaming");
+            isStreaming = true;
             oneFragment.getPreview().liveSetId();
             oneFragment.getPreview().openSurface();
             oneFragment.getPreview().onResume();
@@ -406,6 +352,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     }
 
     public void onIpListReceived(int numOfIps, List<String> ips){
+        Log.d(TAG, "number of ips " + numOfIps);
         runOnUiThread(new notifyTabStripChanged(1, numOfIps));
         twoFragment.updateUIIPsListButtons(numOfIps, ips);
     }

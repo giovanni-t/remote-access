@@ -19,9 +19,12 @@ import android.widget.Toast;
 import com.example.mobserv.remoteapp.camera.CameraStreamer;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.List;
@@ -131,6 +134,26 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         new LoadPreferencesTask().execute();
 
         mIpAddress = tryGetIpV4Address();
+        boolean isAvailable = false;
+        while(!isAvailable) {
+            Socket socket = null;
+            try {
+                socket = new Socket();
+                socket.connect(new InetSocketAddress(mIpAddress, mPort));
+                mPort++;
+            }
+            catch(ConnectException ce){
+                isAvailable = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }finally{
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         updatePrefCacheAndUi();
         final PowerManager powerManager = (PowerManager) context.getSystemService(context.POWER_SERVICE);
         mWakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
@@ -376,7 +399,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     public void releaseMWakeLock(){if(mRunning == true) mWakeLock.release();}
     public String getIpServer(){ return mIpAddress; }
     public int getPortServer(){ return mPort; }
-
     private final class LoadPreferencesTask extends AsyncTask<Void, Void, SharedPreferences>
     {
         private LoadPreferencesTask()

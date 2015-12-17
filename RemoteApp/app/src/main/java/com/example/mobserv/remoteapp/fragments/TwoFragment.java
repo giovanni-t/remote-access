@@ -21,6 +21,7 @@ import com.example.mobserv.remoteapp.camera.MjpegView;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 
@@ -75,9 +76,8 @@ public class TwoFragment extends Fragment {
         }
         return null;
         */
-            HttpURLConnection connection = null;
             try {
-                connection = (HttpURLConnection) new URL(url[0]).openConnection();
+                HttpURLConnection connection = (HttpURLConnection) new URL(url[0]).openConnection();
                 connection.setConnectTimeout(5 * 1000);
                 connection.setReadTimeout(5 * 1000);
                 Log.i(TAG, "1. Sending http request");
@@ -89,6 +89,9 @@ public class TwoFragment extends Fragment {
                     return null;
                 }
                 return new MjpegInputStream(connection.getInputStream());
+            } catch(SocketTimeoutException e){
+                e.printStackTrace();
+                Log.i(TAG, "Timeout HttpURLConnection", e);
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.i(TAG, "Request failed-IOException", e);
@@ -106,19 +109,12 @@ public class TwoFragment extends Fragment {
         }
 
         protected void onPostExecute(MjpegInputStream result) {
-            if(result!=null){
-                if(mv.isActivated() == true)
-                    Log.i(TAG, "Already activated");
-                if(mv.isEnabled() == true)
-                    Log.i(TAG, "Already activated");
-                mv.setSource(result);
-
-                //mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
-                mv.showFps(true);
-                Log.i(TAG, "Start playback");
-            }else{
-                Log.i(TAG, "result is null");
-            }
+            mv.initialize();
+            //mv.surfaceCreated(null);
+            mv.setSource(result);
+            mv.setDisplayMode(MjpegView.SIZE_BEST_FIT);
+            mv.showFps(true);
+            Log.i(TAG, "Start playback");
         }
         protected void onCloseConnection(){
             mv.stopPlayback();
@@ -162,6 +158,7 @@ public class TwoFragment extends Fragment {
      */
     public void onClickEnterText(View view) {
         String url = "http://" + ((Button) view).getText().toString();
+        stopPlayback();
         new DoRead().execute(url);
     }
 

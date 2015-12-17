@@ -22,8 +22,12 @@
         android:layout_height="wrap_content"
         android:id="@+id/idIpAddrEditText"
         android:inputType="text"
+<<<<<<< HEAD
         android:text="192.168.1.47"
         />
+=======
+        android:text="192.168.1.32"/>
+>>>>>>> newbranch
 
     <Button
         android:text="Connect as Client"

@@ -102,7 +102,9 @@ import java.util.concurrent.Executors;
                 } catch (IOException e) {
                     System.err.println("Unable to process client request");
                     e.printStackTrace();
-                } finally {
+                } catch(Exception e){
+                    Log.d(TAG, "Server socket is expired");
+                }finally {
                     if (serverSocket != null) {
                         try {
                             serverSocket.close();
@@ -263,7 +265,9 @@ import java.util.concurrent.Executors;
             } // try
             catch (IOException e) {
                 e.printStackTrace();
-            } finally {
+            } catch(Exception e){
+                Log.d(TAG, "Client socket is expired");
+            }finally {
                 if (stream != null) {
                     try {
                         Log.d("MjpegStreaming", "Streaming closed");
