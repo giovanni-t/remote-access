@@ -142,7 +142,6 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                 }
                             } catch(IOException e) {
                                 Log.d(TAG, "Mjpeg View IOException generated");
-                                //stopPlayback();
                                 mRun = false;
                                 e.printStackTrace();
                             }
@@ -248,5 +247,10 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setDisplayMode(int s) {
         displayMode = s;
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
     }
 }

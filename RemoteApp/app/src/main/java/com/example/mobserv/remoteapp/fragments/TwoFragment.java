@@ -158,6 +158,7 @@ public class TwoFragment extends Fragment {
      */
     public void onClickEnterText(View view) {
         String url = "http://" + ((Button) view).getText().toString();
+        stopPlayback();
         new DoRead().execute(url);
     }
 
