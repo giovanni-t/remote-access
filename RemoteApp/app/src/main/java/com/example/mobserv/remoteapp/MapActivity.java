@@ -23,7 +23,7 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
     MapFragment mapFragment;
     GoogleMap googleMap;
     String nametoshow = null;
-
+    String toSendOrToShow=null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,10 +31,14 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
 
         Intent it = getIntent();
         Bundle b = it.getExtras();
-        lat = b.getDouble("latitude");
-        lon =b.getDouble("longitude");
-        nametoshow = b.getString("nametoshow");
-
+        toSendOrToShow = b.getString("sendOrShow");
+        if ( toSendOrToShow.compareTo("showPosition")==0) {
+            lat = b.getDouble("latitude");
+            lon = b.getDouble("longitude");
+            nametoshow = b.getString("nametoshow");
+        } else {
+            // code to be executed in case i want to click and send the position
+        }
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
