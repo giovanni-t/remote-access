@@ -103,6 +103,9 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     private PagerAdapter adapter;
 
     private boolean isStreaming = false;
+
+    private final int PICK_GPS_POSITION = 130;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -440,4 +443,23 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
             oneFragment.getPreview().onPause();
     }
 
+    public void onClickPickGps(View view){
+        //Toast.makeText(this, "TEST TEST", Toast.LENGTH_SHORT).show();
+        Intent it = new Intent("com.example.mobserv.remoteapp.MapActivity");
+        it.putExtra("sendOrShow", "readPosition");
+        startActivityForResult(it, PICK_GPS_POSITION);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_GPS_POSITION ) {
+            if (resultCode == RESULT_OK) {
+                // add latitude and longitude to edittext
+                String latS = data.getStringExtra("latS");
+                String lonS = data.getStringExtra("lonS");
+                String x = "/"+String.valueOf(latS)+"/"+String.valueOf(lonS);
+                oneFragment.appendToET(x);
+            }
+        }
+    }
 }

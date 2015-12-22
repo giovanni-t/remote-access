@@ -6,6 +6,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -39,7 +40,7 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
             lat = b.getDouble("latitude");
             lon = b.getDouble("longitude");
             nametoshow = b.getString("nametoshow");
-        } else {
+        } else if ( toSendOrToShow.compareTo("readPosition")==0 ){
             // code to be executed in case i want to click and send the position
         }
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
@@ -69,13 +70,19 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
 
     @Override
     public void onMapClick(LatLng latLng) {
-
+            this.lat = latLng.latitude;
+            this.lon = latLng.longitude;
+        Toast.makeText(this, String.valueOf(lat)+String.valueOf(lon), Toast.LENGTH_LONG).show();
+        Intent it = new Intent();
+        it.putExtra("lats", String.valueOf(this.lat));
+        it.putExtra("lonS", String.valueOf(this.lon));
+            onBackPressed();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        LatLng position = new LatLng(lat,lon);
+        LatLng position = new LatLng(0,0);
 
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(position)
