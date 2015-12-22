@@ -255,6 +255,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         @Override
         public void run() {
             threeFragment.getContactImage().setImageBitmap(bitmap);
+            threeFragment.setImageBTM(bitmap);
             runOnUiThread(new notifyTabStripChanged(2, 1));
         }
     }
