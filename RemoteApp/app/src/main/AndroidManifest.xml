@@ -60,12 +60,20 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".PhotoActivity">
+            <intent-filter>
+                <action android:name="com.example.mobserv.remoteapp.PhotoActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAFLDYdtQ6nMWjkEUowbywvG2FctN3Xz7E" />
         <!-- tis this valid for everybody, or just for the one who created? -->
 
-        <activity android:name=".PhotoActivity"></activity>
+
     </application>
 
 </manifest>
