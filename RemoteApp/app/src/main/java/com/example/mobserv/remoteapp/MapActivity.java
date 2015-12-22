@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
+import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,6 +25,8 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
     GoogleMap googleMap;
     String nametoshow = null;
     String toSendOrToShow=null;
+    private int maptype = GoogleMap.MAP_TYPE_NORMAL;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,4 +92,16 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.setOnMapClickListener(this);
     }
+
+    public void onClickChangeMapType(View view){
+
+        if ( maptype == GoogleMap.MAP_TYPE_HYBRID ) {
+            googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            maptype = GoogleMap.MAP_TYPE_NORMAL;
+        } else {
+            googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            maptype = GoogleMap.MAP_TYPE_HYBRID;
+        }
+    }
+
 }

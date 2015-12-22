@@ -403,6 +403,7 @@ public class TaskFragment extends Fragment {
 
     private void onGpsReceived(Double lat, Double lon, String senderName) {
         Intent it = new Intent("com.example.mobserv.remoteapp.MapActivity");
+        it.putExtra("sendOrShow", "showPosition");
         it.putExtra("latitude", lat);
         it.putExtra("longitude", lon);
         it.putExtra("nametoshow", senderName);
