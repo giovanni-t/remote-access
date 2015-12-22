@@ -254,6 +254,7 @@ public class TaskFragment extends Fragment {
                             total.append(line).append("\n");
                         }
                         encodedImage = total.toString();
+
                         byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
                         mCallbacks.onImageReceived(decodedString);
                     } catch (IOException e) {
