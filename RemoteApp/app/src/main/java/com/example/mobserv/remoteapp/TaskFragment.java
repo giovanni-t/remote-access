@@ -3,11 +3,8 @@ package com.example.mobserv.remoteapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -20,6 +17,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,9 +45,11 @@ public class TaskFragment extends Fragment {
         void onTextReceived(String str);
         void onShowToast(String str);
         void onChooseName(Boolean taken);
-        void onImageReceived(Bitmap decodedByte);
+        void onImageReceived(byte[] imageByte);
         void onClientListReceived(int numOfClients, List<String> clients);
+        void onIpListReceived(int numOfIps, ArrayList<String> ips);
         void onWelcome();
+        String onLiveRequested();
         String onImageRequested();
     }
 
@@ -255,11 +255,7 @@ public class TaskFragment extends Fragment {
                         }
                         encodedImage = total.toString();
                         byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
-                        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                        Matrix matrix = new Matrix();
-                        matrix.postRotate(90);
-                        decodedByte = Bitmap.createBitmap(decodedByte, 0, 0, decodedByte.getWidth(), decodedByte.getHeight(), matrix, true);
-                        mCallbacks.onImageReceived(decodedByte);
+                        mCallbacks.onImageReceived(decodedString);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -310,11 +306,25 @@ public class TaskFragment extends Fragment {
                     Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
                     mCallbacks.onClientListReceived(numOfClients, clients);
                     break;
+                case "liveIps":
+                    int numOfIPs = Integer.parseInt(args[4]);
+                    ArrayList<String> ips = new ArrayList<>();
+                    ips.addAll(Arrays.asList(args).subList(5, args.length));
+                    Log.d("msgIsRead", "Parsed list of ips: " + numOfIPs + " " + ips.toString());
+                    mCallbacks.onIpListReceived(numOfIPs, ips);
+                    break;
                 case "photo":
                     String encodedImage = mCallbacks.onImageRequested();
                     reply.add("write");
                     reply.add("photo");
                     data = encodedImage;
+                    break;
+                case "live":
+                    String ip = mCallbacks.onLiveRequested();
+                    reply.add("write");
+                    reply.add("live");
+                    if(ip != null)
+                        reply.add(ip);
                     break;
                 case "nametaken":
                     if (!nameTaken) {

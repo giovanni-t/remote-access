@@ -65,7 +65,14 @@
             android:value="AIzaSyAFLDYdtQ6nMWjkEUowbywvG2FctN3Xz7E" />
         <!-- tis this valid for everybody, or just for the one who created? -->
 
-        <activity android:name=".PhotoActivity"></activity>
+        <activity
+            android:name=".PhotoActivity"
+            android:label="@string/title_activity_photo"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".LiveActivity"
+            android:label="@string/title_activity_live"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

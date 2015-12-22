@@ -1,13 +1,12 @@
 package com.example.mobserv.remoteapp;
 
 import android.app.AlertDialog;
-import android.content.pm.PackageManager;
-import android.support.v4.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
@@ -50,7 +49,8 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
     private TaskFragment mTaskFragment;
 
-
+    private boolean isStreaming = false;
+    private ArrayList<String> IpList;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,15 +125,6 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         }
     }
 
-    class updateUIImage implements Runnable {
-        private Bitmap bitmap;
-        public updateUIImage(Bitmap bitmap) {this.bitmap = bitmap; }
-        @Override
-        public void run() {
-            contactImage.setImageBitmap(bitmap);
-        }
-    }
-
     class makeToast implements Runnable{
         private String msg;
         public makeToast(String msg){ this.msg = msg; }
@@ -192,6 +183,12 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
 
     public void setNameTaken(boolean val){
         this.nameTaken = val;
+    }
+
+    public void videoClick(View view){
+        Intent in1 = new Intent(this, LiveActivity.class);
+        in1.putStringArrayListExtra("ipList", IpList);
+        startActivity(in1);
     }
 
     class createNameDialog implements Runnable {
@@ -306,8 +303,11 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     }
 
     @Override
-    public void onImageReceived(Bitmap decodedByte) {
-        runOnUiThread(new updateUIImage(decodedByte));
+    public void onImageReceived(byte[] imageByte) {
+        //Convert to byte array
+        Intent in1 = new Intent(this, PhotoActivity.class);
+        in1.putExtra("image",imageByte);
+        startActivity(in1);
     }
 
     @Override
@@ -319,7 +319,7 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
             try {
                 preview.setCamera();
                 preview.openSurface();
-                result = preview.takePicture(getApplicationContext());
+                result = preview.takePicture();
             } catch (Exception e) {
                 Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
             } finally {
@@ -335,8 +335,30 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     }
 
     @Override
+    public void onIpListReceived(int numOfIps, ArrayList<String> ips) {
+        Log.d(TAG, "number of ips " + numOfIps);
+        //runOnUiThread(new notifyTabStripChanged(1, numOfIps));
+        IpList = ips;
+    }
+
+    @Override
     public void onWelcome(){
         setNameTaken(true);
+    }
+
+    @Override
+    public String onLiveRequested() {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            new makeToast("No camera on this device");
+        } else{
+            if(isStreaming) new makeToast("This device is streaming");
+            isStreaming = true;
+            preview.liveSetId();
+            preview.openSurface();
+            preview.onResume();
+            return preview.getIpServer() + ":" + String.valueOf(preview.getPortServer());
+        }
+        return null;
     }
 
     /************************/

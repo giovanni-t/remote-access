@@ -4,24 +4,26 @@ from twisted.protocols.basic import LineReceiver
 import socket,os
 
 class Chat(LineReceiver):
-    def __init__(self, clients):
+    def __init__(self, clients, liveIps):
         self.clients = clients
+        self.liveIps = liveIps
         self.name = None
         self.state = "GETNAME"
-
+    
     def connectionMade(self):
         print "New client connecting..."
         self.sendLine("<server> //read/Hello/whatsyourname")
-
 
     def connectionLost(self, reason):
         if self.clients.has_key(self.name):
             left_name = self.name
             del self.clients[self.name]
+            if self.liveIps.has_key(self.name):
+                del self.liveIps[self.name]
             print left_name + ' has left'
             #self.broadcast( left_name + ' has left')
             self.send_clients_lists()
-
+            self.send_liveIPs_lists()
 
     def handle_getname(self, name):
         if self.clients.has_key(name):
@@ -33,6 +35,7 @@ class Chat(LineReceiver):
         send_msg = "<server> /%s/read/Welcome!" % (name, )
         self.sendLine(send_msg )
         self.send_clients_lists()
+        self.send_liveIPs_lists()
 
     def dataReceived(self, data):
         if self.state == "READATA":
@@ -86,6 +89,17 @@ class Chat(LineReceiver):
         for name, protocol in self.clients.iteritems():
             protocol.sendLine(message)
 
+    def send_liveIPs_lists(self):
+        names = ''
+        count = 0
+        for name, ip in self.liveIps.iteritems():
+            names += '/' + ip
+            count +=1
+        #message = "<server> there are %s clients. %s" %(str(count), names)
+        message = "<server> /broadcast/read/liveIps/%s%s" %(str(count), names)
+        for name, protocol in self.clients.iteritems():
+            protocol.sendLine(message)
+
     def handle_Command(self, msg_array, raw_msg):
         print "clients are %s " %self.clients
         if len(msg_array)>=3 and (msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec' or msg_array[2] == 'OK'):
@@ -96,6 +110,10 @@ class Chat(LineReceiver):
                     self.state = "READATA"
                     self.dest = msg_array[1]
                     self.message(msg_array[1], raw_msg)
+                elif msg_array[2] == 'write' and msg_array[3] == 'live':
+                    self.liveIps[self.name] = msg_array[4]
+                    #print "live IPs are %s" %self.liveIps
+                    self.send_liveIPs_lists()
                 else:
                     self.message(msg_array[1], raw_msg)
             else :
@@ -109,11 +127,11 @@ class Chat(LineReceiver):
         
 
 class ChatFactory(Factory):
-
     def __init__(self):
         self.clients = {} # maps user names to Chat instances
+        self.liveIps = {}
     def buildProtocol(self, addr):
-        return Chat(self.clients)
+        return Chat(self.clients, self.liveIps)
 
 
 ifaceListeningPort = reactor.listenTCP(45678, ChatFactory())

@@ -50,13 +50,13 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="write"
+            android:text="read"
             android:onClick="onClickEnterText"
             />
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="read"
+            android:text="live"
             android:onClick="onClickEnterText"
             />
         <!--<Button
@@ -98,17 +98,12 @@
             android:layout_width="1dp"
             android:layout_height="1dp"
             android:id="@+id/surfaceView" />
-        <!--<Button
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Save to sd"
-            />-->
-        <ImageView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/photo"/>
-
+            android:text="video"
+            android:onClick="videoClick"
+            />
     </LinearLayout>
 
 
