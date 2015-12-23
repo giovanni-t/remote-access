@@ -119,6 +119,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             if (flashModes.contains(Camera.Parameters.FLASH_MODE_AUTO)){
                 params.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
             }
+
             mCamera.setParameters(params);
         }
     }

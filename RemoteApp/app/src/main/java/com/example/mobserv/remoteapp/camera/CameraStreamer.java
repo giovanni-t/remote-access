@@ -218,7 +218,6 @@ import java.util.List;
                     range[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
             camera.setParameters(params);
         } // if
-
         // Set up preview callback
         mPreviewFormat = params.getPreviewFormat();
         final Camera.Size previewSize = params.getPreviewSize();

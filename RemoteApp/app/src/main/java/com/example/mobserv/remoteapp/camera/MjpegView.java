@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -121,6 +122,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                         synchronized (mSurfaceHolder) {
                             try {
                                 bm = mIn.readMjpegFrame();
+                                Matrix matrix = new Matrix();
+                                matrix.postRotate(getRotation() + 90);
+                                bm = Bitmap.createBitmap(bm , 0, 0, bm .getWidth(), bm.getHeight(), matrix, true);
                                 destRect = destRect(bm.getWidth(), bm.getHeight());
                                 c.drawColor(Color.BLACK);
                                 c.drawBitmap(bm, null, destRect, p);
