@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -10,63 +10,16 @@
     <RelativeLayout
         android:id="@+id/chatContainer"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="vertical"
         >
-
-        <HorizontalScrollView
-            android:id="@+id/suggestionsScrollView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:fillViewport="true"
-            android:layout_alignParentBottom="true"
-            android:background="@color/colorPrimary"
-            >
-
-            <LinearLayout
-                android:id="@+id/suggestionsLinearLayout"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-
-                <Button
-                    android:id="@+id/example1Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-                <Button
-                    android:id="@+id/example2Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-                <Button
-                    android:id="@+id/example3Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-                <Button
-                    android:id="@+id/example4Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-                <Button
-                    android:id="@+id/example5Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-            </LinearLayout>
-        </HorizontalScrollView>
 
         <EditText
             android:id="@+id/messageEdit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_above="@id/suggestionsScrollView"
+            android:layout_alignParentBottom="true"
             android:layout_toLeftOf="@+id/chatSendButton"
             android:autoText="true"
             android:hint="type message" />
@@ -75,7 +28,7 @@
             android:id="@+id/chatSendButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@id/suggestionsScrollView"
+            android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:text="Send"
             />
@@ -92,8 +45,52 @@
             android:listSelector="@android:color/transparent"
             android:transcriptMode="alwaysScroll"
             android:divider="@null" />
-
-
     </RelativeLayout>
 
-</RelativeLayout>
+    <HorizontalScrollView
+        android:id="@+id/suggestionsScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:background="@color/colorPrimary"
+        >
+
+        <LinearLayout
+            android:id="@+id/suggestionsLinearLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/example1Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sugg Example"
+                />
+            <Button
+                android:id="@+id/example2Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sugg Example"
+                />
+            <Button
+                android:id="@+id/example3Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sugg Example"
+                />
+            <Button
+                android:id="@+id/example4Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sugg Example"
+                />
+            <Button
+                android:id="@+id/example5Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sugg Example"
+                />
+        </LinearLayout>
+    </HorizontalScrollView>
+</LinearLayout>
