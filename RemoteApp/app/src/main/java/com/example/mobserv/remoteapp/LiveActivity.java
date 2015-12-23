@@ -29,17 +29,6 @@ public class LiveActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_live);
-       // Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-       // setSupportActionBar(toolbar);
-
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
 
         IpListArray = getIntent().getStringArrayListExtra("ipList");
         mv = (MjpegView) findViewById(R.id.videoView1);
@@ -64,36 +53,7 @@ public class LiveActivity extends Activity {
     public class DoRead extends AsyncTask<String, Void, MjpegInputStream> {
         protected MjpegInputStream doInBackground(String... url) {
             //TODO: if camera has authentication deal with it and don't just not work
-        /*
-        HttpResponse res = null;
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        HttpParams httpParams = httpclient.getParams();
-        HttpConnectionParams.setConnectionTimeout(httpParams, 5 * 1000);
-        HttpConnectionParams.setSoTimeout(httpParams, 5*1000);
-        if(DEBUG) Log.d(TAG, "1. Sending http request");
-        try {
-            res = httpclient.execute(new HttpGet(URI.create(url[0])));
-            if(DEBUG) Log.d(TAG, "2. Request finished, status = " + res.getStatusLine().getStatusCode());
-            if(res.getStatusLine().getStatusCode()==401){
-                //You must turn off camera User Access Control before this will work
-                return null;
-            }
-            return new MjpegInputStream(res.getEntity().getContent());
-        } catch (ClientProtocolException e) {
-            if(DEBUG){
-                e.printStackTrace();
-                Log.d(TAG, "Request failed-ClientProtocolException", e);
-            }
-            //Error connecting to camera
-        } catch (IOException e) {
-            if(DEBUG){
-                e.printStackTrace();
-                Log.d(TAG, "Request failed-IOException", e);
-            }
-            //Error connecting to camera
-        }
-        return null;
-        */
+
             try {
                 HttpURLConnection connection = (HttpURLConnection) new URL(url[0]).openConnection();
                 connection.setConnectTimeout(5 * 1000);

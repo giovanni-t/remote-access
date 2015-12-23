@@ -27,19 +27,8 @@ public class PhotoActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ///*******BEGIN DEFAULT*******/
         setContentView(R.layout.content_photo);
-       // Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-      //  setSupportActionBar(toolbar);
 
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
         byte[] byteArray = getIntent().getByteArrayExtra("image");
         imageBTM = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
         Matrix matrix = new Matrix();
