@@ -1,5 +1,6 @@
 package com.example.mobserv.remoteapp;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -22,7 +23,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PhotoActivity extends AppCompatActivity {
+public class PhotoActivity extends Activity {
     private ImageView contactImage;
     private Button buttonSavePic;
     private Bitmap imageBTM;
@@ -32,8 +33,8 @@ public class PhotoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         /*******BEGIN DEFAULT*******/
         setContentView(R.layout.activity_photo);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+       // Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+      //  setSupportActionBar(toolbar);
 
         /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

@@ -1,5 +1,6 @@
 package com.example.mobserv.remoteapp;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -21,7 +22,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 
-public class LiveActivity extends AppCompatActivity {
+public class LiveActivity extends Activity {
     private final String TAG = "Live Activity";
     private MjpegView mv;
     private ViewGroup IpLinearLayout;
@@ -32,8 +33,8 @@ public class LiveActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+       // Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+       // setSupportActionBar(toolbar);
 
         /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -43,7 +44,7 @@ public class LiveActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
-        
+
         IpListArray = getIntent().getStringArrayListExtra("ipList");
         mv = (MjpegView) findViewById(R.id.videoView1);
         IpLinearLayout = (LinearLayout) findViewById(R.id.IpLinearLayout);
