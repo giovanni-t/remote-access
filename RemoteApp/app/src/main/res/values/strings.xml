@@ -2,4 +2,8 @@
     <string name="app_name">RemoteApp</string>
     <string name="title_activity_photo">PhotoActivity</string>
     <string name="title_activity_live">LiveActivity</string>
+
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
 </resources>

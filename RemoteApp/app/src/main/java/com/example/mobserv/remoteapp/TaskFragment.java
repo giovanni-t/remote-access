@@ -290,6 +290,7 @@ public class TaskFragment extends Fragment {
             switch (args[3]) {
                 case "gps":
                     if (gpsTracker.getIsGPSTrackingEnabled()) {
+                        gpsTracker.updateGPSCoordinates(); // get the most precise recent position
                         reply.add("write");
                         reply.add("gps");
                         reply.add(String.valueOf(gpsTracker.longitude));
