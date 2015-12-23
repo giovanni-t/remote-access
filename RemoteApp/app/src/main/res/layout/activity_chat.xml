@@ -17,6 +17,53 @@
         android:orientation="vertical"
         >
 
+        <HorizontalScrollView
+            android:id="@+id/suggestionsScrollView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true"
+            android:layout_alignParentBottom="true"
+            >
+
+            <LinearLayout
+                android:id="@+id/suggestionsLinearLayout"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <Button
+                    android:id="@+id/example1Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sugg Example"
+                    />
+                <Button
+                    android:id="@+id/example2Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sugg Example"
+                    />
+                <Button
+                    android:id="@+id/example3Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sugg Example"
+                    />
+                <Button
+                    android:id="@+id/example4Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sugg Example"
+                    />
+                <Button
+                    android:id="@+id/example5Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sugg Example"
+                    />
+            </LinearLayout>
+        </HorizontalScrollView>
+
         <EditText
             android:id="@+id/messageEdit"
             android:layout_width="match_parent"
@@ -66,53 +113,6 @@
             android:text="Friend"
             android:textSize="20dp" />
 
-
-        <HorizontalScrollView
-            android:id="@+id/suggestionsScrollView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:fillViewport="true"
-            android:layout_alignParentBottom="true"
-            >
-
-            <LinearLayout
-                android:id="@+id/suggestionsLinearLayout"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-
-                <Button
-                    android:id="@+id/example1Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-                <Button
-                    android:id="@+id/example2Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-                <Button
-                    android:id="@+id/example3Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-                <Button
-                    android:id="@+id/example4Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-                <Button
-                    android:id="@+id/example5Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sugg Example"
-                    />
-            </LinearLayout>
-        </HorizontalScrollView>
     </RelativeLayout>
 
 </RelativeLayout>
