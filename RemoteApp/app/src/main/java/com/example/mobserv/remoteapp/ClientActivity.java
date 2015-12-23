@@ -422,7 +422,7 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
      */
 
     private void addDrawerItems() {
-        String[] osArray = {"Chat", "Live Streaming", "Photos"};
+        String[] osArray = {"Live Streaming", "Photos"};
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
         mDrawerList.setAdapter(mAdapter);
 
@@ -431,18 +431,12 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position){
                     case 0:
-                        Toast.makeText(getBaseContext(), "We should simply dismiss the nav", Toast.LENGTH_SHORT).show();
-                        /*
-                        Intent i = new Intent("com.example.mobserv.remoteapp.ClientActivity");
-                        startActivity(i);*/
-                        break;
-                    case 1:
                         Intent in1 = new Intent(getBaseContext(), LiveActivity.class);
                         in1.putStringArrayListExtra("ipList", IpList);
                         startActivity(in1);
                         break;
-                    case 2:
-                        Toast.makeText(getBaseContext(), "no photos", Toast.LENGTH_SHORT).show();
+                    case 1:
+                        Toast.makeText(getBaseContext(), "no photos yet", Toast.LENGTH_SHORT).show();
                         /*Intent in2 = new Intent(getBaseContext(), PhotoActivity.class);
                         startActivity(in2);*/
                         break;
@@ -466,7 +460,7 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     }
 
     /*
-    nav drawer
+    nav drawer http://blog.teamtreehouse.com/add-navigation-drawer-android
      */
 
 }

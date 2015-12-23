@@ -394,6 +394,7 @@ public class TaskFragment extends Fragment {
 
     public void closeSocket(){
         try {
+            gpsTracker.stopUsingGPS(); // TODO this should fix issue 6
             socket.close();
         } catch (NullPointerException | IOException e) {
             e.printStackTrace();
