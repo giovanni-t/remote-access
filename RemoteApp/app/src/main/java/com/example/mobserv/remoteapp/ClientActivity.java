@@ -7,6 +7,9 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
@@ -14,10 +17,13 @@ import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,10 +57,26 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
 
     private boolean isStreaming = false;
     private ArrayList<String> IpList;
+
+    /* nav drawer */
+    private ListView mDrawerList;
+    private ArrayAdapter<String> mAdapter;
+
+    private ActionBarDrawerToggle mDrawerToggle;
+    private DrawerLayout mDrawerLayout;
+    private String mActivityTitle;
+    /* nav drawer */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
+        /* nav drawer */
+        mDrawerList = (ListView)findViewById(R.id.navList);
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        mActivityTitle = getTitle().toString();
+        addDrawerItems();
+        setupDrawer();
+        /* nav drawer */
         text = (TextView) findViewById(R.id.idClientText);
         text.setMovementMethod(new ScrollingMovementMethod());
         et = (EditText) findViewById(R.id.idClientEditText);
@@ -395,5 +417,56 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         super.onDestroy();
     }
 
+    /*
+    nav drawer
+     */
+
+    private void addDrawerItems() {
+        String[] osArray = {"Chat", "Live Streaming", "Photos"};
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
+        mDrawerList.setAdapter(mAdapter);
+
+        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position){
+                    case 0:
+                        Toast.makeText(getBaseContext(), "We should simply dismiss the nav", Toast.LENGTH_SHORT).show();
+                        /*
+                        Intent i = new Intent("com.example.mobserv.remoteapp.ClientActivity");
+                        startActivity(i);*/
+                        break;
+                    case 1:
+                        Intent in1 = new Intent(getBaseContext(), LiveActivity.class);
+                        in1.putStringArrayListExtra("ipList", IpList);
+                        startActivity(in1);
+                        break;
+                    case 2:
+                        Toast.makeText(getBaseContext(), "no photos", Toast.LENGTH_SHORT).show();
+                        /*Intent in2 = new Intent(getBaseContext(), PhotoActivity.class);
+                        startActivity(in2);*/
+                        break;
+                }
+
+            }
+        });
+    }
+
+    private void setupDrawer() {
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+            }
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+            }
+        };
+        mDrawerToggle.setDrawerIndicatorEnabled(true);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+    }
+
+    /*
+    nav drawer
+     */
 
 }
