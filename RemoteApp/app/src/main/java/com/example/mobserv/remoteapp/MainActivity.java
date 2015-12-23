@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickServer (View view ){
-        startActivity(new Intent("com.example.mobserv.remoteapp.ServerActivity")); // TODO manifest
+        startActivity(new Intent("com.example.mobserv.remoteapp.ServerActivity"));
     }
 
     public void onClickClient (View view ){
@@ -23,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
         EditText etIpaddr = (EditText) findViewById(R.id.idIpAddrEditText);
         String address = etIpaddr.getText().toString();
         it.putExtra("serverip", address);
-        startActivity(it); // TODO manifest
+        startActivity(it);
+    }
+
+    public void onClickChatUI (View view ){
+        startActivity(new Intent(MainActivity.this, ChatActivity.class));
     }
 }
