@@ -4,11 +4,17 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+<<<<<<< HEAD
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+=======
+import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+>>>>>>> restoreOldUi
 import android.text.Layout;
 import android.util.Log;
 import android.view.Menu;
@@ -94,6 +100,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
     private TaskFragment mTaskFragment;
 
+<<<<<<< HEAD
     private OneFragment oneFragment;
     private TwoFragment twoFragment;
     private ThreeFragment threeFragment;
@@ -106,6 +113,10 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
 
     private final int PICK_GPS_POSITION = 130;
 
+=======
+    private boolean isStreaming = false;
+    private ArrayList<String> IpList;
+>>>>>>> restoreOldUi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -194,6 +205,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         return super.onOptionsItemSelected(item);
     }
 
+<<<<<<< HEAD
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -211,6 +223,14 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
             oneFragment.updateUIClientsListButtons(cl.size(), cl);
         if (savedInstanceState != null) {
             oneFragment.scrollText(savedInstanceState);
+=======
+    class makeToast implements Runnable{
+        private String msg;
+        public makeToast(String msg){ this.msg = msg; }
+        @Override
+        public void run() {
+            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+>>>>>>> restoreOldUi
         }
     }
 
@@ -252,9 +272,30 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
         }
     }
 
+<<<<<<< HEAD
     class updateUIImage implements Runnable {
         private Bitmap bitmap;
         public updateUIImage(Bitmap bitmap) {this.bitmap = bitmap; }
+=======
+    public void setNameTaken(boolean val){
+        this.nameTaken = val;
+    }
+
+    public void videoClick(View view){
+        Intent in1 = new Intent(this, LiveActivity.class);
+        in1.putStringArrayListExtra("ipList", IpList);
+        startActivity(in1);
+    }
+
+    class createNameDialog implements Runnable {
+        Boolean alreadyTaken;
+        ClientActivity activity;
+        public createNameDialog(Boolean alreadyTaken) {
+            this.alreadyTaken = alreadyTaken;
+            this.activity = ClientActivity.this;
+        }
+
+>>>>>>> restoreOldUi
         @Override
         public void run() {
             threeFragment.getContactImage().setImageBitmap(bitmap);
@@ -310,8 +351,11 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     }
 
     @Override
-    public void onImageReceived(Bitmap decodedByte) {
-        runOnUiThread(new updateUIImage(decodedByte));
+    public void onImageReceived(byte[] imageByte) {
+        //Convert to byte array
+        Intent in1 = new Intent(this, PhotoActivity.class);
+        in1.putExtra("image",imageByte);
+        startActivity(in1);
     }
 
     @Override
@@ -321,9 +365,15 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
             onShowToast("No camera on this device");
         } else {
             try {
+<<<<<<< HEAD
                 oneFragment.getPreview().setCamera();
                 oneFragment.getPreview().openSurface();
                 result = oneFragment.getPreview().takePicture();
+=======
+                preview.setCamera();
+                preview.openSurface();
+                result = preview.takePicture();
+>>>>>>> restoreOldUi
             } catch (Exception e) {
                 Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
             } finally {
@@ -362,6 +412,7 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
     }
 
     @Override
+<<<<<<< HEAD
     public void onWelcome() {
         oneFragment.setNameTaken(true);
     }
@@ -373,6 +424,32 @@ public class ClientActivity extends AppCompatActivity implements TaskFragment.Ta
      */
     public void onClickEnterText(View view) {
         oneFragment.onClickEnterText(view);
+=======
+    public void onIpListReceived(int numOfIps, ArrayList<String> ips) {
+        Log.d(TAG, "number of ips " + numOfIps);
+        //runOnUiThread(new notifyTabStripChanged(1, numOfIps));
+        IpList = ips;
+    }
+
+    @Override
+    public void onWelcome(){
+        setNameTaken(true);
+>>>>>>> restoreOldUi
+    }
+
+    @Override
+    public String onLiveRequested() {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            new makeToast("No camera on this device");
+        } else{
+            if(isStreaming) new makeToast("This device is streaming");
+            isStreaming = true;
+            preview.liveSetId();
+            preview.openSurface();
+            preview.onResume();
+            return preview.getIpServer() + ":" + String.valueOf(preview.getPortServer());
+        }
+        return null;
     }
 
     /************************/

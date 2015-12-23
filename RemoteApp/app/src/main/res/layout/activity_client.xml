@@ -11,6 +11,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+<<<<<<< HEAD
         android:layout_alignParentTop="true"
         android:background="?attr/colorPrimary"
         android:elevation="6dp"
@@ -21,6 +22,74 @@
     <android.support.design.widget.TabLayout
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
+=======
+        android:orientation="horizontal"
+        >
+        <EditText
+            android:hint="Write here"
+            android:layout_height="wrap_content"
+            android:id="@+id/idClientEditText"
+            android:layout_weight="95"
+            android:layout_width="wrap_content" />
+        <Button
+            android:id="@+id/sendButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Send"
+            android:layout_weight="5"
+            >
+        </Button>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Predefined commands"
+        android:textSize="25dp"
+        android:textColor="#000000" />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        >
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="read"
+            android:onClick="onClickEnterText"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="live"
+            android:onClick="onClickEnterText"
+            />
+        <!--<Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="exec"
+            android:onClick="onClickEnterText"
+            />-->
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="photo"
+            android:onClick="onClickEnterText"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="gps"
+            android:onClick="onClickEnterText"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+>>>>>>> restoreOldUi
         android:layout_height="wrap_content"
         android:layout_below="@+id/toolbar"
         android:background="?attr/colorPrimary"
@@ -31,6 +100,7 @@
     <com.astuetz.PagerSlidingTabStrip
         android:id="@+id/tabs"
         android:layout_width="match_parent"
+<<<<<<< HEAD
         app:pstsShouldExpand="true"
         app:pstsIndicatorHeight="3dp"
         app:pstsIndicatorColor="@color/badge_color"
@@ -42,5 +112,23 @@
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:layout_below="@id/tabs"/>
+=======
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <SurfaceView
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:id="@+id/surfaceView" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="video"
+            android:onClick="videoClick"
+            />
+    </LinearLayout>
+
+
+>>>>>>> restoreOldUi
 
 </RelativeLayout>

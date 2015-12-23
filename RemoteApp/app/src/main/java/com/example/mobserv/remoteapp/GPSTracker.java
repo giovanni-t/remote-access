@@ -1,5 +1,5 @@
 package com.example.mobserv.remoteapp; /**
- * Created by giovanni on 05/12/15.
+ * Created by pacellig on 22/12/15.
  */
 import android.Manifest;
 import android.app.Activity;
@@ -81,7 +81,11 @@ public class GPSTracker extends Service implements LocationListener {
             // Try to get location if you GPS Service is enabled
             if (isGPSEnabled) {
                 this.isGPSTrackingEnabled = true;
+<<<<<<< HEAD
                 Log.d(TAG, "Application use GPS Service");
+=======
+               // Log.d(TAG, "Application use GPS Service");
+>>>>>>> restoreOldUi
                 /*
                  * This provider determines location using
                  * satellites. Depending on conditions, this provider may take a while to return
@@ -90,7 +94,11 @@ public class GPSTracker extends Service implements LocationListener {
                 provider_info = LocationManager.GPS_PROVIDER;
             } else if (isNetworkEnabled) { // Try to get location if you Network Service is enabled
                 this.isGPSTrackingEnabled = true;
+<<<<<<< HEAD
                 Log.d(TAG, "Application use Network State to get GPS coordinates");
+=======
+               // Log.d(TAG, "Application use Network State to get GPS coordinates");
+>>>>>>> restoreOldUi
                 /*
                  * This provider determines location based on
                  * availability of cell tower and WiFi access points. Results are retrieved
@@ -105,14 +113,18 @@ public class GPSTracker extends Service implements LocationListener {
                     Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ContextCompat.checkSelfPermission(mContext,
                             Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.i("Permission", "not granted -- To be checked");
+              //  Log.i("Permission", "not granted -- To be checked");
                 ActivityCompat.requestPermissions(targActivity,  //getParent(),
-                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION},
                         0);
                 return;
             } else
+<<<<<<< HEAD
                 Log.i("Permission", "GRANTED");
+=======
+              //  Log.i("Permission", "GRANTED");
+>>>>>>> restoreOldUi
             if (!provider_info.isEmpty()) {  // TODO the null is here
                 locationManager.requestLocationUpdates(
                         provider_info,
@@ -131,7 +143,7 @@ public class GPSTracker extends Service implements LocationListener {
         catch (Exception e)
         {
             //e.printStackTrace();
-            Log.e(TAG, "Impossible to connect to LocationManager", e);
+           // Log.e(TAG, "Impossible to connect to LocationManager", e);
         }
     }
 
@@ -190,14 +202,14 @@ public class GPSTracker extends Service implements LocationListener {
                     Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                     ContextCompat.checkSelfPermission(mContext,
                             Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.i("Permission", "not granted -- To be checked");
+               // Log.i("Permission", "not granted -- To be checked");
                 ActivityCompat.requestPermissions(targActivity,  //getParent(),
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION},
                         0);
                 return;
             } else
-                Log.i("Permission", "GRANTED");
+             //   Log.i("Permission", "GRANTED");
             locationManager.removeUpdates(GPSTracker.this);
         }
     }
@@ -205,38 +217,38 @@ public class GPSTracker extends Service implements LocationListener {
     /**
      * Function to show settings alert dialog
      *
-    public void showSettingsAlert() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+     public void showSettingsAlert() {
+     AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
 
-        //Setting Dialog Title
-        alertDialog.setTitle(R.string.GPSAlertDialogTitle);
+     //Setting Dialog Title
+     alertDialog.setTitle(R.string.GPSAlertDialogTitle);
 
-        //Setting Dialog Message
-        alertDialog.setMessage(R.string.GPSAlertDialogMessage);
+     //Setting Dialog Message
+     alertDialog.setMessage(R.string.GPSAlertDialogMessage);
 
-        //On Pressing Setting button
-        alertDialog.setPositiveButton(R.string.action_settings, new DialogInterface.OnClickListener() {
+     //On Pressing Setting button
+     alertDialog.setPositiveButton(R.string.action_settings, new DialogInterface.OnClickListener() {
 
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                mContext.startActivity(intent);
-            }
-        });
-
-        //On pressing cancel button
-        alertDialog.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                dialog.cancel();
-            }
-        });
-
-        alertDialog.show();
+    @Override
+    public void onClick(DialogInterface dialog, int which)
+    {
+    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+    mContext.startActivity(intent);
     }
+    });
+
+     //On pressing cancel button
+     alertDialog.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+
+    @Override
+    public void onClick(DialogInterface dialog, int which)
+    {
+    dialog.cancel();
+    }
+    });
+
+     alertDialog.show();
+     }
      */
 
     /**
@@ -258,7 +270,7 @@ public class GPSTracker extends Service implements LocationListener {
                 return addresses;
             } catch (IOException e) {
                 //e.printStackTrace();
-                Log.e(TAG, "Impossible to connect to Geocoder", e);
+              //  Log.e(TAG, "Impossible to connect to Geocoder", e);
             }
         }
 

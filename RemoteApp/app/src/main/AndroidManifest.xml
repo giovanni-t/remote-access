@@ -22,9 +22,15 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+<<<<<<< HEAD
         android:theme="@style/AppTheme"
         >
         <!--android:theme="@style/AppTheme"-->
+=======
+        android:theme="@style/AppTheme">
+
+        <!-- android:theme="@style/AppTheme" -->
+>>>>>>> restoreOldUi
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -47,6 +53,18 @@
             <intent-filter>
                 <action android:name="com.example.mobserv.remoteapp.ClientActivity" />
 
+<<<<<<< HEAD
+=======
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".MapActivity"
+            android:label="Map Activity">
+            <intent-filter>
+                <action android:name="com.example.mobserv.remoteapp.MapActivity" />
+
+>>>>>>> restoreOldUi
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -66,9 +84,38 @@
             <!-- tis this valid for everybody, or just for the one who created?-->
 
         <activity
+<<<<<<< HEAD
             android:name=".LiveActivity"
             android:label="@string/title_activity_live"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+=======
+            android:name=".PhotoActivity"
+            android:label="@string/title_activity_photo">
+            <!--android:theme="@style/AppTheme.NoActionBar">-->
+            <intent-filter>
+                <action android:name="com.example.mobserv.remoteapp.PhotoActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAFLDYdtQ6nMWjkEUowbywvG2FctN3Xz7E" />
+        <!-- tis this valid for everybody, or just for the one who created? -->
+
+        <activity
+            android:name=".LiveActivity"
+            android:label="@string/title_activity_live"/>
+            <!--android:theme="@style/AppTheme.NoActionBar"/>-->
+        <intent-filter>
+            <action android:name="com.example.mobserv.remoteapp.LiveActivity" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+
+        <activity android:name=".ChatActivity"
+            android:label="@string/app_name"/>
+
+>>>>>>> restoreOldUi
     </application>
 
 </manifest>

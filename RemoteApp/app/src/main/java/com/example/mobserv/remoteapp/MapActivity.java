@@ -43,7 +43,11 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
         } else if ( toSendOrToShow.compareTo("readPosition")==0 ){
             // code to be executed in case i want to click and send the position
         }
+<<<<<<< HEAD
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+=======
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+>>>>>>> restoreOldUi
         mapFragment.getMapAsync(this);
 
     }
@@ -82,7 +86,11 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
+<<<<<<< HEAD
         LatLng position = new LatLng(0,0);
+=======
+        LatLng position = new LatLng(lat,lon);
+>>>>>>> restoreOldUi
 
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(position)
