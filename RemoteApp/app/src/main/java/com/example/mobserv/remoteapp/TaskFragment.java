@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -49,6 +51,8 @@ public class TaskFragment extends Fragment {
         void onClientListReceived(int numOfClients, List<String> clients);
         void onIpListReceived(int numOfIps, ArrayList<String> ips);
         void onWelcome();
+        void onExecReceived(String subscriberName, String service);
+        void onStopTimers();
         String onLiveRequested();
         String onImageRequested();
     }
@@ -62,7 +66,7 @@ public class TaskFragment extends Fragment {
     private Socket socket;
     private PrintWriter out;
     private Boolean nameTaken = false;
-    private GPSTracker gpsTracker;
+    public GPSTracker gpsTracker;
     private Activity attachedActivity;
 
 
@@ -262,12 +266,16 @@ public class TaskFragment extends Fragment {
                     }
                     break;
                 case "gps":
+
                     try {
                         Double lon = Double.parseDouble(args[4]);
                         Double lat = Double.parseDouble(args[5]);
                         Double alt = Double.parseDouble(args[6]);
+                        String isSub= args[7];
                         mCallbacks.onShowToast("Received GPS position from " + senderName + ":\n" + TextUtils.join("/", Arrays.asList(args).subList(4, 7)));
-                        onGpsReceived(lat, lon, senderName);
+                        if ( isSub.compareTo("show")==0){
+                            onGpsReceived(lat, lon, senderName);
+                        }
                     } catch (ArrayIndexOutOfBoundsException e){
                         Log.d("msgIsWrite", "bad format in msg write gps: "+ TextUtils.join("/", args));
                     }
@@ -279,7 +287,15 @@ public class TaskFragment extends Fragment {
         }
 
         public void messageIsExec(String senderName, String[] args) {
-
+            LinkedList<String> reply = new LinkedList<>();
+            String data = null;
+            switch (args[3]) {
+                case "gps":
+                    mCallbacks.onShowToast("exec gps test");
+                    mCallbacks.onExecReceived(senderName,"gps"); // give the name of the client to which send periodic messages
+                                                // give the name of the messages to be sent ( GPS )
+                    break;
+            }
         }
 
 
@@ -296,6 +312,7 @@ public class TaskFragment extends Fragment {
                         reply.add(String.valueOf(gpsTracker.longitude));
                         reply.add(String.valueOf(gpsTracker.latitude));
                         reply.add(String.valueOf(gpsTracker.altitude));
+                        reply.add("show"); // ADDED FOR PERIODIC MESSAGES
                     } else {
                         Log.d("GPS ERROR", "GPS is not enabled");
                         mCallbacks.onShowToast("GPS ERROR: GPS is not enabled");
@@ -395,7 +412,9 @@ public class TaskFragment extends Fragment {
     public void closeSocket(){
         try {
             gpsTracker.stopUsingGPS(); // TODO this should fix issue 6
+            mCallbacks.onStopTimers();
             socket.close();
+
         } catch (NullPointerException | IOException e) {
             e.printStackTrace();
         }

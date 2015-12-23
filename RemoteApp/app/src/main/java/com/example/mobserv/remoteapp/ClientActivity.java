@@ -4,7 +4,9 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -27,8 +29,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by pacel_000 on 22/10/2015.
@@ -66,6 +73,10 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     private DrawerLayout mDrawerLayout;
     private String mActivityTitle;
     /* nav drawer */
+
+    private List<Subscriber> subscribers;
+    final Handler provatimer = new Handler();
+    private List<TimerTask> subscribersTimer;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,6 +121,9 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         if(savedInstanceState == null) { // IF first launch of the activity
             et.setFocusable(false);
         }
+
+        subscribers = new LinkedList<>();
+        subscribersTimer  = new LinkedList<>();
     }
 
     public void onClick(View view) {
@@ -367,6 +381,61 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     public void onWelcome(){
         setNameTaken(true);
     }
+
+    @Override
+    public void onExecReceived(String subscriberName, String service) {
+        final Subscriber s = new Subscriber(subscriberName,service);
+        subscribers.add(s);
+        Timer timer = new Timer();
+        subscribersTimer.add(new TimerTask() {
+            @Override
+            public void run() {
+                provatimer.post(new Runnable() {
+                    public void run() {
+                       // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
+                        LinkedList<String> reply = new LinkedList<>();
+                        reply.add("write");
+                        reply.add("gps");
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.altitude));
+                        reply.add("subscription"); // otherwise maps keep opening
+                        String msg = composeMsg(s.name, reply);
+                        mTaskFragment.sendMsg(msg);
+                    }
+                });
+            }
+        });
+        timer.schedule(subscribersTimer.get(subscribersTimer.size() - 1), 0, 60000); //it executes this every 60000ms ( 1 minute ) TODO time should be passed
+    }
+
+    @Override
+    public void onStopTimers() {
+        for ( TimerTask t : subscribersTimer ){
+            t.cancel();
+        }
+    }
+
+    public String composeMsg(String to, LinkedList<String> content) {
+        String msg = "/"; // <-- leaving field 0 empty
+        // Log.d("composeMsg", "to: "+ to+" Content: "+content.toString());
+        msg += to;
+        if (content == null)
+            return msg;
+        for (String arg : content) {
+            msg += "/" + arg;
+        }
+        return msg;
+    }
+    private class Subscriber {
+        public String name, service;
+        public Subscriber(String n, String s) {
+            name = n;
+            service = s;
+        }
+    }
+
+
 
     @Override
     public String onLiveRequested() {
