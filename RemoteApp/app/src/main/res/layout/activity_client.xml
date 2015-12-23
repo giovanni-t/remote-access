@@ -6,6 +6,7 @@
 
     <TextView
         android:hint="Received commands will be shown here\n"
+        android:freezesText="true"
         android:layout_width="match_parent"
         android:layout_height="173dp"
         android:id="@+id/idClientText"
@@ -18,16 +19,17 @@
         >
         <EditText
             android:hint="Write here"
-            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:id="@+id/idClientEditText"
-            />
+            android:layout_weight="95"
+            android:layout_width="wrap_content" />
         <Button
             android:id="@+id/sendButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onClick"
             android:text="Send"
+            android:layout_weight="5"
             >
         </Button>
     </LinearLayout>
@@ -48,13 +50,13 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="write"
+            android:text="read"
             android:onClick="onClickEnterText"
             />
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="read"
+            android:text="live"
             android:onClick="onClickEnterText"
             />
         <!--<Button
@@ -96,12 +98,12 @@
             android:layout_width="1dp"
             android:layout_height="1dp"
             android:id="@+id/surfaceView" />
-
-        <ImageView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/photo"/>
-
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="video"
+            android:onClick="videoClick"
+            />
     </LinearLayout>
 
 
