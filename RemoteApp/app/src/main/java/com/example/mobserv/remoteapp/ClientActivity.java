@@ -392,7 +392,10 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     @Override
     protected void onDestroy() {
         if (DEBUG) Log.i(TAG, "onDestroy()");
+        if(preview != null) preview.releaseMWakeLock();
         super.onDestroy();
+        if (preview!= null)
+            preview.onPause();
     }
 
 

@@ -148,6 +148,10 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                 Log.d(TAG, "Mjpeg View IOException generated");
                                 mRun = false;
                                 e.printStackTrace();
+                            } catch(Exception e){
+                                Log.d(TAG, "Mjpeg View IOException generated");
+                                mRun = false;
+                                e.printStackTrace();
                             }
                         }
                     } finally {

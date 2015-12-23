@@ -153,4 +153,10 @@ public class LiveActivity extends Activity {
         Log.i(TAG,"Stop playback");
         new DoRead().onCloseConnection();
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopPlayback();
+    }
 }
