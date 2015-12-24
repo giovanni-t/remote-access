@@ -42,7 +42,7 @@ import java.util.TimerTask;
  */
 public class ClientActivity extends FragmentActivity implements TaskFragment.TaskCallbacks {
 
-    private static final String TAG = TaskFragment.class.getSimpleName();
+    private static final String TAG = ClientActivity.class.getSimpleName();
     private static final boolean DEBUG = true; // Set this to false to disable logs .
 
     private static final int serverport = 45678;
