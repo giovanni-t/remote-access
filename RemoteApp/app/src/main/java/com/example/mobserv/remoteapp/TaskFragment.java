@@ -299,7 +299,6 @@ public class TaskFragment extends Fragment {
         }
 
 
-
         public void messageIsRead(String senderName, String[] args) {
             LinkedList<String> reply = new LinkedList<>();
             String data = null;
