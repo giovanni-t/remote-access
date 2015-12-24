@@ -13,22 +13,18 @@ import android.widget.RelativeLayout;
  */
 public class DrawerActivity extends AppCompatActivity {
 
-    protected RelativeLayout fullLayout;
+    protected DrawerLayout fullLayout;
     protected FrameLayout frameLayout;
 
     @Override
     public void setContentView(int layoutResID) {
-        fullLayout = (RelativeLayout) getLayoutInflater().inflate(R.layout.activity_drawer, null);
-        frameLayout = (FrameLayout) fullLayout.findViewById(R.id.drawer_frame);
+        fullLayout = (DrawerLayout) getLayoutInflater().inflate(R.layout.activity_drawer, null);
+        frameLayout = (FrameLayout) fullLayout.findViewById(R.id.content_frame);
         getLayoutInflater().inflate(layoutResID, frameLayout, true);
         super.setContentView(fullLayout);
 
-        //My drawer content..
         // Set up the toolbar and the side menu toggle
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.main_toolbar);
-        setSupportActionBar(myToolbar);
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.navigation_drawer);
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,myToolbar,R.string.app_name,R.string.app_name);
-        drawerLayout.setDrawerListener(actionBarDrawerToggle);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
     }
 }
