@@ -324,9 +324,6 @@ public class TaskFragment extends Fragment {
                             reply.add(String.valueOf(gpsTracker.altitude));
                             reply.add("subscription"); // ADDED FOR PERIODIC MESSAGES
                             replyList.add(reply);
-                            Log.d("MESSAGEISBATCHLIST", reply.toString());
-                            //Log.d("MESSAGEISBATCHLIST", replyList.get(0).toString());
-                            //reply.clear();
                         } else {
                             Log.d("GPS ERROR", "GPS is not enabled");
                             mCallbacks.onShowToast("GPS ERROR: GPS is not enabled");
@@ -347,7 +344,6 @@ public class TaskFragment extends Fragment {
             }
 
             for ( LinkedList<String> r : replyList ){
-                Log.d("MESSAGEISBATCHLIST", r.toString());
                 if (r.size() != 0) {
                     String msg = composeMsg(senderName, r);
                     sendMsg(msg);
