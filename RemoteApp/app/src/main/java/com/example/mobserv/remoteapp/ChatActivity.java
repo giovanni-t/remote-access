@@ -2,7 +2,7 @@ package com.example.mobserv.remoteapp;
 
 import android.os.Bundle;
 
-public class ChatActivity extends DrawerActivity {
+public class ChatActivity extends DrawerActivity  {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

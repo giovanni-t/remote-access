@@ -4,14 +4,12 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
@@ -28,8 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -75,8 +71,9 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
     /* nav drawer */
 
     private List<Subscriber> subscribers;
-    final Handler provatimer = new Handler();
+    final Handler singleTimer = new Handler();
     private List<TimerTask> subscribersTimer;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -390,9 +387,9 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         subscribersTimer.add(new TimerTask() {
             @Override
             public void run() {
-                provatimer.post(new Runnable() {
+                singleTimer.post(new Runnable() {
                     public void run() {
-                       // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
+                        // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
                         LinkedList<String> reply = new LinkedList<>();
                         reply.add("write");
                         reply.add("gps");
@@ -427,6 +424,7 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
         }
         return msg;
     }
+
     private class Subscriber {
         public String name, service;
         public Subscriber(String n, String s) {
@@ -434,8 +432,6 @@ public class ClientActivity extends FragmentActivity implements TaskFragment.Tas
             service = s;
         }
     }
-
-
 
     @Override
     public String onLiveRequested() {

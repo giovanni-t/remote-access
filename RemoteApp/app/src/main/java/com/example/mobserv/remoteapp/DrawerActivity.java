@@ -17,7 +17,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 /**
- * Created by giovanni on 24/12/15.
+ * Created by giovanni on 24/12/15. just before christmas eating
  */
 public class DrawerActivity extends AppCompatActivity {
 

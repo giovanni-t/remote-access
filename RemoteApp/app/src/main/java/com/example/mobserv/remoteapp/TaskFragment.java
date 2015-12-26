@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
@@ -298,68 +299,150 @@ public class TaskFragment extends Fragment {
             }
         }
 
+        public void messageIsBatch( String senderName, String[] args ){
+            List<LinkedList<String>> replyList = new LinkedList<>();
+            LinkedList<String> reply = null;
+            String data = null;
+            int n=0, index=3; // n counts the #messages, index contains the relative index of the command in the string
 
+            for ( String s : args ){
+                if ( s.compareTo(";")==0 ){
+                    n++;
+                }
+            }
+
+            for ( int i=0; i<=n; i++ ){
+                switch (args[index]) {
+                    case "gps":
+                        if (gpsTracker.getIsGPSTrackingEnabled()) {
+                            gpsTracker.updateGPSCoordinates(); // get the most precise recent position
+                            reply = new LinkedList<>();
+                            reply.add("write");
+                            reply.add("gps");
+                            reply.add(String.valueOf(gpsTracker.longitude));
+                            reply.add(String.valueOf(gpsTracker.latitude));
+                            reply.add(String.valueOf(gpsTracker.altitude));
+                            reply.add("subscription"); // ADDED FOR PERIODIC MESSAGES
+                            replyList.add(reply);
+                            Log.d("MESSAGEISBATCHLIST", reply.toString());
+                            //Log.d("MESSAGEISBATCHLIST", replyList.get(0).toString());
+                            //reply.clear();
+                        } else {
+                            Log.d("GPS ERROR", "GPS is not enabled");
+                            mCallbacks.onShowToast("GPS ERROR: GPS is not enabled");
+                        }
+                        break;
+                    case "photo":
+                        String encodedImage = mCallbacks.onImageRequested();
+                        reply.add("write");
+                        reply.add("photo");
+                        data = encodedImage;
+                        replyList.add(reply);
+                        reply.clear();
+                        break;
+                    default:
+                        mCallbacks.onShowToast("Unknown READ-BATCH message:\n" + TextUtils.join("/", args));
+                }
+                index += 4;
+            }
+
+            for ( LinkedList<String> r : replyList ){
+                Log.d("MESSAGEISBATCHLIST", r.toString());
+                if (r.size() != 0) {
+                    String msg = composeMsg(senderName, r);
+                    sendMsg(msg);
+                    if (data != null) {
+                        try {
+                            Thread.sleep(500);
+                            out.write(data);
+                            out.flush();
+                            Thread.sleep(500);
+                            out.write("_end_");
+                            out.flush();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Log.d("SendMsg", msg);
+                }
+            }
+        }
         public void messageIsRead(String senderName, String[] args) {
             LinkedList<String> reply = new LinkedList<>();
             String data = null;
-            switch (args[3]) {
-                case "gps":
-                    if (gpsTracker.getIsGPSTrackingEnabled()) {
-                        gpsTracker.updateGPSCoordinates(); // get the most precise recent position
+
+            Boolean isBatch = false;
+            for ( String s : args ){
+                if (s.compareTo(";")==0){
+                    isBatch = true;
+                    Log.d("ISBATCHCHECK", "true");
+                    break;
+                }
+            }
+
+            if ( ! isBatch ){
+                switch (args[3]) {
+                    case "gps":
+                        if (gpsTracker.getIsGPSTrackingEnabled()) {
+                            gpsTracker.updateGPSCoordinates(); // get the most precise recent position
+                            reply.add("write");
+                            reply.add("gps");
+                            reply.add(String.valueOf(gpsTracker.longitude));
+                            reply.add(String.valueOf(gpsTracker.latitude));
+                            reply.add(String.valueOf(gpsTracker.altitude));
+                            reply.add("show"); // ADDED FOR PERIODIC MESSAGES
+                        } else {
+                            Log.d("GPS ERROR", "GPS is not enabled");
+                            mCallbacks.onShowToast("GPS ERROR: GPS is not enabled");
+                        }
+                        break;
+                    case "clientlist":
+                        int numOfClients = Integer.parseInt(args[4]);
+                        List<String> clients = new LinkedList<>();
+                        clients.addAll(Arrays.asList(args).subList(5, args.length));
+                        Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
+                        mCallbacks.onClientListReceived(numOfClients, clients);
+                        break;
+                    case "liveIps":
+                        int numOfIPs = Integer.parseInt(args[4]);
+                        ArrayList<String> ips = new ArrayList<>();
+                        ips.addAll(Arrays.asList(args).subList(5, args.length));
+                        Log.d("msgIsRead", "Parsed list of ips: " + numOfIPs + " " + ips.toString());
+                        mCallbacks.onIpListReceived(numOfIPs, ips);
+                        break;
+                    case "photo":
+                        String encodedImage = mCallbacks.onImageRequested();
                         reply.add("write");
-                        reply.add("gps");
-                        reply.add(String.valueOf(gpsTracker.longitude));
-                        reply.add(String.valueOf(gpsTracker.latitude));
-                        reply.add(String.valueOf(gpsTracker.altitude));
-                        reply.add("show"); // ADDED FOR PERIODIC MESSAGES
-                    } else {
-                        Log.d("GPS ERROR", "GPS is not enabled");
-                        mCallbacks.onShowToast("GPS ERROR: GPS is not enabled");
-                    }
-                    break;
-                case "clientlist":
-                    int numOfClients = Integer.parseInt(args[4]);
-                    List<String> clients = new LinkedList<>();
-                    clients.addAll(Arrays.asList(args).subList(5, args.length));
-                    Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
-                    mCallbacks.onClientListReceived(numOfClients, clients);
-                    break;
-                case "liveIps":
-                    int numOfIPs = Integer.parseInt(args[4]);
-                    ArrayList<String> ips = new ArrayList<>();
-                    ips.addAll(Arrays.asList(args).subList(5, args.length));
-                    Log.d("msgIsRead", "Parsed list of ips: " + numOfIPs + " " + ips.toString());
-                    mCallbacks.onIpListReceived(numOfIPs, ips);
-                    break;
-                case "photo":
-                    String encodedImage = mCallbacks.onImageRequested();
-                    reply.add("write");
-                    reply.add("photo");
-                    data = encodedImage;
-                    break;
-                case "live":
-                    String ip = mCallbacks.onLiveRequested();
-                    reply.add("write");
-                    reply.add("live");
-                    if(ip != null)
-                        reply.add(ip);
-                    break;
-                case "nametaken":
-                    if (!nameTaken) {
-                        mCallbacks.onChooseName(true);
-                    }
-                    break;
-                case "Welcome!":
-                    myName = args[1];
-                    Log.d("debug", "My name as client: " + myName);
-                    nameTaken = true;
-                    mCallbacks.onWelcome();
-                    break;
-                case "Hello":
-                    mCallbacks.onChooseName(false);
-                    break;
-                default:
-                    mCallbacks.onShowToast("Unknown READ message:\n" + TextUtils.join("/", args));
+                        reply.add("photo");
+                        data = encodedImage;
+                        break;
+                    case "live":
+                        String ip = mCallbacks.onLiveRequested();
+                        reply.add("write");
+                        reply.add("live");
+                        if(ip != null)
+                            reply.add(ip);
+                        break;
+                    case "nametaken":
+                        if (!nameTaken) {
+                            mCallbacks.onChooseName(true);
+                        }
+                        break;
+                    case "Welcome!":
+                        myName = args[1];
+                        Log.d("debug", "My name as client: " + myName);
+                        nameTaken = true;
+                        mCallbacks.onWelcome();
+                        break;
+                    case "Hello":
+                        mCallbacks.onChooseName(false);
+                        break;
+                    default:
+                        mCallbacks.onShowToast("Unknown READ message:\n" + TextUtils.join("/", args));
+                }
+            } else {
+                Log.d("DISPATCHBATCH", "dispatching");
+                messageIsBatch(senderName, args);
             }
             if (reply.size() != 0) {
                 String msg = composeMsg(senderName, reply);
