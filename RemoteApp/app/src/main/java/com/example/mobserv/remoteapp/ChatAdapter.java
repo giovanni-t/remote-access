@@ -2,6 +2,8 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
+import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +21,8 @@ import java.util.List;
 public class ChatAdapter extends BaseAdapter {
     private final List<ChatMessage> chatMessages;
     private Activity context;
+
+
 
     public ChatAdapter(Activity context, List<ChatMessage> chatMessages) {
         this.context = context;
@@ -84,8 +88,10 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     private void setAlignment(ViewHolder holder, boolean isMe) {
+        holder.contentWithBG.setBackgroundResource(R.drawable.box_rounded_corners);
         if(isMe){
-            holder.contentWithBG.setBackgroundResource(R.drawable.mebox);
+            ((GradientDrawable) holder.contentWithBG.getBackground())
+                    .setColor(ContextCompat.getColor(context, R.color.colorSentMessageBox));
             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
             layoutParams.gravity = Gravity.RIGHT;
             holder.contentWithBG.setLayoutParams(layoutParams);
@@ -103,8 +109,8 @@ public class ChatAdapter extends BaseAdapter {
             layoutParams.gravity = Gravity.RIGHT;
             holder.txtInfo.setLayoutParams(layoutParams);
         } else {
-            holder.contentWithBG.setBackgroundResource(R.drawable.otherbox);
-
+            ((GradientDrawable) holder.contentWithBG.getBackground())
+                    .setColor(ContextCompat.getColor(context, R.color.colorReceivedMessageBox));
             LinearLayout.LayoutParams layoutParams =
             	(LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
             layoutParams.gravity = Gravity.LEFT;

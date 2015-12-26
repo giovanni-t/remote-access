@@ -3,4 +3,12 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <!-- https://www.google.com/design/spec/style/color.html#color-color-palette -->
+    <color name="colorSentMessageBox">#2196f3</color>
+    <color name="colorReceivedMessageBox">#388e3c</color>
+    <color name="colorServerMessageBox">#757575</color>
+    <color name="colorSentText">#ffffff</color>
+    <color name="colorReceivedText">#ffffff</color>
+    <color name="colorServerText">#ffffff</color>
+    <color name="colorInfoText">#8a000000</color>
 </resources>
