@@ -7,4 +7,13 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="navigator_title">Menu</string>
 
+    <string-array name="example_array">
+        <item>Ex 1</item>
+        <item>Ex 2</item>
+        <item>Merry Christmas! ^_^</item>
+        <item>Ex 3</item>
+        <item>Ex 4</item>
+        <item>Ex 5</item>
+        <item>Ex 6</item>
+    </string-array>
 </resources>

@@ -2,6 +2,7 @@ package com.example.mobserv.remoteapp;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,9 @@ import android.widget.RelativeLayout;
 
 /**
  * Created by giovanni on 24/12/15. just before christmas eating
+ * Draws and handles the navigator (left side menu)
+ * In order to have a consistent UI, always extend this class
+ * for all your Activities! =)
  */
 public class DrawerActivity extends AppCompatActivity {
 
@@ -60,6 +64,7 @@ public class DrawerActivity extends AppCompatActivity {
         final String[] menuArray = { "Ex1", "Ex2", "Ex3", "Ex4", "Ex5" };
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, menuArray);
         mDrawerList.setAdapter(mAdapter);
+        Log.d("DrawerActivity", "Mock List added");
 
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -74,7 +79,7 @@ public class DrawerActivity extends AppCompatActivity {
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                getSupportActionBar().setTitle(R.string.navigator_title);  // we can change the text in the main bar from here
+                getSupportActionBar().setTitle(R.string.navigator_title); // Set the text to show in the main toolbar when navigator is shown
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
             /** Called when a drawer has settled in a completely closed state. */
