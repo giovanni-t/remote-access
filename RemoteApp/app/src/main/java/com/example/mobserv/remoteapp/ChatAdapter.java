@@ -22,11 +22,13 @@ public class ChatAdapter extends BaseAdapter {
     private final List<ChatMessage> chatMessages;
     private Activity context;
 
-
-
     public ChatAdapter(Activity context, List<ChatMessage> chatMessages) {
         this.context = context;
         this.chatMessages = chatMessages;
+    }
+
+    public List<ChatMessage> getChatMessages(){
+        return chatMessages;
     }
 
     private ViewHolder createViewHolder(View v) {
