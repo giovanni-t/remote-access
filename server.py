@@ -9,7 +9,7 @@ class Chat(LineReceiver):
         self.liveIps = liveIps
         self.name = None
         self.state = "GETNAME"
-    
+
     def connectionMade(self):
         print "New client connecting..."
         self.sendLine("<server> //read/Hello/whatsyourname")
@@ -26,7 +26,7 @@ class Chat(LineReceiver):
             self.send_liveIPs_lists()
 
     def handle_getname(self, name):
-        if self.clients.has_key(name):
+        if self.clients.has_key(name) or name == "server":
             self.sendLine("<server> //read/nametaken")
             return
         self.name = name
@@ -104,7 +104,7 @@ class Chat(LineReceiver):
         print "clients are %s " %self.clients
         if len(msg_array)>=3 and (msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec' or msg_array[2] == 'OK'):
             if self.clients.has_key(msg_array[1]):
-                print "fowarding msg to %s " % self.clients[msg_array[1]].name 
+                print "fowarding msg to %s " % self.clients[msg_array[1]].name
                 if msg_array[2] == 'write' and msg_array[3] == 'photo':
                     print "state Changed to READATA"
                     self.state = "READATA"
@@ -124,7 +124,7 @@ class Chat(LineReceiver):
         else :
             #self.broadcast(raw_msg)
             self.message(self.name, 'wrong command')
-        
+
 
 class ChatFactory(Factory):
     def __init__(self):
@@ -136,7 +136,7 @@ class ChatFactory(Factory):
 
 ifaceListeningPort = reactor.listenTCP(45678, ChatFactory())
 #3/12 by Alessio
-#print "IP:", socket.gethostbyname(socket.gethostname()) 
+#print "IP:", socket.gethostbyname(socket.gethostname())
 #7/12 by Giovanni: found this huge oneliner to get the correct ip address instead of localhost/loopback address
 ip = [l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l]
 print "Chat server started on", socket.gethostname()+"/"
