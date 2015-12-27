@@ -7,8 +7,26 @@
     <color name="colorSentMessageBox">#2196f3</color>
     <color name="colorReceivedMessageBox">#388e3c</color>
     <color name="colorServerMessageBox">#757575</color>
+
     <color name="colorSentText">#ffffff</color>
-    <color name="colorReceivedText">#ffffff</color>
+    <color name="colorReceivedText">#ffffff</color> <!-- WHITE -->
     <color name="colorServerText">#ffffff</color>
     <color name="colorInfoText">#8a000000</color>
+
+    <array name="arrayReceivedMsgBox">
+        <!-- OK with WHITE text -->
+        <item>#388e3c</item>
+        <item>#1a237e</item>
+        <item>#1b5e20</item>
+        <item>#bf360c</item>
+        <item>#4a148c</item>
+        <item>#b71c1c</item>
+        <item>#880e4f</item>
+        <item>#01579b</item>
+        <item>#827717</item>
+        <item>#004d40</item>
+        <item>#3e2723</item>
+        <item>#aa00ff</item>
+    </array>
+
 </resources>
