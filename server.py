@@ -123,7 +123,7 @@ class Chat(LineReceiver):
             	self.message(self.name, "client %s not found" % msg_array[1])
         else :
             #self.broadcast(raw_msg)
-            self.message(self.name, 'wrong command')
+            self.sendLine("<server> wrong command")
 
 
 class ChatFactory(Factory):
