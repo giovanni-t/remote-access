@@ -4,12 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,7 +19,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
@@ -44,14 +41,14 @@ public class TaskFragment extends Fragment {
      */
     interface TaskCallbacks {
         void onConnected();
-        void onFragmentCancel();
+        void onTaskFragmentCancel();
         void onTextReceived(String str);
         void onShowToast(String str);
         void onChooseName(Boolean taken);
         void onImageReceived(byte[] imageByte);
         void onClientListReceived(int numOfClients, List<String> clients);
         void onIpListReceived(int numOfIps, ArrayList<String> ips);
-        void onWelcome();
+        void onWelcome(String myName);
         void onExecReceived(String subscriberName, String service);
         void onStopTimers();
         String onLiveRequested();
@@ -63,7 +60,6 @@ public class TaskFragment extends Fragment {
     private Thread th;
     private String myName;
     private String serverip = "dummy IP";
-    private static final int serverport = 45678;
     private Socket socket;
     private PrintWriter out;
     private Boolean nameTaken = false;
@@ -133,10 +129,10 @@ public class TaskFragment extends Fragment {
 
         @Override
         public void run() {
-            mCallbacks.onShowToast("Connecting to " + serverip + ":" + serverport + "...");
+            mCallbacks.onShowToast("Connecting to " + serverip + ":" + MyConstants.serverport + "...");
             try {
                 InetAddress serverAddr = InetAddress.getByName(serverip);
-                socket = new Socket(serverAddr, serverport);
+                socket = new Socket(serverAddr, MyConstants.serverport);
                 this.inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),
                         true);
@@ -147,7 +143,7 @@ public class TaskFragment extends Fragment {
             } catch (IOException e) {
                 e.printStackTrace();
                 mCallbacks.onShowToast("ERROR:\n" + e.getMessage());
-                mCallbacks.onFragmentCancel();
+                mCallbacks.onTaskFragmentCancel();
                 return;
             }
 
@@ -176,12 +172,12 @@ public class TaskFragment extends Fragment {
                         mCallbacks.onShowToast("ERROR:\n" + e.getMessage());
                     else
                         mCallbacks.onShowToast(e.getMessage());
-                    mCallbacks.onFragmentCancel();
+                    mCallbacks.onTaskFragmentCancel();
                     return;
                 }
             }
 
-            mCallbacks.onFragmentCancel();
+            mCallbacks.onTaskFragmentCancel();
         }
 
         /**
@@ -432,7 +428,7 @@ public class TaskFragment extends Fragment {
                         myName = args[1];
                         Log.d("debug", "My name as client: " + myName);
                         nameTaken = true;
-                        mCallbacks.onWelcome();
+                        mCallbacks.onWelcome(myName);
                         break;
                     case "Hello":
                         mCallbacks.onChooseName(false);
@@ -488,7 +484,7 @@ public class TaskFragment extends Fragment {
     public void sendMsg(String msg) {
         out.write(msg);
         out.flush();
-        mCallbacks.onTextReceived(msg); // would be better to have a "onTextSent" to have a different handling
+        // mCallbacks.onTextReceived(msg);
     }
 
     public void closeSocket(){

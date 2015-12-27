@@ -8,10 +8,11 @@ import android.content.Intent;
 public class ChatMessage {
     private long id;
     private boolean isMe;
+    private boolean isFromServer;
     private String message;
-    private long senderId;
+    private long senderId = -1;
     private String dateTime;
-    private String senderName;
+    private String senderName = "";
     private boolean clickable;
     private Intent intent;
 
@@ -61,6 +62,16 @@ public class ChatMessage {
 
     public void setSenderName(String senderName) {
         this.senderName = senderName;
+        setIsFromServer(senderName.equals(MyConstants.USERNAME_SERVER));
+    }
+
+
+    public boolean isFromServer() {
+        return isFromServer;
+    }
+
+    public void setIsFromServer(boolean isFromServer) {
+        this.isFromServer = isFromServer;
     }
 
 }

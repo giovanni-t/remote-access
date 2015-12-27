@@ -2,6 +2,8 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
@@ -82,14 +84,17 @@ public class ChatAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         boolean myMsg = chatMessage.isMe();
-        setAlignment(holder, myMsg);
+        int senderId = (int)chatMessage.getSenderId();
+        setAlignment(holder, myMsg, senderId);
         holder.txtMessage.setText(chatMessage.getMessage());
-        holder.txtInfo.setText(chatMessage.getDate());
+        holder.txtInfo.setText(chatMessage.getSenderName());
 
         return convertView;
     }
 
-    private void setAlignment(ViewHolder holder, boolean isMe) {
+    private void setAlignment(ViewHolder holder, boolean isMe, int senderId) {
+        TypedArray colorPool = context.getResources().obtainTypedArray(R.array.arrayReceivedMsgBox);
+
         holder.contentWithBG.setBackgroundResource(R.drawable.box_rounded_corners);
         if(isMe){
             ((GradientDrawable) holder.contentWithBG.getBackground())
@@ -111,8 +116,14 @@ public class ChatAdapter extends BaseAdapter {
             layoutParams.gravity = Gravity.RIGHT;
             holder.txtInfo.setLayoutParams(layoutParams);
         } else {
-            ((GradientDrawable) holder.contentWithBG.getBackground())
-                    .setColor(ContextCompat.getColor(context, R.color.colorReceivedMessageBox));
+            int bgColor = ContextCompat.getColor(context, R.color.colorReceivedMessageBox);
+            if(senderId == MyConstants.SERVER_SENDER_ID)
+                bgColor = ContextCompat.getColor(context, R.color.colorServerMessageBox);
+            else{
+                int index = (senderId - 1) % colorPool.length();
+                bgColor = colorPool.getColor(index, bgColor);
+            }
+            ((GradientDrawable) holder.contentWithBG.getBackground()).setColor(bgColor);
             LinearLayout.LayoutParams layoutParams =
             	(LinearLayout.LayoutParams) holder.contentWithBG.getLayoutParams();
             layoutParams.gravity = Gravity.LEFT;

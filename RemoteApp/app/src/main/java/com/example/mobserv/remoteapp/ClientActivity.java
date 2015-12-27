@@ -164,7 +164,7 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
                     public void onClick(DialogInterface arg0, int arg1) {
                         ClientActivity.super.onBackPressed();
                         // close connection here --> kill the fragment
-                        onFragmentCancel();
+                        onTaskFragmentCancel();
                     }
                 }).create().show();
     }
@@ -307,7 +307,7 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
     }
 
     @Override
-    public void onFragmentCancel() {
+    public void onTaskFragmentCancel() {
         mTaskFragment.closeSocket();
         FragmentManager fm = getSupportFragmentManager();
         fm.beginTransaction().remove(mTaskFragment).commit();
@@ -359,7 +359,7 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
     }
 
     @Override
-    public void onWelcome() {
+    public void onWelcome(String myName) {
         setNameTaken(true);
     }
 

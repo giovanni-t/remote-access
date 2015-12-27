@@ -5,9 +5,13 @@ package com.example.mobserv.remoteapp;
  */
 public class MyConstants {
     public static final String TAG_CLIENTS_LIST = "clientsList";
-    public static final String TAG_TEXT_SCROLL_X = "tScrollX";
-    public static final String TAG_TEXT_SCROLL_Y = "tScrollY";
     public static final String TAG_TASK_FRAGMENT = "task_fragment";
     public static final String TAG_SERVERIP = "serverip";
     public static final String TAG_CHAT_FRAGMENT = "chat_fragment";
+    public static final int serverport = 45678;
+    public static final String USERNAME_SERVER = "<server>";
+    public static final long SERVER_SENDER_ID = 0;
+    public static final String TAG_CONNECTED = "connected";
+    public static final String TAG_NAMETAKEN = "name_taken";
+    public static final String TAG_MYNAME = "my_name";
 }
