@@ -84,9 +84,13 @@ public class TaskFragment extends Fragment {
 
         if(context instanceof TaskCallbacks) {
             mCallbacks = (TaskCallbacks) context;
+        } else {
+            Log.d(TAG, "Fatal: Given attaching context is not instanceof TaskCallbacks");
         }
         if (context instanceof Activity){
             attachedActivity = (Activity) context;
+        } else {
+            Log.d(TAG, "Fatal: Given attaching context is not instanceof Activity");
         }
     }
 
@@ -103,7 +107,7 @@ public class TaskFragment extends Fragment {
 
         // Get the ip of server from the intent
         Bundle bd = getArguments();
-        serverip = bd.getString("serverip");
+        serverip = bd.getString(MyConstants.TAG_SERVERIP);
 
         // Create and execute the background task.
         mTask = new ClientThread();
