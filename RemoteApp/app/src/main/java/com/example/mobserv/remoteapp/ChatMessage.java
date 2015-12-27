@@ -63,27 +63,4 @@ public class ChatMessage {
         this.senderName = senderName;
     }
 
-
-
-    /* Parcelable implementation ****
-
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
-        public ChatMessage createFromParcel(Parcel in) { return new ChatMessage(in); }
-        public ChatMessage[] newArray(int size) { return new ChatMessage[size]; }
-    };
-
-    public ChatMessage(Parcel in){
-        in.read
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-
-    }
-    */
 }
