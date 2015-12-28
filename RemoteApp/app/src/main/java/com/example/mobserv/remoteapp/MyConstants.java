@@ -2,6 +2,8 @@ package com.example.mobserv.remoteapp;
 
 /**
  * Created by giovanni on 27/12/15.
+ * Holds references to constants.
+ * Useful to use the same key when passing data in Bundles
  */
 public class MyConstants {
     public static final String TAG_CLIENTS_LIST = "clientsList";

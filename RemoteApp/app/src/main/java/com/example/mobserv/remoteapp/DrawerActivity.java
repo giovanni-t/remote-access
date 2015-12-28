@@ -21,7 +21,7 @@ import android.widget.RelativeLayout;
  * Created by giovanni on 24/12/15. just before christmas eating
  * Draws and handles the navigator (left side menu)
  * In order to have a consistent UI, always extend this class
- * for all your Activities! =)
+ * for all your Activities instead of extending 'Activity'
  */
 public class DrawerActivity extends AppCompatActivity {
 

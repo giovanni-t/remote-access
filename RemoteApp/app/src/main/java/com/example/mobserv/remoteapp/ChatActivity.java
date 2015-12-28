@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Client Activity with new GUI
+ */
 public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCallbacks {
 
     // Constants

@@ -2,7 +2,6 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v4.content.ContextCompat;
@@ -18,7 +17,8 @@ import android.widget.TextView;
 import java.util.List;
 
 /**
- * Created by giovanni on 26/12/15.
+ * Adds the layout information to the chat, to show received and sent messages
+ * on two different sides and pick up a different color for each sender
  */
 public class ChatAdapter extends BaseAdapter {
     private final List<ChatMessage> chatMessages;

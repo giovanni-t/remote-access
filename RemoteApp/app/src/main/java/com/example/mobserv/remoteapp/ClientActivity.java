@@ -29,6 +29,7 @@ import java.util.TimerTask;
 
 /**
  * Created by pacel_000 on 22/10/2015.
+ * Old UI Client Activity. Mostly used for debugging
  */
 public class ClientActivity extends DrawerActivity implements TaskFragment.TaskCallbacks {
 

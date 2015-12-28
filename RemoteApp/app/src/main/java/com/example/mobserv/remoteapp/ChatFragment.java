@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Created by giovanni on 27/12/15.
+ * Fragment that holds information about the chat history (during the same session)
+ * and the clients. Provides an id for the clients, so it can be used to pick color
+ * for the message background.
+ * The fragment is retained, so its data survive the activity re-creation.
  */
 public class ChatFragment extends Fragment{
     private static final String TAG = ChatFragment.class.getSimpleName();

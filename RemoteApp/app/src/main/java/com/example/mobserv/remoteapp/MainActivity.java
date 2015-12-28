@@ -6,6 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 
+/**
+ * Main activity of the app.
+ * Let the user insert the IP of the running server
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override

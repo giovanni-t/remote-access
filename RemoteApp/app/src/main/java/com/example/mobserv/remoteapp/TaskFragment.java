@@ -30,6 +30,10 @@ import java.util.regex.PatternSyntaxException;
 /**
  * This Fragment manages a single background task and retains
  * itself across configuration changes.
+ * It handles the connection with the server, interpret the received
+ * messages and calls the corresponding callbacks.
+ * The callbacks are just an interface, so they must be implemented in the
+ * activity that holds this class.
  */
 public class TaskFragment extends Fragment {
 

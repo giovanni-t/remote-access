@@ -3,7 +3,7 @@ package com.example.mobserv.remoteapp;
 import android.content.Intent;
 
 /**
- * Created by giovanni on 26/12/15.
+ * Model class for the messages
  */
 public class ChatMessage {
     private long id;
