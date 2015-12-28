@@ -165,6 +165,21 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setTitle("Really exit?")
+                .setMessage("Are you sure you want to close connection to server?")
+                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        ChatActivity.super.onBackPressed();
+                        // close connection here --> kill the fragment
+                        onTaskFragmentCancel();
+                    }
+                }).create().show();
+    }
+
     /********************************
      * TaskCallbacks implementation *
      ********************************/
@@ -220,7 +235,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onImageReceived(byte[] imageByte) {
-
+        // TODO
     }
 
     @Override
@@ -230,7 +245,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onIpListReceived(int numOfIps, ArrayList<String> ips) {
-
+        // TODO
     }
 
     @Override
@@ -241,27 +256,31 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onExecReceived(String subscriberName, String service) {
+        // TODO
 
     }
 
     @Override
     public void onStopTimers() {
+        // TODO
 
     }
 
     @Override
     public String onLiveRequested() {
+        // TODO
         return null;
     }
 
     @Override
     public String onImageRequested() {
+        // TODO
         return null;
     }
 
     @Override
     public void onGpsReceived(Double lat, Double lon, Double alt, String senderName) {
-
+        // TODO
     }
 
     /***********************
