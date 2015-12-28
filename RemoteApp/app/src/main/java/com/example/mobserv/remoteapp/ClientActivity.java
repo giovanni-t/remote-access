@@ -433,4 +433,14 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
         }
         return null;
     }
+
+    @Override
+    public void onGpsReceived(Double lat, Double lon, Double alt, String senderName) {
+        Intent it = new Intent("com.example.mobserv.remoteapp.MapActivity");
+        it.putExtra("sendOrShow", "showPosition");
+        it.putExtra("latitude", lat);
+        it.putExtra("longitude", lon);
+        it.putExtra("nametoshow", senderName);
+        startActivity(it);
+    }
 }

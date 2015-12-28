@@ -57,6 +57,7 @@ public class TaskFragment extends Fragment {
         void onStopTimers();
         String onLiveRequested();
         String onImageRequested();
+        void onGpsReceived(Double lat, Double lon, Double alt, String senderName);
     }
 
     private TaskCallbacks mCallbacks;
@@ -279,7 +280,7 @@ public class TaskFragment extends Fragment {
                         String isSub= args[7];
                         mCallbacks.onShowToast("Received GPS position from " + senderName + ":\n" + TextUtils.join("/", Arrays.asList(args).subList(4, 7)));
                         if ( isSub.compareTo("show")==0){
-                            onGpsReceived(lat, lon, senderName);
+                            mCallbacks.onGpsReceived(lat, lon, alt, senderName);
                         }
                     } catch (ArrayIndexOutOfBoundsException e){
                         Log.d("msgIsWrite", "bad format in msg write gps: "+ TextUtils.join("/", args));
@@ -536,12 +537,5 @@ public class TaskFragment extends Fragment {
         super.onStop();
     }
 
-    private void onGpsReceived(Double lat, Double lon, String senderName) {
-        Intent it = new Intent("com.example.mobserv.remoteapp.MapActivity");
-        it.putExtra("sendOrShow", "showPosition");
-        it.putExtra("latitude", lat);
-        it.putExtra("longitude", lon);
-        it.putExtra("nametoshow", senderName);
-        startActivity(it);
-    }
+
 }

@@ -259,6 +259,11 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         return null;
     }
 
+    @Override
+    public void onGpsReceived(Double lat, Double lon, Double alt, String senderName) {
+
+    }
+
     /***********************
      * Runnable subclasses *
      ***********************/
