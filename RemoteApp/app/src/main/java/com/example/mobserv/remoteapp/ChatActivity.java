@@ -64,7 +64,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     /* Streaming */
     private boolean isStreaming = false;
-    private ArrayList<String> IpList;
+    private static ArrayList<String> IpList;
 
     /* Subscription */
     private List<Subscriber> subscribers;
@@ -474,5 +474,10 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         Intent in1 = new Intent(this, LiveActivity.class);
         in1.putStringArrayListExtra("ipList", IpList);
         startActivity(in1);
+    }
+
+    public static ArrayList<String> getIpList() {
+        ArrayList<String> x = IpList;
+        return x;
     }
 }

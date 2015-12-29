@@ -80,10 +80,9 @@ public class DrawerActivity extends AppCompatActivity {
                         break;
                     case 1:
                         // Live Streamings
-                        // TODO until we haven't the iplist in this class ( chatactivity ) this code cannot work
-                        //Intent in1 = new Intent("com.example.mobserv.remoteapp.LiveActivity");
-                        //in1.putStringArrayListExtra("ipList", IpList);
-                       // startActivity(in1);
+                        Intent in1 = new Intent(getApplicationContext(), LiveActivity.class);
+                        in1.putStringArrayListExtra("ipList", ChatActivity.getIpList());
+                        startActivity(in1);
                         break;
                 }
             }
