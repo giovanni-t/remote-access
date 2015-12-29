@@ -443,4 +443,9 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
         it.putExtra("nametoshow", senderName);
         startActivity(it);
     }
+
+    public void onClickShowGallery (View v ){
+        Intent i = new Intent("com.example.mobserv.remoteapp.GalleryActivity");
+        startActivity(i);
+    }
 }
