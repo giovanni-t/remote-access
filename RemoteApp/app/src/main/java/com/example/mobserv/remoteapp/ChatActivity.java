@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -21,7 +22,10 @@ import android.widget.Toast;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Client Activity with new GUI
@@ -62,10 +66,10 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     private boolean isStreaming = false;
     private ArrayList<String> IpList; */
 
-    /* Subscription
+    /* Subscription */
     private List<Subscriber> subscribers;
     final Handler singleTimer = new Handler();
-    private List<TimerTask> subscribersTimer; */
+    private List<TimerTask> subscribersTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +92,9 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         mSurfaceView.setX(metrics.widthPixels + 1);
         /* task fragment init */
         initTaskFragment();
+
+        subscribers = new LinkedList<>();
+        subscribersTimer = new LinkedList<>();
 
     }
 
@@ -274,14 +281,57 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onExecReceived(String subscriberName, String service) {
-        // TODO
-
+        final Subscriber s = new Subscriber(subscriberName, service);
+        subscribers.add(s);
+        Timer timer = new Timer();
+        subscribersTimer.add(new TimerTask() {
+            @Override
+            public void run() {
+                singleTimer.post(new Runnable() {
+                    public void run() {
+                        // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
+                        LinkedList<String> reply = new LinkedList<>();
+                        reply.add("write");
+                        reply.add("gps");
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.altitude));
+                        reply.add("subscription"); // otherwise maps keep opening
+                        String msg = composeMsg(s.name, reply);
+                        mTaskFragment.sendMsg(msg);
+                    }
+                });
+            }
+        });
+        timer.schedule(subscribersTimer.get(subscribersTimer.size() - 1), 0, 60000); //it executes this every 60000ms ( 1 minute ) TODO time should be passed
     }
 
     @Override
     public void onStopTimers() {
-        // TODO
+        for (TimerTask t : subscribersTimer) {
+            t.cancel();
+        }
+    }
 
+    public String composeMsg(String to, LinkedList<String> content) {
+        String msg = "/"; // <-- leaving field 0 empty
+        // Log.d("composeMsg", "to: "+ to+" Content: "+content.toString());
+        msg += to;
+        if (content == null)
+            return msg;
+        for (String arg : content) {
+            msg += "/" + arg;
+        }
+        return msg;
+    }
+
+    private class Subscriber {
+        public String name, service;
+
+        public Subscriber(String n, String s) {
+            name = n;
+            service = s;
+        }
     }
 
     @Override
