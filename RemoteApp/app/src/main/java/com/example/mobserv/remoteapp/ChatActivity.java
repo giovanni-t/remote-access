@@ -3,14 +3,18 @@ package com.example.mobserv.remoteapp;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -48,11 +52,11 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     private TaskFragment mTaskFragment;
 
     // Camera preview -- To be moved in other activity
-    /*
+
     private SurfaceView mSurfaceView;
     private ImageView contactImage;
     private CameraPreview preview;
-    */
+
 
     /* Streaming
     private boolean isStreaming = false;
@@ -73,6 +77,16 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         initChatFragment();
         //loadDummyHistory();
         this.serverip = getIntent().getStringExtra(MyConstants.TAG_SERVERIP);
+        /* camera inits */
+        mSurfaceView = (SurfaceView) findViewById(R.id.surfaceViewNew);
+        contactImage = (ImageView) findViewById(R.id.photo);
+
+        preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceViewNew));
+        preview.setKeepScreenOn(true);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mSurfaceView.setX(metrics.widthPixels + 1);
+        /* task fragment init */
         initTaskFragment();
 
     }
@@ -278,8 +292,21 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public String onImageRequested() {
-        // TODO
-        return null;
+        String result = null;
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            onShowToast("No camera on this device");
+        } else {
+            try {
+                preview.setCamera();
+                preview.openSurface();
+                result = preview.takePicture();
+            } catch (Exception e) {
+                Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
+            } finally {
+                preview.closeSurface();
+            }
+        }
+        return result;
     }
 
     @Override
