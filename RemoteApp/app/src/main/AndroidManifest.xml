@@ -100,6 +100,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".GalleryImageActivity">
+            <intent-filter>
+                <action android:name="com.example.mobserv.remoteapp.GalleryImageActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

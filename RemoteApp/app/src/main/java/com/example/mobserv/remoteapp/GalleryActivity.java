@@ -1,5 +1,6 @@
 package com.example.mobserv.remoteapp;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
@@ -33,6 +34,15 @@ public class GalleryActivity extends DrawerActivity {
 
         this.imageGrid.setAdapter(new ImageAdapter(this, this.bitmapList));
 
+        this.imageGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Bitmap b = bitmapList.get(position);
+                Intent intent = new Intent("com.example.mobserv.remoteapp.GalleryImageActivity");
+                intent.putExtra("BitmapImage", b);
+                startActivity(intent);
+            }
+        });
     }
 
     public void showSavedPictures(){
