@@ -2,6 +2,7 @@ package com.example.mobserv.remoteapp;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
@@ -235,7 +236,10 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onImageReceived(byte[] imageByte) {
-        // TODO
+        //Convert to byte array
+        Intent in1 = new Intent(this, PhotoActivity.class);
+        in1.putExtra("image", imageByte);
+        startActivity(in1);
     }
 
     @Override
@@ -280,7 +284,12 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onGpsReceived(Double lat, Double lon, Double alt, String senderName) {
-        // TODO
+        Intent it = new Intent("com.example.mobserv.remoteapp.MapActivity");
+        it.putExtra("sendOrShow", "showPosition");
+        it.putExtra("latitude", lat);
+        it.putExtra("longitude", lon);
+        it.putExtra("nametoshow", senderName);
+        startActivity(it);
     }
 
     /***********************
