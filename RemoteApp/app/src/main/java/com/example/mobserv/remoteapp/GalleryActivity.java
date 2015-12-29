@@ -33,24 +33,25 @@ public class GalleryActivity extends DrawerActivity {
 
         this.imageGrid.setAdapter(new ImageAdapter(this, this.bitmapList));
 
-    } // TODO : check array length
+    }
 
     public void showSavedPictures(){
         String path = getApplicationContext().getCacheDir() + "/inpaint/";
         Log.d("Files", "Path: " + path);
         File f = new File(path);
         File file[] = f.listFiles();
-        Log.d("Files", "Size: "+ file.length);
 
-        try {
-            for(int i = 0; i < file.length; i++) {
-                Log.d("Files", "FileName:" + file[i].getName());
-                Bitmap toadd = BitmapFactory.decodeFile(path+file[i].getName());
-                this.bitmapList.add(toadd);
+        if ( file != null ) {
+            Log.d("Files", "Size: " + file.length);
+            try {
+                for (int i = 0; i < file.length; i++) {
+                    Log.d("Files", "FileName:" + file[i].getName());
+                    Bitmap toadd = BitmapFactory.decodeFile(path + file[i].getName());
+                    this.bitmapList.add(toadd);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
     }
 }

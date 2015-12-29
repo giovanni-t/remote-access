@@ -100,7 +100,7 @@ public class PhotoActivity extends DrawerActivity {
 
     public void defaultSave(Bitmap b){
         File pictureFile = getOutputMediaFile("temporary");
-        Toast.makeText(getApplicationContext(), "Saved On: "+pictureFile, Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "Saved On: "+pictureFile, Toast.LENGTH_LONG).show();
         if (pictureFile == null) {
             Log.d(TAG,
                     "Error creating media file, check storage permissions: ");// e.getMessage());
