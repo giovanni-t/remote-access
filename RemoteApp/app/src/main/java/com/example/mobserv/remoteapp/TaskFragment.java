@@ -298,7 +298,7 @@ public class TaskFragment extends Fragment {
             String data = null;
             switch (args[3]) {
                 case "gps":
-                    mCallbacks.onShowToast("exec gps test");
+                    //mCallbacks.onShowToast("exec gps test");
                     mCallbacks.onExecReceived(senderName,"gps"); // give the name of the client to which send periodic messages
                                                 // give the name of the messages to be sent ( GPS )
                     break;
