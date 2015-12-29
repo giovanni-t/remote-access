@@ -7,6 +7,12 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="navigator_title">Menu</string>
 
+    <string name="type_cmd">Type command here</string>
+    <string name="send">Send</string>
+
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="connection_will_be_close">This will close the connection with the server</string>
+
     <string-array name="example_array">
         <item>Ex 1</item>
         <item>Ex 2</item>

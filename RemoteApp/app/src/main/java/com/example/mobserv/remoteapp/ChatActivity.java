@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -125,6 +127,37 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             }
         });
 
+        messageET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                int slashes = 0;
+                for(int i=0; i < s.length(); i++) if (s.charAt(i) == '/') slashes++;
+                switch(slashes){
+                    case 0:
+                        // suggest user names
+                        break;
+                    case 1:
+                        // suggest commands (read/write(?)/exec)
+                        break;
+                    case 2:
+                        // suggest actions (gps, photo, ...)
+                        break;
+                    default: // #'/' > 2
+                        // empty suggestions
+                        break;
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
     private void initChatFragment() {
@@ -190,8 +223,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     @Override
     public void onBackPressed() {
         new AlertDialog.Builder(this)
-                .setTitle("Really exit?")
-                .setMessage("Are you sure you want to close connection to server?")
+                .setTitle(getResources().getString(R.string.are_you_sure))
+                .setMessage(getResources().getString(R.string.connection_will_be_close))
                 .setNegativeButton(android.R.string.no, null)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
