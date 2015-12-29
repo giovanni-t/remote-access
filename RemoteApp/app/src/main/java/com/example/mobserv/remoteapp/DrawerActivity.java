@@ -1,5 +1,6 @@
 package com.example.mobserv.remoteapp;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -16,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 /**
  * Created by giovanni on 24/12/15. just before christmas eating
@@ -61,7 +63,7 @@ public class DrawerActivity extends AppCompatActivity {
     }
 
     private void addDrawerItems() {
-        final String[] menuArray = { "Ex1", "Ex2", "Ex3", "Ex4", "Ex5" };
+        final String[] menuArray = { "Gallery", "Live Streamings" };
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, menuArray);
         mDrawerList.setAdapter(mAdapter);
         Log.d("DrawerActivity", "Mock List added");
@@ -70,6 +72,20 @@ public class DrawerActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d("DrawerActivity", "Pressed item " + parent.getItemAtPosition(position) + " pos " + position + " with id " + id);
+                switch (position){
+                    case 0:
+                        // Gallery
+                        Intent i = new Intent("com.example.mobserv.remoteapp.GalleryActivity");
+                        startActivity(i);
+                        break;
+                    case 1:
+                        // Live Streamings
+                        // TODO until we haven't the iplist in this class ( chatactivity ) this code cannot work
+                        //Intent in1 = new Intent("com.example.mobserv.remoteapp.LiveActivity");
+                        //in1.putStringArrayListExtra("ipList", IpList);
+                       // startActivity(in1);
+                        break;
+                }
             }
         });
     }
@@ -121,7 +137,6 @@ public class DrawerActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         // Activate the navigation drawer toggle
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
