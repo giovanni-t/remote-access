@@ -2,23 +2,32 @@ package com.example.mobserv.remoteapp;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Client Activity with new GUI
@@ -49,20 +58,20 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     private TaskFragment mTaskFragment;
 
     // Camera preview -- To be moved in other activity
-    /*
+
     private SurfaceView mSurfaceView;
     private ImageView contactImage;
     private CameraPreview preview;
-    */
 
-    /* Streaming
+
+    /* Streaming */
     private boolean isStreaming = false;
-    private ArrayList<String> IpList; */
+    private ArrayList<String> IpList;
 
-    /* Subscription
+    /* Subscription */
     private List<Subscriber> subscribers;
     final Handler singleTimer = new Handler();
-    private List<TimerTask> subscribersTimer; */
+    private List<TimerTask> subscribersTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +83,20 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         initChatFragment();
         //loadDummyHistory();
         this.serverip = getIntent().getStringExtra(MyConstants.TAG_SERVERIP);
+        /* camera inits */
+        mSurfaceView = (SurfaceView) findViewById(R.id.surfaceViewNew);
+        contactImage = (ImageView) findViewById(R.id.photo);
+
+        preview = new CameraPreview(this, (SurfaceView) findViewById(R.id.surfaceViewNew));
+        preview.setKeepScreenOn(true);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mSurfaceView.setX(metrics.widthPixels + 1);
+        /* task fragment init */
         initTaskFragment();
+
+        subscribers = new LinkedList<>();
+        subscribersTimer = new LinkedList<>();
 
     }
 
@@ -268,7 +290,10 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onImageReceived(byte[] imageByte) {
-        // TODO
+        //Convert to byte array
+        Intent in1 = new Intent(this, PhotoActivity.class);
+        in1.putExtra("image", imageByte);
+        startActivity(in1);
     }
 
     @Override
@@ -278,7 +303,9 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onIpListReceived(int numOfIps, ArrayList<String> ips) {
-        // TODO
+        Log.d(TAG, "number of ips " + numOfIps);
+        //runOnUiThread(new notifyTabStripChanged(1, numOfIps));
+        IpList = ips;
     }
 
     @Override
@@ -289,31 +316,101 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onExecReceived(String subscriberName, String service) {
-        // TODO
-
+        final Subscriber s = new Subscriber(subscriberName, service);
+        subscribers.add(s);
+        Timer timer = new Timer();
+        subscribersTimer.add(new TimerTask() {
+            @Override
+            public void run() {
+                singleTimer.post(new Runnable() {
+                    public void run() {
+                        // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
+                        LinkedList<String> reply = new LinkedList<>();
+                        reply.add("write");
+                        reply.add("gps");
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
+                        reply.add(String.valueOf(mTaskFragment.gpsTracker.altitude));
+                        reply.add("subscription"); // otherwise maps keep opening
+                        String msg = composeMsg(s.name, reply);
+                        mTaskFragment.sendMsg(msg);
+                    }
+                });
+            }
+        });
+        timer.schedule(subscribersTimer.get(subscribersTimer.size() - 1), 0, 60000); //it executes this every 60000ms ( 1 minute ) TODO time should be passed
     }
 
     @Override
     public void onStopTimers() {
-        // TODO
+        for (TimerTask t : subscribersTimer) {
+            t.cancel();
+        }
+    }
 
+    public String composeMsg(String to, LinkedList<String> content) {
+        String msg = "/"; // <-- leaving field 0 empty
+        // Log.d("composeMsg", "to: "+ to+" Content: "+content.toString());
+        msg += to;
+        if (content == null)
+            return msg;
+        for (String arg : content) {
+            msg += "/" + arg;
+        }
+        return msg;
+    }
+
+    private class Subscriber {
+        public String name, service;
+
+        public Subscriber(String n, String s) {
+            name = n;
+            service = s;
+        }
     }
 
     @Override
     public String onLiveRequested() {
-        // TODO
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            new MakeToast("No camera on this device");
+        } else {
+            if (isStreaming) new MakeToast("This device is streaming");
+            isStreaming = true;
+            preview.liveSetId();
+            preview.openSurface();
+            preview.onResume();
+            return preview.getIpServer() + ":" + String.valueOf(preview.getPortServer());
+        }
         return null;
     }
 
     @Override
     public String onImageRequested() {
-        // TODO
-        return null;
+        String result = null;
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            onShowToast("No camera on this device");
+        } else {
+            try {
+                preview.setCamera();
+                preview.openSurface();
+                result = preview.takePicture();
+            } catch (Exception e) {
+                Log.d("ERROR", "Failed to config the camera: " + e.getMessage());
+            } finally {
+                preview.closeSurface();
+            }
+        }
+        return result;
     }
 
     @Override
     public void onGpsReceived(Double lat, Double lon, Double alt, String senderName) {
-        // TODO
+        Intent it = new Intent("com.example.mobserv.remoteapp.MapActivity");
+        it.putExtra("sendOrShow", "showPosition");
+        it.putExtra("latitude", lat);
+        it.putExtra("longitude", lon);
+        it.putExtra("nametoshow", senderName);
+        startActivity(it);
     }
 
     /***********************
@@ -404,5 +501,11 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         messageET.setFocusableInTouchMode(connected);
         nameTaken = savedInstanceState.getBoolean(MyConstants.TAG_NAMETAKEN);
         myName = savedInstanceState.getString(MyConstants.TAG_MYNAME, "");
+    }
+
+    public void videoClick(View view) {
+        Intent in1 = new Intent(this, LiveActivity.class);
+        in1.putStringArrayListExtra("ipList", IpList);
+        startActivity(in1);
     }
 }

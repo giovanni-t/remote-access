@@ -56,7 +56,17 @@
 
         </ListView>
     </RelativeLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
 
+        <SurfaceView
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:id="@+id/surfaceViewNew" />
+
+    </LinearLayout>
     <HorizontalScrollView
         android:id="@+id/suggestionsScrollView"
         android:layout_width="match_parent"
@@ -78,7 +88,8 @@
                 android:id="@+id/example1Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sugg Example"
+                android:text="video"
+                android:onClick="videoClick"
                 />
             <Button
                 android:id="@+id/example2Button"
