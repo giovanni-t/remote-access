@@ -84,18 +84,20 @@
             android:layout_gravity="center_vertical"
             >
 
-            <Button
+            <!--<Button
                 android:id="@+id/example1Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="video"
                 android:onClick="videoClick"
-                />
+                I've commented it in order to make the ui consistent
+                />-->
             <Button
                 android:id="@+id/example2Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sugg Example"
+                android:text="send position"
+                android:onClick="onClickSendGPS"
                 />
             <Button
                 android:id="@+id/example3Button"

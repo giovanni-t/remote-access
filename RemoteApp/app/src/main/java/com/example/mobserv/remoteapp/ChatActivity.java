@@ -1,5 +1,6 @@
 package com.example.mobserv.remoteapp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,6 +38,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     // Constants
     private static final String TITLE = "Remote Access"; // Main toolbar title!
     private static final String TAG = ChatActivity.class.getSimpleName();
+    private static final int SEND_GPS = 111;
 
     // UI elements
     private EditText messageET;
@@ -136,8 +138,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 int slashes = 0;
-                for(int i=0; i < s.length(); i++) if (s.charAt(i) == '/') slashes++;
-                switch(slashes){
+                for (int i = 0; i < s.length(); i++) if (s.charAt(i) == '/') slashes++;
+                switch (slashes) {
                     case 0:
                         // suggest user names
                         break;
@@ -503,14 +505,46 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         myName = savedInstanceState.getString(MyConstants.TAG_MYNAME, "");
     }
 
+    public static ArrayList<String> getIpList() {
+        ArrayList<String> x = IpList;
+        return x;
+    }
+
+    /* videoclick is actually useless since we can use the navigation drawer on left side */
     public void videoClick(View view) {
         Intent in1 = new Intent(this, LiveActivity.class);
         in1.putStringArrayListExtra("ipList", IpList);
         startActivity(in1);
     }
 
-    public static ArrayList<String> getIpList() {
-        ArrayList<String> x = IpList;
-        return x;
+    public void onClickSendGPS (View view){
+        Intent i = new Intent(this, MapActivity.class);
+        i.putExtra("sendOrShow","readPosition");
+        i.putExtra("nametoshow", myName);
+        startActivityForResult(i, SEND_GPS);
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SEND_GPS) {
+            if(resultCode == Activity.RESULT_OK){
+                String latS = data.getStringExtra("latS");
+                String lonS = data.getStringExtra("lonS");
+                String altS = data.getStringExtra("altS");
+                Toast.makeText(this, "lat: "+latS+", lon: "+lonS, Toast.LENGTH_LONG).show();
+                // at this moment, edit text should be edited
+                // may finish either with show or subscription, in case we want the map to be opened or not on reception
+                // the format used belows implies that the user writes the name of the client o whom send the position
+                // then clicks on the button 'sendGPS' and, when he cliks on the received position, edittext
+                // is auto completed with the right frmat to send gps coordinates
+                messageET.getText().append("/write/gps/"+lonS+"/"+latS+"/"+altS+"/show");
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
+    }
+
+
 }
