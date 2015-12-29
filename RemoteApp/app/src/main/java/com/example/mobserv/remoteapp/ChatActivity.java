@@ -62,9 +62,9 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     private CameraPreview preview;
 
 
-    /* Streaming
+    /* Streaming */
     private boolean isStreaming = false;
-    private ArrayList<String> IpList; */
+    private ArrayList<String> IpList;
 
     /* Subscription */
     private List<Subscriber> subscribers;
@@ -270,7 +270,9 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public void onIpListReceived(int numOfIps, ArrayList<String> ips) {
-        // TODO
+        Log.d(TAG, "number of ips " + numOfIps);
+        //runOnUiThread(new notifyTabStripChanged(1, numOfIps));
+        IpList = ips;
     }
 
     @Override
@@ -336,7 +338,16 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     @Override
     public String onLiveRequested() {
-        // TODO
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            new MakeToast("No camera on this device");
+        } else {
+            if (isStreaming) new MakeToast("This device is streaming");
+            isStreaming = true;
+            preview.liveSetId();
+            preview.openSurface();
+            preview.onResume();
+            return preview.getIpServer() + ":" + String.valueOf(preview.getPortServer());
+        }
         return null;
     }
 
@@ -457,5 +468,11 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         messageET.setFocusableInTouchMode(connected);
         nameTaken = savedInstanceState.getBoolean(MyConstants.TAG_NAMETAKEN);
         myName = savedInstanceState.getString(MyConstants.TAG_MYNAME, "");
+    }
+
+    public void videoClick(View view) {
+        Intent in1 = new Intent(this, LiveActivity.class);
+        in1.putStringArrayListExtra("ipList", IpList);
+        startActivity(in1);
     }
 }
