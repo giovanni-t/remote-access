@@ -16,9 +16,11 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -46,6 +48,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     private Button sendBtn;
     private ChatAdapter mChatAdapter;
     private ChatFragment chatFragment;
+    private ViewGroup suggestionsLL;
+    private int suggestionsState;
 
     // Connection parameters
     private String serverip = "another dummy IP"; // Retrieved by the intent
@@ -54,12 +58,11 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     // Clients
     private boolean nameTaken;
     private String myName;
-    private List<String> clientsList;
 
     // Connected fragment
     private TaskFragment mTaskFragment;
 
-    // Camera preview -- To be moved in other activity
+    // Camera preview -- To be moved in other activity(?)
 
     private SurfaceView mSurfaceView;
     private ImageView contactImage;
@@ -80,12 +83,20 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         setTitle(TITLE);
+        this.serverip = getIntent().getStringExtra(MyConstants.TAG_SERVERIP);
 
         initControls();
         initChatFragment();
         //loadDummyHistory();
-        this.serverip = getIntent().getStringExtra(MyConstants.TAG_SERVERIP);
-        /* camera inits */
+        initCamera();
+        initTaskFragment();
+
+        subscribers = new LinkedList<>();
+        subscribersTimer = new LinkedList<>();
+
+    }
+
+    private void initCamera(){
         mSurfaceView = (SurfaceView) findViewById(R.id.surfaceViewNew);
         contactImage = (ImageView) findViewById(R.id.photo);
 
@@ -94,16 +105,12 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         mSurfaceView.setX(metrics.widthPixels + 1);
-        /* task fragment init */
-        initTaskFragment();
-
-        subscribers = new LinkedList<>();
-        subscribersTimer = new LinkedList<>();
-
     }
 
     private void initControls() {
         messagesContainer = (ListView) findViewById(R.id.messagesContainer);
+        suggestionsLL = (ViewGroup) findViewById(R.id.suggestionsLinearLayout);
+        suggestionsState = 0;
         messageET = (EditText) findViewById(R.id.messageEdit);
         if(!connected){
             messageET.setFocusable(false);
@@ -132,32 +139,37 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         messageET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 int slashes = 0;
                 for (int i = 0; i < s.length(); i++) if (s.charAt(i) == '/') slashes++;
-                switch (slashes) {
-                    case 0:
-                        // suggest user names
-                        break;
-                    case 1:
-                        // suggest commands (read/write(?)/exec)
-                        break;
-                    case 2:
-                        // suggest actions (gps, photo, ...)
-                        break;
-                    default: // #'/' > 2
-                        // empty suggestions
-                        break;
+                if(slashes != suggestionsState) { // to avoid overhead
+                    suggestionsState = slashes;
+                    switch (slashes) {
+                        case 0:
+                            // suggest user names
+                            suggestUserNames();
+                            break;
+                        case 1:
+                            // suggest commands (read/write(?)/exec)
+                            suggestCommands();
+                            break;
+                        case 2:
+                            // suggest actions (gps, photo, ...)
+                            suggestActions();
+                            break;
+                        default: // #'/' > 2
+                            // empty suggestions
+                            suggestClean();
+                            break;
+                    }
                 }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-
             }
         });
     }
@@ -214,12 +226,60 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         msg1.setMessage("How r u doing???");
         msg1.setDate(DateFormat.getDateTimeInstance().format(new Date()));
         chatHistory.add(msg1);
-
         // display and add
         for(int i=0; i<chatHistory.size(); i++) {
             ChatMessage message = chatHistory.get(i);
             displayMessage(message);
         }
+    }
+
+    private void suggestCommands(){
+        List<String> l = new ArrayList<>();
+        l.add("read");
+        l.add("write");
+        l.add("exec");
+        setSuggestions(l);
+    }
+
+    private void suggestActions(){
+        List<String> l = new ArrayList<>();
+        l.add("gps");
+        l.add("photo");
+        l.add("live");
+        setSuggestions(l);
+    }
+
+    private void suggestUserNames(){
+        List<String> clientsList = chatFragment.getClients();
+        clientsList.remove(myName);
+        setSuggestions(clientsList);
+    }
+
+    private void setSuggestions(List<String> stringList){
+        suggestClean();
+        for (final String s : stringList) {
+            Button bt = new Button(getApplicationContext());
+            bt.setText(s);
+            bt.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onSuggestionClick(v);
+                }
+            });
+            bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            suggestionsLL.addView(bt);
+        }
+    }
+
+    private void onSuggestionClick(View v) {
+        String tmp = messageET.getText().toString();
+        tmp += "/" + ((Button) v).getText().toString();
+        messageET.setText(tmp);
+        messageET.setSelection(messageET.getText().toString().length());
+    }
+
+    private void suggestClean(){
+        suggestionsLL.removeAllViews();
     }
 
     @Override
@@ -301,6 +361,13 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     @Override
     public void onClientListReceived(int numOfClients, List<String> clients) {
         chatFragment.setClients(clients);
+        if(suggestionsState == 0)
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    suggestUserNames();
+                }
+            });
     }
 
     @Override
@@ -494,6 +561,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         outState.putBoolean(MyConstants.TAG_CONNECTED, connected);
         outState.putBoolean(MyConstants.TAG_NAMETAKEN, nameTaken);
         outState.putString(MyConstants.TAG_MYNAME, myName);
+        outState.putInt(MyConstants.TAG_SUGG_STATE, suggestionsState);
     }
 
     @Override
@@ -503,18 +571,15 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         messageET.setFocusableInTouchMode(connected);
         nameTaken = savedInstanceState.getBoolean(MyConstants.TAG_NAMETAKEN);
         myName = savedInstanceState.getString(MyConstants.TAG_MYNAME, "");
+        suggestionsState = savedInstanceState.getInt(MyConstants.TAG_SUGG_STATE);
     }
+
+    /******
+     ******/
 
     public static ArrayList<String> getIpList() {
         ArrayList<String> x = IpList;
         return x;
-    }
-
-    /* videoclick is actually useless since we can use the navigation drawer on left side */
-    public void videoClick(View view) {
-        Intent in1 = new Intent(this, LiveActivity.class);
-        in1.putStringArrayListExtra("ipList", IpList);
-        startActivity(in1);
     }
 
     public void onClickSendGPS (View view){
