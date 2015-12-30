@@ -164,7 +164,8 @@ public class TaskFragment extends Fragment {
 
                     boolean isOK = checkReceivedMessageFormat(read);
                     if (!isOK) {
-                        mCallbacks.onShowToast(read);
+                        //mCallbacks.onShowToast(read);
+                        Log.d(TAG, "skipping ["+read+"] - bad format");
                     } else {
                         String senderName = read.substring(1, read.indexOf(">"));
                         String[] args = read.substring(read.indexOf(">") + 2, read.length()).split("/");
@@ -212,7 +213,7 @@ public class TaskFragment extends Fragment {
                 //------> it enters here when image is being transferring, although the image is retrieved in messageIsWrite
                 // should be fixed now
                 Log.d("ReceivedMessageFormat", "Exception: " + e.getClass().getName() + " " + e.getMessage());
-                Log.d("ReceivedMessageFormat", "Exception :: " + msg);
+                //Log.d("ReceivedMessageFormat", "Exception :: " + msg);
                 return false;
             }
             return true;
