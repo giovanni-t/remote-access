@@ -13,6 +13,7 @@ bin/
 gen/
 
 # Gradle files
+build.gradle
 .gradle/
 build/
 /*/build/
@@ -26,13 +27,11 @@ proguard/
 # Log Files
 *.log
 
-<<<<<<< HEAD
 # Android Studio
 local.properties
 .idea/
 .DS_Store
 
-=======
 # Local configuration file (sdk path, etc)
 local.properties
 
@@ -58,4 +57,3 @@ local.properties
 .Trashes
 ehthumbs.db
 Thumbs.db
->>>>>>> restoreOldUi

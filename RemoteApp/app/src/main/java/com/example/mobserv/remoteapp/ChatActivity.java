@@ -111,6 +111,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         messagesContainer = (ListView) findViewById(R.id.messagesContainer);
         suggestionsLL = (ViewGroup) findViewById(R.id.suggestionsLinearLayout);
         suggestionsState = 0;
+        suggestClean(); // clean example buttons which are loaded from the xml
         messageET = (EditText) findViewById(R.id.messageEdit);
         if(!connected){
             messageET.setFocusable(false);
@@ -145,26 +146,9 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 int slashes = 0;
                 for (int i = 0; i < s.length(); i++) if (s.charAt(i) == '/') slashes++;
-                if(slashes != suggestionsState) { // to avoid overhead
+                if (slashes != suggestionsState) { // to avoid overhead
                     suggestionsState = slashes;
-                    switch (slashes) {
-                        case 0:
-                            // suggest user names
-                            suggestUserNames();
-                            break;
-                        case 1:
-                            // suggest commands (read/write(?)/exec)
-                            suggestCommands();
-                            break;
-                        case 2:
-                            // suggest actions (gps, photo, ...)
-                            suggestActions();
-                            break;
-                        default: // #'/' > 2
-                            // empty suggestions
-                            suggestClean();
-                            break;
-                    }
+                    setSuggestions(suggestionsState);
                 }
             }
 
@@ -173,6 +157,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             }
         });
     }
+
+
 
     private void initChatFragment() {
         FragmentManager fm = getSupportFragmentManager();
@@ -239,6 +225,17 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         l.add("write");
         l.add("exec");
         setSuggestions(l);
+
+        Button bt = new Button(getApplicationContext());
+        bt.setText("send position");
+        bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickSendGPS(v);
+            }
+        });
+        bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        suggestionsLL.addView(bt);
     }
 
     private void suggestActions(){
@@ -268,6 +265,27 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             });
             bt.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
             suggestionsLL.addView(bt);
+        }
+    }
+
+    private void setSuggestions(int state) {
+        switch (state) {
+            case 0:
+                // suggest user names
+                suggestUserNames();
+                break;
+            case 1:
+                // suggest commands (read/write(?)/exec)
+                suggestCommands();
+                break;
+            case 2:
+                // suggest actions (gps, photo, ...)
+                suggestActions();
+                break;
+            default: // #'/' > 2
+                // empty suggestions
+                suggestClean();
+                break;
         }
     }
 
@@ -571,7 +589,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         messageET.setFocusableInTouchMode(connected);
         nameTaken = savedInstanceState.getBoolean(MyConstants.TAG_NAMETAKEN);
         myName = savedInstanceState.getString(MyConstants.TAG_MYNAME, "");
-        suggestionsState = savedInstanceState.getInt(MyConstants.TAG_SUGG_STATE);
+        suggestionsState = savedInstanceState.getInt(MyConstants.TAG_SUGG_STATE, 0);
+        setSuggestions(suggestionsState);
     }
 
     /******
