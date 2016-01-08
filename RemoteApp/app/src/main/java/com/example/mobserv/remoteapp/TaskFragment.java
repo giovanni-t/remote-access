@@ -2,7 +2,6 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
@@ -338,12 +337,21 @@ public class TaskFragment extends Fragment {
                         break;
                     case "photo":
                         String encodedImage = mCallbacks.onImageRequested();
+                        reply = new LinkedList<>();
                         reply.add("write");
                         reply.add("photo");
                         data = encodedImage;
                         replyList.add(reply);
-                        reply.clear();
                         break;
+                    case "live":
+                        String ip = mCallbacks.onLiveRequested();
+                        reply = new LinkedList<>();
+                        reply.add("write");
+                        reply.add("live");
+                        if(ip != null) {
+                            reply.add(ip);
+                            replyList.add(reply);
+                        }
                     default:
                         mCallbacks.onShowToast("Unknown READ-BATCH message:\n" + TextUtils.join("/", args));
                 }
@@ -354,7 +362,7 @@ public class TaskFragment extends Fragment {
                 if (r.size() != 0) {
                     String msg = composeMsg(senderName, r);
                     sendMsg(msg);
-                    if (data != null) {
+                    if (r.get(0) == "write" && r.get(1) == "photo" && data != null) {
                         try {
                             Thread.sleep(500);
                             out.write(data);
