@@ -11,6 +11,7 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -30,6 +31,10 @@ import java.util.regex.PatternSyntaxException;
 /**
  * This Fragment manages a single background task and retains
  * itself across configuration changes.
+ * It handles the connection with the server, interpret the received
+ * messages and calls the corresponding callbacks.
+ * The callbacks are just an interface, so they must be implemented in the
+ * activity that holds this class.
  */
 public class TaskFragment extends Fragment {
 
@@ -41,16 +46,19 @@ public class TaskFragment extends Fragment {
      */
     interface TaskCallbacks {
         void onConnected();
-        void onFragmentCancel();
+        void onTaskFragmentCancel();
         void onTextReceived(String str);
         void onShowToast(String str);
         void onChooseName(Boolean taken);
         void onImageReceived(byte[] imageByte);
         void onClientListReceived(int numOfClients, List<String> clients);
         void onIpListReceived(int numOfIps, ArrayList<String> ips);
-        void onWelcome();
+        void onWelcome(String myName);
+        void onExecReceived(String subscriberName, String service);
+        void onStopTimers();
         String onLiveRequested();
         String onImageRequested();
+        void onGpsReceived(Double lat, Double lon, Double alt, String senderName);
     }
 
     private TaskCallbacks mCallbacks;
@@ -58,11 +66,10 @@ public class TaskFragment extends Fragment {
     private Thread th;
     private String myName;
     private String serverip = "dummy IP";
-    private static final int serverport = 45678;
     private Socket socket;
     private PrintWriter out;
     private Boolean nameTaken = false;
-    private GPSTracker gpsTracker;
+    public GPSTracker gpsTracker;
     private Activity attachedActivity;
 
 
@@ -79,9 +86,13 @@ public class TaskFragment extends Fragment {
 
         if(context instanceof TaskCallbacks) {
             mCallbacks = (TaskCallbacks) context;
+        } else {
+            Log.d(TAG, "Fatal: Given attaching context is not instanceof TaskCallbacks");
         }
         if (context instanceof Activity){
             attachedActivity = (Activity) context;
+        } else {
+            Log.d(TAG, "Fatal: Given attaching context is not instanceof Activity");
         }
     }
 
@@ -98,7 +109,7 @@ public class TaskFragment extends Fragment {
 
         // Get the ip of server from the intent
         Bundle bd = getArguments();
-        serverip = bd.getString("serverip");
+        serverip = bd.getString(MyConstants.TAG_SERVERIP);
 
         // Create and execute the background task.
         mTask = new ClientThread();
@@ -124,10 +135,10 @@ public class TaskFragment extends Fragment {
 
         @Override
         public void run() {
-            mCallbacks.onShowToast("Connecting to " + serverip + ":" + serverport + "...");
+            mCallbacks.onShowToast("Connecting to " + serverip + ":" + MyConstants.serverport + "...");
             try {
                 InetAddress serverAddr = InetAddress.getByName(serverip);
-                socket = new Socket(serverAddr, serverport);
+                socket = new Socket(serverAddr, MyConstants.serverport);
                 this.inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),
                         true);
@@ -138,7 +149,7 @@ public class TaskFragment extends Fragment {
             } catch (IOException e) {
                 e.printStackTrace();
                 mCallbacks.onShowToast("ERROR:\n" + e.getMessage());
-                mCallbacks.onFragmentCancel();
+                mCallbacks.onTaskFragmentCancel();
                 return;
             }
 
@@ -153,7 +164,8 @@ public class TaskFragment extends Fragment {
 
                     boolean isOK = checkReceivedMessageFormat(read);
                     if (!isOK) {
-                        mCallbacks.onShowToast(read);
+                        //mCallbacks.onShowToast(read);
+                        Log.d(TAG, "skipping ["+read+"] - bad format");
                     } else {
                         String senderName = read.substring(1, read.indexOf(">"));
                         String[] args = read.substring(read.indexOf(">") + 2, read.length()).split("/");
@@ -167,12 +179,12 @@ public class TaskFragment extends Fragment {
                         mCallbacks.onShowToast("ERROR:\n" + e.getMessage());
                     else
                         mCallbacks.onShowToast(e.getMessage());
-                    mCallbacks.onFragmentCancel();
+                    mCallbacks.onTaskFragmentCancel();
                     return;
                 }
             }
 
-            mCallbacks.onFragmentCancel();
+            mCallbacks.onTaskFragmentCancel();
         }
 
         /**
@@ -201,7 +213,7 @@ public class TaskFragment extends Fragment {
                 //------> it enters here when image is being transferring, although the image is retrieved in messageIsWrite
                 // should be fixed now
                 Log.d("ReceivedMessageFormat", "Exception: " + e.getClass().getName() + " " + e.getMessage());
-                Log.d("ReceivedMessageFormat", "Exception :: " + msg);
+                //Log.d("ReceivedMessageFormat", "Exception :: " + msg);
                 return false;
             }
             return true;
@@ -262,12 +274,16 @@ public class TaskFragment extends Fragment {
                     }
                     break;
                 case "gps":
+
                     try {
                         Double lon = Double.parseDouble(args[4]);
                         Double lat = Double.parseDouble(args[5]);
                         Double alt = Double.parseDouble(args[6]);
+                        String isSub= args[7];
                         mCallbacks.onShowToast("Received GPS position from " + senderName + ":\n" + TextUtils.join("/", Arrays.asList(args).subList(4, 7)));
-                        onGpsReceived(lat, lon, senderName);
+                        if ( isSub.compareTo("show")==0){
+                            mCallbacks.onGpsReceived(lat, lon, alt, senderName);
+                        }
                     } catch (ArrayIndexOutOfBoundsException e){
                         Log.d("msgIsWrite", "bad format in msg write gps: "+ TextUtils.join("/", args));
                     }
@@ -279,70 +295,157 @@ public class TaskFragment extends Fragment {
         }
 
         public void messageIsExec(String senderName, String[] args) {
-
-        }
-
-
-
-        public void messageIsRead(String senderName, String[] args) {
             LinkedList<String> reply = new LinkedList<>();
             String data = null;
             switch (args[3]) {
                 case "gps":
-                    if (gpsTracker.getIsGPSTrackingEnabled()) {
+                    //mCallbacks.onShowToast("exec gps test");
+                    mCallbacks.onExecReceived(senderName,"gps"); // give the name of the client to which send periodic messages
+                                                // give the name of the messages to be sent ( GPS )
+                    break;
+            }
+        }
+
+        public void messageIsBatch( String senderName, String[] args ){
+            List<LinkedList<String>> replyList = new LinkedList<>();
+            LinkedList<String> reply = null;
+            String data = null;
+            int n=0, index=3; // n counts the #messages, index contains the relative index of the command in the string
+
+            for ( String s : args ){
+                if ( s.compareTo(";")==0 ){
+                    n++;
+                }
+            }
+
+            for ( int i=0; i<=n; i++ ){
+                switch (args[index]) {
+                    case "gps":
+                        if (gpsTracker.getIsGPSTrackingEnabled()) {
+                            gpsTracker.updateGPSCoordinates(); // get the most precise recent position
+                            reply = new LinkedList<>();
+                            reply.add("write");
+                            reply.add("gps");
+                            reply.add(String.valueOf(gpsTracker.longitude));
+                            reply.add(String.valueOf(gpsTracker.latitude));
+                            reply.add(String.valueOf(gpsTracker.altitude));
+                            reply.add("subscription"); // ADDED FOR PERIODIC MESSAGES
+                            replyList.add(reply);
+                        } else {
+                            Log.d("GPS ERROR", "GPS is not enabled");
+                            mCallbacks.onShowToast("GPS ERROR: GPS is not enabled");
+                        }
+                        break;
+                    case "photo":
+                        String encodedImage = mCallbacks.onImageRequested();
                         reply.add("write");
-                        reply.add("gps");
-                        reply.add(String.valueOf(gpsTracker.longitude));
-                        reply.add(String.valueOf(gpsTracker.latitude));
-                        reply.add(String.valueOf(gpsTracker.altitude));
-                    } else {
-                        Log.d("GPS ERROR", "GPS is not enabled");
-                        mCallbacks.onShowToast("GPS ERROR: GPS is not enabled");
+                        reply.add("photo");
+                        data = encodedImage;
+                        replyList.add(reply);
+                        reply.clear();
+                        break;
+                    default:
+                        mCallbacks.onShowToast("Unknown READ-BATCH message:\n" + TextUtils.join("/", args));
+                }
+                index += 4;
+            }
+
+            for ( LinkedList<String> r : replyList ){
+                if (r.size() != 0) {
+                    String msg = composeMsg(senderName, r);
+                    sendMsg(msg);
+                    if (data != null) {
+                        try {
+                            Thread.sleep(500);
+                            out.write(data);
+                            out.flush();
+                            Thread.sleep(500);
+                            out.write("_end_");
+                            out.flush();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
+                    Log.d("SendMsg", msg);
+                }
+            }
+        }
+        public void messageIsRead(String senderName, String[] args) {
+            LinkedList<String> reply = new LinkedList<>();
+            String data = null;
+
+            Boolean isBatch = false;
+            for ( String s : args ){
+                if (s.compareTo(";")==0){
+                    isBatch = true;
+                    Log.d("ISBATCHCHECK", "true");
                     break;
-                case "clientlist":
-                    int numOfClients = Integer.parseInt(args[4]);
-                    List<String> clients = new LinkedList<>();
-                    clients.addAll(Arrays.asList(args).subList(5, args.length));
-                    Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
-                    mCallbacks.onClientListReceived(numOfClients, clients);
-                    break;
-                case "liveIps":
-                    int numOfIPs = Integer.parseInt(args[4]);
-                    ArrayList<String> ips = new ArrayList<>();
-                    ips.addAll(Arrays.asList(args).subList(5, args.length));
-                    Log.d("msgIsRead", "Parsed list of ips: " + numOfIPs + " " + ips.toString());
-                    mCallbacks.onIpListReceived(numOfIPs, ips);
-                    break;
-                case "photo":
-                    String encodedImage = mCallbacks.onImageRequested();
-                    reply.add("write");
-                    reply.add("photo");
-                    data = encodedImage;
-                    break;
-                case "live":
-                    String ip = mCallbacks.onLiveRequested();
-                    reply.add("write");
-                    reply.add("live");
-                    if(ip != null)
-                        reply.add(ip);
-                    break;
-                case "nametaken":
-                    if (!nameTaken) {
-                        mCallbacks.onChooseName(true);
-                    }
-                    break;
-                case "Welcome!":
-                    myName = args[1];
-                    Log.d("debug", "My name as client: " + myName);
-                    nameTaken = true;
-                    mCallbacks.onWelcome();
-                    break;
-                case "Hello":
-                    mCallbacks.onChooseName(false);
-                    break;
-                default:
-                    mCallbacks.onShowToast("Unknown READ message:\n" + TextUtils.join("/", args));
+                }
+            }
+
+            if ( ! isBatch ){
+                switch (args[3]) {
+                    case "gps":
+                        if (gpsTracker.getIsGPSTrackingEnabled()) {
+                            gpsTracker.updateGPSCoordinates(); // get the most precise recent position
+                            reply.add("write");
+                            reply.add("gps");
+                            reply.add(String.valueOf(gpsTracker.longitude));
+                            reply.add(String.valueOf(gpsTracker.latitude));
+                            reply.add(String.valueOf(gpsTracker.altitude));
+                            reply.add("show"); // ADDED FOR PERIODIC MESSAGES
+                        } else {
+                            Log.d("GPS ERROR", "GPS is not enabled");
+                            mCallbacks.onShowToast("GPS ERROR: GPS is not enabled");
+                        }
+                        break;
+                    case "clientlist":
+                        int numOfClients = Integer.parseInt(args[4]);
+                        List<String> clients = new LinkedList<>();
+                        clients.addAll(Arrays.asList(args).subList(5, args.length));
+                        Log.d("msgIsRead", "Parsed list of clients: " + numOfClients + " " + clients.toString());
+                        mCallbacks.onClientListReceived(numOfClients, clients);
+                        break;
+                    case "liveIps":
+                        int numOfIPs = Integer.parseInt(args[4]);
+                        ArrayList<String> ips = new ArrayList<>();
+                        ips.addAll(Arrays.asList(args).subList(5, args.length));
+                        Log.d("msgIsRead", "Parsed list of ips: " + numOfIPs + " " + ips.toString());
+                        mCallbacks.onIpListReceived(numOfIPs, ips);
+                        break;
+                    case "photo":
+                        String encodedImage = mCallbacks.onImageRequested();
+                        reply.add("write");
+                        reply.add("photo");
+                        data = encodedImage;
+                        break;
+                    case "live":
+                        String ip = mCallbacks.onLiveRequested();
+                        reply.add("write");
+                        reply.add("live");
+                        if(ip != null)
+                            reply.add(ip);
+                        break;
+                    case "nametaken":
+                        if (!nameTaken) {
+                            mCallbacks.onChooseName(true);
+                        }
+                        break;
+                    case "Welcome!":
+                        myName = args[1];
+                        Log.d("debug", "My name as client: " + myName);
+                        nameTaken = true;
+                        mCallbacks.onWelcome(myName);
+                        break;
+                    case "Hello":
+                        mCallbacks.onChooseName(false);
+                        break;
+                    default:
+                        mCallbacks.onShowToast("Unknown READ message:\n" + TextUtils.join("/", args));
+                }
+            } else {
+                Log.d("DISPATCHBATCH", "dispatching");
+                messageIsBatch(senderName, args);
             }
             if (reply.size() != 0) {
                 String msg = composeMsg(senderName, reply);
@@ -388,15 +491,44 @@ public class TaskFragment extends Fragment {
     public void sendMsg(String msg) {
         out.write(msg);
         out.flush();
-        mCallbacks.onTextReceived(msg); // would be better to have a "onTextSent" to have a different handling
+        // mCallbacks.onTextReceived(msg);
     }
 
     public void closeSocket(){
         try {
+            gpsTracker.stopUsingGPS(); // TODO this should fix issue 6
+            mCallbacks.onStopTimers();
+            trimCache(getContext());
             socket.close();
+
         } catch (NullPointerException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void trimCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            if (dir != null && dir.isDirectory()) {
+                deleteDir(dir);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        // The directory is now empty so delete it
+        return dir.delete();
     }
 
     /************************/
@@ -433,12 +565,5 @@ public class TaskFragment extends Fragment {
         super.onStop();
     }
 
-    private void onGpsReceived(Double lat, Double lon, String senderName) {
-        Intent it = new Intent("com.example.mobserv.remoteapp.MapActivity");
-        it.putExtra("sendOrShow", "showPosition");
-        it.putExtra("latitude", lat);
-        it.putExtra("longitude", lon);
-        it.putExtra("nametoshow", senderName);
-        startActivity(it);
-    }
+
 }

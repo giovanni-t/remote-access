@@ -26,6 +26,11 @@ proguard/
 # Log Files
 *.log
 
+# Android Studio
+local.properties
+.idea/
+.DS_Store
+
 # Local configuration file (sdk path, etc)
 local.properties
 

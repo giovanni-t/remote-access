@@ -27,6 +27,7 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
     String nametoshow = null;
     String toSendOrToShow=null;
     private int maptype = GoogleMap.MAP_TYPE_NORMAL;
+    private static final int SEND_GPS = 111;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +43,9 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
             nametoshow = b.getString("nametoshow");
         } else if ( toSendOrToShow.compareTo("readPosition")==0 ){
             // code to be executed in case i want to click and send the position
+            nametoshow = b.getString("nametoshow");
+            lat = 43.614386; // default cordinates for the map
+            lon = 7.071125;
         }
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -70,13 +74,18 @@ public class MapActivity extends Activity implements LocationListener, OnMapRead
 
     @Override
     public void onMapClick(LatLng latLng) {
-            this.lat = latLng.latitude;
-            this.lon = latLng.longitude;
-        Toast.makeText(this, String.valueOf(lat)+String.valueOf(lon), Toast.LENGTH_LONG).show();
-        Intent it = new Intent();
-        it.putExtra("lats", String.valueOf(this.lat));
-        it.putExtra("lonS", String.valueOf(this.lon));
-            onBackPressed();
+        if ( toSendOrToShow.compareTo("readPosition")==0 ) {
+            //Toast.makeText(this, String.valueOf(lat) + " " String.valueOf(lon), Toast.LENGTH_LONG).show();
+            Intent it = new Intent();
+            it.putExtra("latS", String.valueOf(latLng.latitude));
+            it.putExtra("lonS", String.valueOf(latLng.longitude));
+            it.putExtra("altS", String.valueOf(0)); // cannot get altitude
+            setResult(Activity.RESULT_OK, it);
+            finish();
+        }
+        else {
+            // do nothing
+        }
     }
 
     @Override

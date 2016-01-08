@@ -2,4 +2,24 @@
     <string name="app_name">RemoteApp</string>
     <string name="title_activity_photo">PhotoActivity</string>
     <string name="title_activity_live">LiveActivity</string>
+
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="navigator_title">Menu</string>
+
+    <string name="type_cmd">Type command here</string>
+    <string name="send">Send</string>
+
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="connection_will_be_close">This will close the connection with the server</string>
+
+    <string-array name="example_array">
+        <item>Ex 1</item>
+        <item>Ex 2</item>
+        <item>Merry Christmas! ^_^</item>
+        <item>Ex 3</item>
+        <item>Ex 4</item>
+        <item>Ex 5</item>
+        <item>Ex 6</item>
+    </string-array>
 </resources>
