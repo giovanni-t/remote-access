@@ -57,7 +57,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     // Clients
     private boolean nameTaken;
-    private String myName;
+    private String myName = "";
 
     // Connected fragment
     private TaskFragment mTaskFragment;
