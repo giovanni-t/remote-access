@@ -13,7 +13,6 @@ bin/
 gen/
 
 # Gradle files
-build.gradle
 .gradle/
 build/
 /*/build/
