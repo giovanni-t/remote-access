@@ -145,7 +145,6 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 int slashes = 0;
-                int semicol = 0;
                 for (int i = 0; i < s.length(); i++) {
                     if (s.charAt(i) == '/')
                         slashes++;
@@ -303,8 +302,13 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     }
 
     private void onSuggestionClick(View v) {
+        String buttonText = ((Button) v).getText().toString();
         String tmp = messageET.getText().toString();
-        tmp += "/" + ((Button) v).getText().toString();
+        tmp += "/" + buttonText;
+        if (buttonText.equals(";")){
+            String dest = tmp.split("/")[1];
+            tmp += "/" + dest;
+        }
         messageET.setText(tmp);
         messageET.setSelection(messageET.getText().toString().length());
     }
