@@ -145,7 +145,14 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 int slashes = 0;
-                for (int i = 0; i < s.length(); i++) if (s.charAt(i) == '/') slashes++;
+                int semicol = 0;
+                for (int i = 0; i < s.length(); i++) {
+                    if (s.charAt(i) == '/')
+                        slashes++;
+                    else if (s.charAt(i) == ';'){
+                        slashes = 0;
+                    }
+                }
                 if (slashes != suggestionsState) { // to avoid overhead
                     suggestionsState = slashes;
                     setSuggestions(suggestionsState);
@@ -246,6 +253,12 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         setSuggestions(l);
     }
 
+    private void suggestSemicolon(){
+        List<String> l = new ArrayList<>();
+        l.add(";");
+        setSuggestions(l);
+    }
+
     private void suggestUserNames(){
         List<String> clientsList = chatFragment.getClients();
         clientsList.remove(myName);
@@ -283,8 +296,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
                 suggestActions();
                 break;
             default: // #'/' > 2
-                // empty suggestions
-                suggestClean();
+                // suggest semicolon
+                suggestSemicolon();
                 break;
         }
     }
