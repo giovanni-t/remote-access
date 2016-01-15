@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
+    /*
     public void onClickServer (View view ){
         startActivity(new Intent("com.example.mobserv.remoteapp.ServerActivity"));
     }
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         it.putExtra(MyConstants.TAG_SERVERIP, address);
         startActivity(it);
     }
+    */
 
     public void onClickChatUI (View view){
         Intent it = new Intent(MainActivity.this, ChatActivity.class);

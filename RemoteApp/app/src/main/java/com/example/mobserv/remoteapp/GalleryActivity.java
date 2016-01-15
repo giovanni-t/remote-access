@@ -62,6 +62,9 @@ public class GalleryActivity extends DrawerActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        } else {
+            Toast.makeText(this, "There aren't photos for the current session", Toast.LENGTH_LONG).show();
+
         }
     }
 }
