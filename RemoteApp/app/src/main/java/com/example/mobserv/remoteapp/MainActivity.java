@@ -1,6 +1,7 @@
 package com.example.mobserv.remoteapp;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             twIP.setText("");
         }
+        twIP.setBackgroundColor(Color.WHITE);
     }
 
     /*
