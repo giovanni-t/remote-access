@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             twIP.setText("");
         }
-        twIP.setBackgroundColor(Color.WHITE);
+        //twIP.setBackgroundColor(Color.WHITE);
     }
 
     /*
