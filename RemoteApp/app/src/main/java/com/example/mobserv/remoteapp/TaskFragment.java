@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -287,12 +288,16 @@ public class TaskFragment extends Fragment {
                         String isSub= args[7];
                         mCallbacks.onShowToast("Received GPS position from " + senderName + ":\n" + TextUtils.join("/", Arrays.asList(args).subList(4, 7)));
                         // on receiving the gps position, it must be appended to the log file
-                        // format is timestamp user gps lat lon alt
+                        // format is year/month/day hour:minute user gps lat lon alt
                         String str = "";
                         try {
                             fos = getContext().openFileOutput(MyConstants.LOG_FILENAME, Context.MODE_APPEND);
                             Calendar c = Calendar.getInstance();
-                            str += c.toString() + " " + senderName + " " + "gps" + " " + String.valueOf(lat) + " " +
+                            //Long tsLong = System.currentTimeMillis()/1000;
+                            String ts = "" + String.valueOf(c.get(Calendar.YEAR)) + "/" + String.valueOf(c.get(Calendar.MONTH)+1) +
+                                    "/" + String.valueOf(c.get(Calendar.DAY_OF_MONTH))
+                                    + " " + String.valueOf(c.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(c.get(Calendar.MINUTE));
+                            str += ts + " " + senderName + " " + "gps" + " " + String.valueOf(lat) + " " +
                                     String.valueOf(lon) + " " + String.valueOf(alt) + "\n";
                             fos.write(str.getBytes());
                             fos.close();

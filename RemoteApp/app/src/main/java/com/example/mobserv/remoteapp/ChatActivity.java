@@ -355,6 +355,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         FragmentManager fm = getSupportFragmentManager();
         fm.beginTransaction().remove(mTaskFragment).commit();
         finish(); // exit also from this activity
+        // instead of simply deleting the file, append the content to another log file 'total' for the app
+        getApplicationContext().deleteFile(MyConstants.LOG_FILENAME);
     }
 
     @Override

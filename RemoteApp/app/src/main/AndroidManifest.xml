@@ -106,7 +106,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".LogActivity"></activity>
+        <activity android:name=".LogActivity" />
+        <activity android:name=".TotalLogActivity"></activity>
     </application>
 
 </manifest>
