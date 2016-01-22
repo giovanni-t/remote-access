@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.SharedElementCallback;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -43,7 +44,7 @@ import java.util.TimerTask;
 public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCallbacks {
 
     // Constants
-    private static final String TITLE = "Remote Access"; // Main toolbar title!
+    private static final String TITLE = "Drone Controller"; // Main toolbar title!
     private static final String TAG = ChatActivity.class.getSimpleName();
     private static final int SEND_GPS = 111;
 
@@ -232,7 +233,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     private void suggestCommands(){
         List<String> l = new ArrayList<>();
-        l.add("read");
+        l.add("read"); 
         l.add("write");
         l.add("exec");
         setSuggestions(l);
@@ -337,6 +338,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
                 }).create().show();
     }
 
+
+
     /********************************
      * TaskCallbacks implementation *
      ********************************/
@@ -380,7 +383,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             Log.d("FILEOUTPUT", "File not found exception");
         } catch (IOException e) {
             e.printStackTrace();
-            Log.d("FILEOUTPUT", "IO error -> "+ str );
+            Log.d("FILEOUTPUT", "IO error -> " + str);
         }
         // delete session file
         getApplicationContext().deleteFile(MyConstants.LOG_FILENAME);
@@ -677,6 +680,5 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             }
         }
     }
-
 
 }
