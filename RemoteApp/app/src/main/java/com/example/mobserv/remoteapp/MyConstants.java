@@ -17,4 +17,5 @@ public class MyConstants {
     public static final String TAG_NAMETAKEN = "name_taken";
     public static final String TAG_MYNAME = "my_name";
     public static final String TAG_SUGG_STATE = "sugestionState";
+    public static final String LOG_FILENAME = "log_file";
 }

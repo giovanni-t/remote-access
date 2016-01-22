@@ -11,14 +11,18 @@ import android.util.Log;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
@@ -70,7 +74,7 @@ public class TaskFragment extends Fragment {
     private Boolean nameTaken = false;
     public GPSTracker gpsTracker;
     private Activity attachedActivity;
-
+    private FileOutputStream fos;
 
 
     /**
@@ -282,6 +286,23 @@ public class TaskFragment extends Fragment {
                         Double alt = Double.parseDouble(args[6]);
                         String isSub= args[7];
                         mCallbacks.onShowToast("Received GPS position from " + senderName + ":\n" + TextUtils.join("/", Arrays.asList(args).subList(4, 7)));
+                        // on receiving the gps position, it must be appended to the log file
+                        // format is timestamp user gps lat lon alt
+                        String str = "";
+                        try {
+                            fos = getContext().openFileOutput(MyConstants.LOG_FILENAME, Context.MODE_APPEND);
+                            Calendar c = Calendar.getInstance();
+                            str += c.toString() + " " + senderName + " " + "gps" + " " + String.valueOf(lat) + " " +
+                                    String.valueOf(lon) + " " + String.valueOf(alt) + "\n";
+                            fos.write(str.getBytes());
+                            fos.close();
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                            Log.d("FILEOUTPUT", "File not found exception");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Log.d("FILEOUTPUT", "IO error -> "+ str );
+                        }
                         if ( isSub.compareTo("show")==0){
                             mCallbacks.onGpsReceived(lat, lon, alt, senderName);
                         }
