@@ -1,0 +1,12 @@
+documentation and testing ( either javadoc or use-cases ) ( for users and developers )
+
+add broadcast to the list of possivble users to send commands to (ALL)
+add a log for the received informations ( time person command value )
+change read and write -> set and get  ( REQ or RES )
+
+fix the bugs
+
+
+network signal info (fromandreamas) -> niry should do the read of network status
+	-> exec comand extended also on the happening of an event ( IE. when the network level goes below a treshold, send the info )
+	OR ->unregister for an event ( from a single device or from any )
