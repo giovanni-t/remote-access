@@ -147,8 +147,10 @@ public class TaskFragment extends Fragment {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                mCallbacks.onShowToast("ERROR:\n" + e.getMessage());
-                mCallbacks.onTaskFragmentCancel();
+                if (mCallbacks != null) {
+                    mCallbacks.onShowToast("ERROR:\n" + e.getMessage());
+                    mCallbacks.onTaskFragmentCancel();
+                }
                 return;
             }
 
