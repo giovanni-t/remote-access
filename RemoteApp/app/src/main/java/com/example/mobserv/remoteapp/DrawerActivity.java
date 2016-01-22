@@ -63,7 +63,7 @@ public class DrawerActivity extends AppCompatActivity {
     }
 
     private void addDrawerItems() {
-        final String[] menuArray = { "Gallery", "Live Streamings", "Log" };
+        final String[] menuArray = { "Gallery", "Live Streamings", "Session Log", "Total log" };
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, menuArray);
         mDrawerList.setAdapter(mAdapter);
         Log.d("DrawerActivity", "Mock List added");
@@ -85,10 +85,14 @@ public class DrawerActivity extends AppCompatActivity {
                         startActivity(in1);
                         break;
                     case 2:
-                        // Logs
+                        // Session Logs
                         Intent in2 = new Intent(getApplicationContext(), LogActivity.class);
-                        //in2.putStringArrayListExtra("ipList", ChatActivity.getIpList());
                         startActivity(in2);
+                        break;
+                    case 3:
+                        // Total Logs
+                        Intent in3 = new Intent(getApplicationContext(), LogActivity.class);
+                        startActivity(in3);
                         break;
                 }
             }

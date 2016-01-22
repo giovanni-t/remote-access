@@ -24,8 +24,13 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -354,9 +359,33 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         mTaskFragment.closeSocket();
         FragmentManager fm = getSupportFragmentManager();
         fm.beginTransaction().remove(mTaskFragment).commit();
-        finish(); // exit also from this activity
         // instead of simply deleting the file, append the content to another log file 'total' for the app
+        FileOutputStream fos;
+        FileInputStream fis;
+        String str = "";
+        try {
+            fos = getApplicationContext().openFileOutput(MyConstants.TOTAL_LOG_FILENAME, Context.MODE_APPEND);
+            fis = getApplicationContext().openFileInput(MyConstants.LOG_FILENAME);
+            int c;
+            String temp="";
+            while( (c = fis.read()) != -1){
+                temp = temp + Character.toString((char)c);
+            }
+            //string temp contains all the data of the file.
+            fos.write(str.getBytes());
+            fis.close();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.d("FILEOUTPUT", "File not found exception");
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d("FILEOUTPUT", "IO error -> "+ str );
+        }
+        // delete session file
         getApplicationContext().deleteFile(MyConstants.LOG_FILENAME);
+        // finish
+        finish(); // exit also from this activity
     }
 
     @Override
