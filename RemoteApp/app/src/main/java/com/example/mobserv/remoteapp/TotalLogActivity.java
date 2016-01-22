@@ -2,6 +2,7 @@ package com.example.mobserv.remoteapp;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import java.io.FileInputStream;
@@ -31,5 +32,10 @@ public class TotalLogActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void onClickDeleteTotalLog(View view){
+        getApplicationContext().deleteFile(MyConstants.TOTAL_LOG_FILENAME);
+        onBackPressed();
     }
 }
