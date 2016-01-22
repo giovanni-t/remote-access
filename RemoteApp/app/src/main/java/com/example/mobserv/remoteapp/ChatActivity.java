@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.SharedElementCallback;
@@ -25,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -233,7 +235,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     private void suggestCommands(){
         List<String> l = new ArrayList<>();
-        l.add("read"); 
+        l.add("read");
         l.add("write");
         l.add("exec");
         setSuggestions(l);
@@ -362,29 +364,6 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         mTaskFragment.closeSocket();
         FragmentManager fm = getSupportFragmentManager();
         fm.beginTransaction().remove(mTaskFragment).commit();
-        // instead of simply deleting the file, append the content to another log file 'total' for the app
-        FileOutputStream fos;
-        FileInputStream fis;
-        String str = "";
-        try {
-            fos = getApplicationContext().openFileOutput(MyConstants.TOTAL_LOG_FILENAME, Context.MODE_APPEND);
-            fis = getApplicationContext().openFileInput(MyConstants.LOG_FILENAME);
-            int c;
-            String temp="";
-            while( (c = fis.read()) != -1){
-                temp = temp + Character.toString((char)c);
-            }
-            //string temp contains all the data of the file.
-            fos.write(str.getBytes());
-            fis.close();
-            fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.d("FILEOUTPUT", "File not found exception");
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d("FILEOUTPUT", "IO error -> " + str);
-        }
         // delete session file
         getApplicationContext().deleteFile(MyConstants.LOG_FILENAME);
         // finish

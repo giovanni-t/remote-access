@@ -75,7 +75,7 @@ public class TaskFragment extends Fragment {
     private Boolean nameTaken = false;
     public GPSTracker gpsTracker;
     private Activity attachedActivity;
-    private FileOutputStream fos;
+    private FileOutputStream fos, fos_total;
 
 
     /**
@@ -292,6 +292,7 @@ public class TaskFragment extends Fragment {
                         String str = "";
                         try {
                             fos = getContext().openFileOutput(MyConstants.LOG_FILENAME, Context.MODE_APPEND);
+                            fos_total = getContext().openFileOutput(MyConstants.TOTAL_LOG_FILENAME, Context.MODE_APPEND);
                             Calendar c = Calendar.getInstance();
                             //Long tsLong = System.currentTimeMillis()/1000;
                             String ts = "" + String.valueOf(c.get(Calendar.YEAR)) + "/" + String.valueOf(c.get(Calendar.MONTH)+1) +
@@ -301,6 +302,8 @@ public class TaskFragment extends Fragment {
                                     String.valueOf(lon) + " " + String.valueOf(alt) + "\n";
                             fos.write(str.getBytes());
                             fos.close();
+                            fos_total.write(str.getBytes());
+                            fos_total.close();
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                             Log.d("FILEOUTPUT", "File not found exception");

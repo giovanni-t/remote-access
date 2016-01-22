@@ -91,7 +91,7 @@ public class DrawerActivity extends AppCompatActivity {
                         break;
                     case 3:
                         // Total Logs
-                        Intent in3 = new Intent(getApplicationContext(), LogActivity.class);
+                        Intent in3 = new Intent(getApplicationContext(), TotalLogActivity.class);
                         startActivity(in3);
                         break;
                 }
