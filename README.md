@@ -1,4 +1,4 @@
-# remote-access
+# Drone Controller
 
 University project for MobServ class at Eurecom.
 
