@@ -63,6 +63,7 @@ public class TotalLogActivity extends AppCompatActivity {
             }
             //string temp contains all the data of the file.
             fin.close();
+            filename+=".txt";
             path+=filename;
             if (!file.exists()) {
                 file.createNewFile();
