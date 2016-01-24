@@ -235,8 +235,8 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
 
     private void suggestCommands(){
         List<String> l = new ArrayList<>();
-        l.add("read");
-        l.add("write");
+        l.add("req");
+        l.add("resp");
         l.add("exec");
         setSuggestions(l);
 
@@ -295,7 +295,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
                 suggestUserNames();
                 break;
             case 1:
-                // suggest commands (read/write(?)/exec)
+                // suggest commands (req/resp/exec)
                 suggestCommands();
                 break;
             case 2:
@@ -443,7 +443,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
                     public void run() {
                         // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
                         LinkedList<String> reply = new LinkedList<>();
-                        reply.add("write");
+                        reply.add("resp");
                         reply.add("gps");
                         reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
                         reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
@@ -652,7 +652,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
                 // the format used belows implies that the user writes the name of the client o whom send the position
                 // then clicks on the button 'sendGPS' and, when he cliks on the received position, edittext
                 // is auto completed with the right frmat to send gps coordinates
-                messageET.getText().append("/write/gps/"+lonS+"/"+latS+"/"+altS+"/show");
+                messageET.getText().append("/resp/gps/"+lonS+"/"+latS+"/"+altS+"/show");
             }
             if (resultCode == Activity.RESULT_CANCELED) {
                 //Write your code if there's no result

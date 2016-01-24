@@ -12,7 +12,7 @@ class Chat(LineReceiver):
 
     def connectionMade(self):
         print "New client connecting..."
-        self.sendLine("<server> //read/Hello/whatsyourname")
+        self.sendLine("<server> //req/Hello/whatsyourname")
 
     def connectionLost(self, reason):
         if self.clients.has_key(self.name):
@@ -27,12 +27,12 @@ class Chat(LineReceiver):
 
     def handle_getname(self, name):
         if self.clients.has_key(name) or name == "server":
-            self.sendLine("<server> //read/nametaken")
+            self.sendLine("<server> //resp/nametaken")
             return
         self.name = name
         self.clients[name] = self
         self.state = "GETCOMMAND"
-        send_msg = "<server> /%s/read/Welcome!" % (name, )
+        send_msg = "<server> /%s/resp/Welcome!" % (name, )
         self.sendLine(send_msg )
         self.send_clients_lists()
         self.send_liveIPs_lists()
@@ -84,8 +84,8 @@ class Chat(LineReceiver):
         for name, protocol in self.clients.iteritems():
             names += '/' + protocol.name
             count +=1
-        #message = "<server> there are %s clients. %s" %(str(count), names)
-        message = "<server> /broadcast/read/clientlist/%s%s" %(str(count), names)
+        # names are already in the form "/name1/name2/...."
+        message = "<server> /broadcast/resp/clientlist/%s%s" %(str(count), names)
         for name, protocol in self.clients.iteritems():
             protocol.sendLine(message)
 
@@ -95,32 +95,30 @@ class Chat(LineReceiver):
         for name, ip in self.liveIps.iteritems():
             names += '/' + ip
             count +=1
-        #message = "<server> there are %s clients. %s" %(str(count), names)
-        message = "<server> /broadcast/read/liveIps/%s%s" %(str(count), names)
+        # names are already in the form "/name1/name2/...."
+        message = "<server> /broadcast/resp/liveIps/%s%s" %(str(count), names)
         for name, protocol in self.clients.iteritems():
             protocol.sendLine(message)
 
     def handle_Command(self, msg_array, raw_msg):
         print "clients are %s " %self.clients
-        if len(msg_array)>=3 and (msg_array[2] == 'read'or msg_array[2] == 'write'or msg_array[2] == 'exec' or msg_array[2] == 'OK'):
+        if len(msg_array)>=3 and (msg_array[2] == 'req'or msg_array[2] == 'resp'or msg_array[2] == 'exec' or msg_array[2] == 'OK'):
             if self.clients.has_key(msg_array[1]):
                 print "fowarding msg to %s " % self.clients[msg_array[1]].name
-                if msg_array[2] == 'write' and msg_array[3] == 'photo':
+                if msg_array[2] == 'resp' and msg_array[3] == 'photo':
                     print "state Changed to READATA"
                     self.state = "READATA"
                     self.dest = msg_array[1]
                     self.message(msg_array[1], raw_msg)
-                elif msg_array[2] == 'write' and msg_array[3] == 'live':
+                elif msg_array[2] == 'resp' and msg_array[3] == 'live':
                     self.liveIps[self.name] = msg_array[4]
                     #print "live IPs are %s" %self.liveIps
                     self.send_liveIPs_lists()
                 else:
                     self.message(msg_array[1], raw_msg)
             else :
-                #print "client %s not found. Broadcasting the message" % msg_array[1]
-                #self.broadcast(raw_msg)
                 print "client %s not found" % msg_array[1]
-            	self.message(self.name, "client %s not found" % msg_array[1])
+            	self.sendLine("<server> client %s not found" % msg_array[1])
         else :
             #self.broadcast(raw_msg)
             self.sendLine("<server> wrong command")

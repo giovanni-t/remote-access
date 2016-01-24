@@ -376,7 +376,7 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
                     public void run() {
                         // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
                         LinkedList<String> reply = new LinkedList<>();
-                        reply.add("write");
+                        reply.add("resp");
                         reply.add("gps");
                         reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
                         reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
