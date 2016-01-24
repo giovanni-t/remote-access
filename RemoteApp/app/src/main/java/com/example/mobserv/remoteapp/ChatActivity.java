@@ -236,7 +236,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     private void suggestCommands(){
         List<String> l = new ArrayList<>();
         l.add("req");
-        l.add("resp");
+        //l.add("resp");
         l.add("exec");
         setSuggestions(l);
 
@@ -269,6 +269,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     private void suggestUserNames(){
         List<String> clientsList = chatFragment.getClients();
         clientsList.remove(myName);
+        clientsList.add("all");
         setSuggestions(clientsList);
     }
 
