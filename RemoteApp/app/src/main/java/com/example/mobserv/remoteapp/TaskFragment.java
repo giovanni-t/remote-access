@@ -240,9 +240,6 @@ public class TaskFragment extends Fragment {
                 case "exec":
                     messageIsExec(senderName, args);
                     break;
-                case "OK":
-                    // ok msg
-                    break;
                 default:
                     // this should never happen if the server is well behaved
                     mCallbacks.onShowToast("Unknown message:\n" + TextUtils.join("/", args));

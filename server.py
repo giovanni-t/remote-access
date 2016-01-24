@@ -21,12 +21,11 @@ class Chat(LineReceiver):
             if self.liveIps.has_key(self.name):
                 del self.liveIps[self.name]
             print left_name + ' has left'
-            #self.broadcast( left_name + ' has left')
             self.send_clients_lists()
             self.send_liveIPs_lists()
 
     def handle_getname(self, name):
-        if self.clients.has_key(name) or name == "server":
+        if self.clients.has_key(name) or name == "server" or name == "all":
             self.sendLine("<server> //resp/nametaken")
             return
         self.name = name
@@ -39,10 +38,11 @@ class Chat(LineReceiver):
 
     def dataReceived(self, data):
         if self.state == "READATA":
-            print data
-            self.read_data(data)
+            #print data
+            print 'forwarding raw data'
+            self.read_raw_data(data)
             if data[-6:].rstrip(os.linesep) == "_end_":
-                print "change_state"
+                print "change_state to GETCOMMAND"
                 self.state = "GETCOMMAND"
         else:
             #strip the endings if they are '\n' and/or '\r'
@@ -58,25 +58,31 @@ class Chat(LineReceiver):
                     self.handle_Command(a, data)
 
 
-    #send to specific client
     def message(self, send_to, message):
+        #send to specific client
         message = "<%s> %s" % (self.name, message)
         for name, protocol in self.clients.iteritems():
             if protocol == self.clients[send_to] :
                 protocol.sendLine(message)
 
-    def broadcast(self, message):
-        #self.transport.write(message + '\n')
+    def broadcast_from_client(self, message):
+        # forward message to everyone except me
         message = "<%s> %s" % (self.name, message)
         for name, protocol in self.clients.iteritems():
             if protocol != self:
                 protocol.sendLine(message)
 
-    def read_data(self,data):
-        #print data
-        for name, protocol in self.clients.iteritems():
-            if protocol == self.clients[self.dest] :
-                protocol.sendLine(data)
+    def read_raw_data(self,data):
+        # forward read data to self.dest
+        # if self.dest is all, broadcast it
+        if self.dest != "all":
+            for name, protocol in self.clients.iteritems():
+                if protocol == self.clients[self.dest] :
+                    protocol.sendLine(data)
+        else: # broadcast
+            for name, protocol in self.clients.iteritems():
+                if protocol != self:
+                    protocol.sendLine(data)
 
     def send_clients_lists(self):
         names = ''
@@ -85,44 +91,51 @@ class Chat(LineReceiver):
             names += '/' + protocol.name
             count +=1
         # names are already in the form "/name1/name2/...."
-        message = "<server> /broadcast/resp/clientlist/%s%s" %(str(count), names)
+        message = "<server> /all/resp/clientlist/%s%s" %(str(count), names)
         for name, protocol in self.clients.iteritems():
             protocol.sendLine(message)
 
     def send_liveIPs_lists(self):
+        """Broadcasts the list of live IPs as <server>"""
         names = ''
         count = 0
         for name, ip in self.liveIps.iteritems():
             names += '/' + ip
             count +=1
         # names are already in the form "/name1/name2/...."
-        message = "<server> /broadcast/resp/liveIps/%s%s" %(str(count), names)
+        message = "<server> /all/resp/liveIps/%s%s" %(str(count), names)
         for name, protocol in self.clients.iteritems():
             protocol.sendLine(message)
-
+  
     def handle_Command(self, msg_array, raw_msg):
         print "clients are %s " %self.clients
-        if len(msg_array)>=3 and (msg_array[2] == 'req'or msg_array[2] == 'resp'or msg_array[2] == 'exec' or msg_array[2] == 'OK'):
-            if self.clients.has_key(msg_array[1]):
-                print "fowarding msg to %s " % self.clients[msg_array[1]].name
-                if msg_array[2] == 'resp' and msg_array[3] == 'photo':
-                    print "state Changed to READATA"
-                    self.state = "READATA"
-                    self.dest = msg_array[1]
-                    self.message(msg_array[1], raw_msg)
-                elif msg_array[2] == 'resp' and msg_array[3] == 'live':
-                    self.liveIps[self.name] = msg_array[4]
-                    #print "live IPs are %s" %self.liveIps
-                    self.send_liveIPs_lists()
-                else:
-                    self.message(msg_array[1], raw_msg)
-            else :
-                print "client %s not found" % msg_array[1]
-            	self.sendLine("<server> client %s not found" % msg_array[1])
-        else :
-            #self.broadcast(raw_msg)
-            self.sendLine("<server> wrong command")
+        # check message format:
+        if not (len(msg_array)>=3 and (msg_array[2] == 'req'or msg_array[2] == 'resp'or msg_array[2] == 'exec')):
+            self.sendLine("<server> wrong command or format")
+            return
+        # check message recipient
+        if not (self.clients.has_key(msg_array[1]) or msg_array[1] == 'all'):
+            print "client %s not found" % msg_array[1]
+            self.sendLine("<server> client %s not found" % msg_array[1])
+            return
+        print "forwarding msg to %s " % msg_array[1]
+        # check if message is /resp/live
+        if msg_array[2] == 'resp' and msg_array[3] == 'live':
+            self.liveIps[self.name] = msg_array[4]
+            #print "live IPs are %s" %self.liveIps
+            self.send_liveIPs_lists() # broadcasts the ip to every client as <server>
+            return
+        # check if message is /resp/photo and setstate correspondingly
+        if msg_array[2] == 'resp' and msg_array[3] == 'photo':
+            print "state Changed to READATA"
+            self.state = "READATA"
+            self.dest = msg_array[1]
 
+        if msg_array[1] != 'all':
+            self.message(msg_array[1], raw_msg)
+        else:
+            self.broadcast_from_client(raw_msg)
+            
 
 class ChatFactory(Factory):
     def __init__(self):
