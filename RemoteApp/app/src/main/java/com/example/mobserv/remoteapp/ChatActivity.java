@@ -46,7 +46,6 @@ import java.util.TimerTask;
 public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCallbacks {
 
     // Constants
-    private static final String TITLE = "Drone Controller"; // Main toolbar title!
     private static final String TAG = ChatActivity.class.getSimpleName();
     private static final int SEND_GPS = 111;
 
@@ -90,7 +89,6 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        setTitle(TITLE);
         this.serverip = getIntent().getStringExtra(MyConstants.TAG_SERVERIP);
 
         initControls();
