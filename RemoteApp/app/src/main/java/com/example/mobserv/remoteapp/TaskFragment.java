@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -283,29 +284,8 @@ public class TaskFragment extends Fragment {
                         String isSub= args[7];
                         mCallbacks.onShowToast("Received GPS position from " + senderName + ":\n" + TextUtils.join("/", Arrays.asList(args).subList(4, 7)));
                         // on receiving the gps position, it must be appended to the log file
-                        // format is year/month/day hour:minute user gps lat lon alt
-                        String str = "";
-                        try {
-                            fos = getContext().openFileOutput(MyConstants.LOG_FILENAME, Context.MODE_APPEND);
-                            fos_total = getContext().openFileOutput(MyConstants.TOTAL_LOG_FILENAME, Context.MODE_APPEND);
-                            Calendar c = Calendar.getInstance();
-                            //Long tsLong = System.currentTimeMillis()/1000;
-                            String ts = "" + String.valueOf(c.get(Calendar.YEAR)) + "/" + String.valueOf(c.get(Calendar.MONTH)+1) +
-                                    "/" + String.valueOf(c.get(Calendar.DAY_OF_MONTH))
-                                    + " " + String.valueOf(c.get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(c.get(Calendar.MINUTE));
-                            str += ts + " " + senderName + " " + "gps" + " " + String.valueOf(lat) + " " +
-                                    String.valueOf(lon) + " " + String.valueOf(alt) + "\n";
-                            fos.write(str.getBytes());
-                            fos.close();
-                            fos_total.write(str.getBytes());
-                            fos_total.close();
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                            Log.d("FILEOUTPUT", "File not found exception");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Log.d("FILEOUTPUT", "IO error -> "+ str );
-                        }
+                        Object[] arr = new Double[]{lon,lat,alt};
+                        writeToLog("gps", senderName, arr);
                         if ( isSub.compareTo("show")==0){
                             mCallbacks.onGpsReceived(lat, lon, alt, senderName);
                         }
@@ -563,6 +543,42 @@ public class TaskFragment extends Fragment {
         }
         // The directory is now empty so delete it
         return dir.delete();
+    }
+
+    /* write events to the log file */
+    public void writeToLog(String command, String senderName, Object[] array){
+        // for now works only for gps
+        // format (for gps ) is year:year month:month day:day time:hour.minute from:user command:gps lat:lat lon:lon alt:alt
+        switch (command){
+            case "gps":
+                String str = "";
+                Double lon = (Double)array[0];
+                Double lat = (Double)array[1];
+                Double alt = (Double)array[2];
+                try {
+                    fos = getContext().openFileOutput(MyConstants.LOG_FILENAME, Context.MODE_APPEND);
+                    fos_total = getContext().openFileOutput(MyConstants.TOTAL_LOG_FILENAME, Context.MODE_APPEND);
+                    Calendar c = Calendar.getInstance();
+                    //Long tsLong = System.currentTimeMillis()/1000;
+                    String ts = "year:" + String.valueOf(c.get(Calendar.YEAR)) + " month:" + String.valueOf(c.get(Calendar.MONTH)+1) +
+                            " day:" + String.valueOf(c.get(Calendar.DAY_OF_MONTH))
+                            + " time:" + String.valueOf(c.get(Calendar.HOUR_OF_DAY)) + "." + String.valueOf(c.get(Calendar.MINUTE));
+                    str += ts + " from:" + senderName + " command:" + "gps" + " lat:" + String.valueOf(lat) + " lon:" +
+                            String.valueOf(lon) + " alt:" + String.valueOf(alt) + "\n";
+                    fos.write(str.getBytes());
+                    fos.close();
+                    fos_total.write(str.getBytes());
+                    fos_total.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    Log.d("FILEOUTPUT", "File not found exception");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.d("FILEOUTPUT", "IO error -> "+ str );
+                }
+                break;
+        }
+
     }
 
     /************************/
