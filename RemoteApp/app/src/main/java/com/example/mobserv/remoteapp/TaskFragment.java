@@ -58,6 +58,7 @@ public class TaskFragment extends Fragment {
         void onIpListReceived(int numOfIps, ArrayList<String> ips);
         void onWelcome(String myName);
         void onExecReceived(String subscriberName, String service);
+        void onNetworkRequested();
         void onStopTimers();
         String onLiveRequested();
         String onImageRequested();
@@ -383,6 +384,9 @@ public class TaskFragment extends Fragment {
                             reply.add(ip);
                             replyList.add(reply);
                         }
+                    case "network":
+                        mCallbacks.onNetworkRequested();
+                        break;
                     default:
                         mCallbacks.onShowToast("Unknown REQ-BATCH message:\n" + TextUtils.join("/", args));
                 }
@@ -453,6 +457,9 @@ public class TaskFragment extends Fragment {
                         break;
                     case "Hello":
                         mCallbacks.onChooseName(false);
+                        break;
+                    case "network":
+                        mCallbacks.onNetworkRequested();
                         break;
                     default:
                         mCallbacks.onShowToast("Unknown REQ message:\n" + TextUtils.join("/", args));

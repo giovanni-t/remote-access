@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -58,7 +60,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     private int suggestionsState;
 
     // Connection parameters
-    private String serverip = "another dummy IP"; // Retrieved by the intent
+     private String serverip = "another dummy IP"; // Retrieved by the intent
     private boolean connected = false;
 
     // Clients
@@ -153,7 +155,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
                 for (int i = 0; i < s.length(); i++) {
                     if (s.charAt(i) == '/')
                         slashes++;
-                    else if (s.charAt(i) == ';'){
+                    else if (s.charAt(i) == ';') {
                         slashes = 0;
                     }
                 }
@@ -371,7 +373,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     @Override
     public void onTextReceived(String str) {
         ChatMessage msg = new ChatMessage();
-        msg.setId(mChatAdapter.getCount()+1);
+        msg.setId(mChatAdapter.getCount() + 1);
         msg.setIsMe(false);
         int space = str.indexOf(" ");
         try {
@@ -454,6 +456,17 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
             }
         });
         timer.schedule(subscribersTimer.get(subscribersTimer.size() - 1), 0, 60000); //it executes this every 60000ms ( 1 minute ) TODO time should be passed
+    }
+
+    @Override
+    public void onNetworkRequested() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
+        if (isConnected) {
+            Log.d("onNetworkRequested","Network Status: CONNECTED");
+        }
     }
 
     @Override

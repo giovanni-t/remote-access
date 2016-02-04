@@ -1,9 +1,11 @@
 package com.example.mobserv.remoteapp;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
@@ -20,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.net.ConnectivityManager;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -389,6 +392,17 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
             }
         });
         timer.schedule(subscribersTimer.get(subscribersTimer.size() - 1), 0, 60000); //it executes this every 60000ms ( 1 minute ) TODO time should be passed
+    }
+
+    @Override
+    public void onNetworkRequested() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
+        if (isConnected) {
+            Log.d("onNetworkRequested","Network Status: CONNECTED");
+        }
     }
 
     @Override
