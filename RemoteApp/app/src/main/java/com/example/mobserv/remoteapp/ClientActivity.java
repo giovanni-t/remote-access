@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
+import android.net.NetworkInfo.DetailedState;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentManager;
@@ -395,14 +396,15 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
     }
 
     @Override
-    public void onNetworkRequested() {
+    public DetailedState onNetworkRequested() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
-        if (isConnected) {
-            Log.d("onNetworkRequested","Network Status: CONNECTED");
-        }
+        DetailedState nwState = activeNetwork.getDetailedState();
+        Log.d("onNetworkRequested", "Network Status: " + nwState);
+
+        return nwState;
+
     }
 
     @Override

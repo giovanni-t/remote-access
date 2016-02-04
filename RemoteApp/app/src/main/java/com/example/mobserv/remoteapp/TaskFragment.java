@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.net.NetworkInfo.DetailedState;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -58,7 +59,7 @@ public class TaskFragment extends Fragment {
         void onIpListReceived(int numOfIps, ArrayList<String> ips);
         void onWelcome(String myName);
         void onExecReceived(String subscriberName, String service);
-        void onNetworkRequested();
+        DetailedState onNetworkRequested();
         void onStopTimers();
         String onLiveRequested();
         String onImageRequested();
@@ -385,7 +386,12 @@ public class TaskFragment extends Fragment {
                             replyList.add(reply);
                         }
                     case "network":
-                        mCallbacks.onNetworkRequested();
+                        DetailedState info = mCallbacks.onNetworkRequested();
+                        reply = new LinkedList<>();
+                        reply.add("resp");
+                        reply.add("network");
+                        reply.add(info.toString());
+                        replyList.add(reply);
                         break;
                     default:
                         mCallbacks.onShowToast("Unknown REQ-BATCH message:\n" + TextUtils.join("/", args));
@@ -459,7 +465,11 @@ public class TaskFragment extends Fragment {
                         mCallbacks.onChooseName(false);
                         break;
                     case "network":
-                        mCallbacks.onNetworkRequested();
+                        DetailedState info = mCallbacks.onNetworkRequested();
+                        reply = new LinkedList<>();
+                        reply.add("resp");
+                        reply.add("network");
+                        reply.add(info.toString());
                         break;
                     default:
                         mCallbacks.onShowToast("Unknown REQ message:\n" + TextUtils.join("/", args));

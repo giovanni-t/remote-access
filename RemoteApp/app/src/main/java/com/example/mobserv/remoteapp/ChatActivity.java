@@ -459,14 +459,15 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     }
 
     @Override
-    public void onNetworkRequested() {
+    public NetworkInfo.DetailedState onNetworkRequested() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
-        if (isConnected) {
-            Log.d("onNetworkRequested","Network Status: CONNECTED");
-        }
+        NetworkInfo.DetailedState nwState = activeNetwork.getDetailedState();
+        Log.d("onNetworkRequested", "Network Status: " + nwState);
+
+        return nwState;
+
     }
 
     @Override
