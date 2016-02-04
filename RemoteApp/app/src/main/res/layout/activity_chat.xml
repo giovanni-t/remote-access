@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_gravity="center_vertical"
-            >
+            android:weightSum="1">
             <!-- style="?android:attr/buttonBarStyle" -->
 
             <!--<Button
@@ -104,7 +104,7 @@
             <Button
                 style="?android:attr/buttonBarButtonStyle"
                 android:id="@+id/example3Button"
-                android:layout_width="wrap_content"
+                android:layout_width="95dp"
                 android:layout_height="wrap_content"
                 android:text="Sugg Example"
                 />
@@ -112,17 +112,24 @@
             <Button
                 style="?android:attr/buttonBarButtonStyle"
                 android:id="@+id/example4Button"
-                android:layout_width="wrap_content"
+                android:layout_width="95dp"
                 android:layout_height="wrap_content"
                 android:text="Sugg Example"
-                />
+                android:layout_weight="0.10" />
             <Button
                 style="?android:attr/buttonBarButtonStyle"
                 android:id="@+id/example5Button"
-                android:layout_width="wrap_content"
+                android:layout_width="95dp"
                 android:layout_height="wrap_content"
                 android:text="Sugg Example"
                 />
+
+            <Button
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="95dp"
+                android:layout_height="wrap_content"
+                android:text="Sugg Example"
+                android:id="@+id/Example6Button" />
         </LinearLayout>
     </HorizontalScrollView>
 </LinearLayout>
