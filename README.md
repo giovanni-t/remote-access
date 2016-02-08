@@ -26,7 +26,13 @@ When the server is up and running it will show the ip address to insert in the a
 In order to use the application you need to run the server. The server will provide you with an ip address, which you need to insert into the first page of the app and click connect to the server.
 Once you are connected you can choose a name, if you choose a name already taken you will be asked to provide a different one.
 
-Now you can start sending requests, you do this by first choosing the name of the device you want to recive data from, or choosing to recive from all. Next choose what the request is, if it is a request for reciving the gps position, a picture or stream video. Then send the request by clicking send.
+Now you can start sending requests, ask for periodic messages or send your own position. 
+
+
+
+
+
+You do this by first choosing the name of the device you want to recive data from, or choosing to recive from all. Next choose what the request is, if it is a request for reciving the gps position, a picture or stream video. Then send the request by clicking send.
 
 You can also send more requests at the same time, you do this by choosing ; after the choosen request. Then you continue by choosing the devise as before.
 
