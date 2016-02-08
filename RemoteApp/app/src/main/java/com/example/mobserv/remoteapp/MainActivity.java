@@ -2,12 +2,15 @@ package com.example.mobserv.remoteapp;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Main activity of the app.
@@ -49,6 +52,14 @@ public class MainActivity extends AppCompatActivity {
         String address = ((EditText) findViewById(R.id.idIpAddrEditText)).getText().toString();
         PreferenceManager.getDefaultSharedPreferences(this).edit().putString("IP_ADDRESS", address).commit();
         it.putExtra(MyConstants.TAG_SERVERIP, address);
-        startActivity(it);
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        //NetworkInfo mMobile = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+        if (mWifi.isConnected() == false) {
+            Toast.makeText(this, R.string.not_wifi_connected, Toast.LENGTH_LONG).show();
+        } else {
+            startActivity(it);
+        }
     }
 }
