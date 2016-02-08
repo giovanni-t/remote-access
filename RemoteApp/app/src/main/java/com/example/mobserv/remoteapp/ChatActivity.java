@@ -256,6 +256,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         l.add("gps");
         l.add("photo");
         l.add("live");
+        l.add("network");
         setSuggestions(l);
     }
 
@@ -434,6 +435,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
     @Override
     public void onExecReceived(String subscriberName, String service) {
         final Subscriber s = new Subscriber(subscriberName, service);
+        final String serv = service;
         subscribers.add(s);
         Timer timer = new Timer();
         subscribersTimer.add(new TimerTask() {
@@ -444,11 +446,28 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
                         // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
                         LinkedList<String> reply = new LinkedList<>();
                         reply.add("resp");
-                        reply.add("gps");
-                        reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
-                        reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
-                        reply.add(String.valueOf(mTaskFragment.gpsTracker.altitude));
-                        reply.add("subscription"); // otherwise maps keep opening
+
+                        switch (serv) {
+                            case "gps":
+                                reply.add("gps");
+                                reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
+                                reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
+                                reply.add(String.valueOf(mTaskFragment.gpsTracker.altitude));
+                                reply.add("subscription"); // otherwise maps keep opening
+                                break;
+                            case "network":
+                                ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                                NetworkInfo.DetailedState nwState = activeNetwork.getDetailedState();
+                                reply.add("network");
+                                if (nwState != NetworkInfo.DetailedState.CONNECTED) {
+                                    reply.add("POOR_CONNECTIVITY");
+                                }
+                                else {
+                                    reply.add("CONNECTIVITY_OK");
+                                }
+                                break;
+                        }
                         String msg = composeMsg(s.name, reply);
                         mTaskFragment.sendMsg(msg);
                     }
@@ -457,7 +476,6 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         });
         timer.schedule(subscribersTimer.get(subscribersTimer.size() - 1), 0, 60000); //it executes this every 60000ms ( 1 minute ) TODO time should be passed
     }
-
     @Override
     public NetworkInfo.DetailedState onNetworkRequested() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

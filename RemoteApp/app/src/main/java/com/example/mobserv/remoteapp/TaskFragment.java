@@ -335,6 +335,9 @@ public class TaskFragment extends Fragment {
                     mCallbacks.onExecReceived(senderName,"gps"); // give the name of the client to which send periodic messages
                                                 // give the name of the messages to be sent ( GPS )
                     break;
+                case "network":
+                    mCallbacks.onExecReceived(senderName,"network");
+                    break;
             }
         }
 

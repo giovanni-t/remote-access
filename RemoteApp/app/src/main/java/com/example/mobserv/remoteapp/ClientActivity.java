@@ -371,6 +371,7 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
     @Override
     public void onExecReceived(String subscriberName, String service) {
         final Subscriber s = new Subscriber(subscriberName, service);
+        final String serv = service;
         subscribers.add(s);
         Timer timer = new Timer();
         subscribersTimer.add(new TimerTask() {
@@ -381,13 +382,31 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
                         // Toast.makeText(getBaseContext(), "try timer", Toast.LENGTH_SHORT).show();
                         LinkedList<String> reply = new LinkedList<>();
                         reply.add("resp");
-                        reply.add("gps");
-                        reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
-                        reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
-                        reply.add(String.valueOf(mTaskFragment.gpsTracker.altitude));
-                        reply.add("subscription"); // otherwise maps keep opening
+
+                        switch (serv) {
+                            case "gps":
+                                reply.add("gps");
+                                reply.add(String.valueOf(mTaskFragment.gpsTracker.longitude));
+                                reply.add(String.valueOf(mTaskFragment.gpsTracker.latitude));
+                                reply.add(String.valueOf(mTaskFragment.gpsTracker.altitude));
+                                reply.add("subscription"); // otherwise maps keep opening
+                                break;
+                            case "network":
+                                ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                                DetailedState nwState = activeNetwork.getDetailedState();
+                                if (nwState != DetailedState.CONNECTED) {
+                                    reply.add("network");
+                                    reply.add("POOR_CONNECTIVITY");
+                                }
+                                else {
+                                    reply.add("CONNECTIVITY_OK");
+                                }
+                                break;
+                        }
                         String msg = composeMsg(s.name, reply);
                         mTaskFragment.sendMsg(msg);
+
                     }
                 });
             }
@@ -398,7 +417,6 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
     @Override
     public DetailedState onNetworkRequested() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         DetailedState nwState = activeNetwork.getDetailedState();
         Log.d("onNetworkRequested", "Network Status: " + nwState);
