@@ -34,7 +34,7 @@ public class TotalLogActivity extends AppCompatActivity {
             fin.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            textView.setText("");
+            textView.setText("Nothing to show");
         } catch (IOException e) {
             e.printStackTrace();
         }

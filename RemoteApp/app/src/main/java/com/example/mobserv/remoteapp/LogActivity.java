@@ -30,6 +30,7 @@ public class LogActivity extends AppCompatActivity {
             fin.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            textView.setText("Nothing to show");
         } catch (IOException e) {
             e.printStackTrace();
         }
