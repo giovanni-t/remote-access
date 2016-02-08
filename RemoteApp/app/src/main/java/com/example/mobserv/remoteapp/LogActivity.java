@@ -8,7 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class LogActivity extends AppCompatActivity {
+public class LogActivity extends DrawerActivity {
 
     TextView textView;
 

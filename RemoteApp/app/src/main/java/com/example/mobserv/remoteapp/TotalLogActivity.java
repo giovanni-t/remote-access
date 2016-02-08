@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class TotalLogActivity extends AppCompatActivity {
+public class TotalLogActivity extends DrawerActivity {
     TextView textView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
