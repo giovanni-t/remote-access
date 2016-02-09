@@ -23,17 +23,50 @@ When the server is up and running it will show the ip address to insert in the a
 
 ### How to use
 
-In order to use the application you need to run the server. The server will provide you with an ip address, which you need to insert into the first page of the app and click connect to the server.
-Once you are connected you can choose a name, if you choose a name already taken you will be asked to provide a different one.
+In order to use the application you need to run the server. The server will provide you with an ip address, which you need to insert into the first page of the app and click *connect to server*. Once you are connected you can choose a name, if you choose a name already taken you will be asked to provide a different one. If you do not choose a name, the first thing you write in the application will be your name.
 
-Now you can start sending requests, ask for periodic messages or send your own position. 
+Now you can start sending requests, request for periodic messages or provide your own GPS position.
+
+This is done by first selecting the name of the device you would like to communicate with, or choosing *all* in order to broadcast. After doing this you will be provided with the option of sending a request, recuesting for periodic messages or send your own GPS position. When you for example choose to send a request, options on what you can request will appear. When the only option that remains is *;*, your message is ready to be send and you click *SEND*, do not include *;* before *SEND*.
+
+You can also add more actions to your message by adding *;* an action message. After choosing *;* you continue as explained over, starting by selecting a device which will recive the action.
+
+When you click *SEND* your request will be sent through the server to the devise you choose and you will recive a response with the data you requested.
+
+
+### Protocol syntax
+
+The syntaxt of the messages beeing sent over the server is of the form
+
+/recipient_user/command/action/params/moreparams
+
+The recipient_user field is used for the username of the user the command is beeing sent to. recipient_user can also be set to *all* in case of broadcast.
+
+The command field is used for commands, like requests (Req), responses or execute (Exec).
+
+The action field is used for the specific action of the command. E.g. Gps, Photo, Live stream or Network. 
+
+The params and moreparams field is used for any parameters that the action migth need. This field will be specific for every different action.
+
+
+### Features
+
+##### Already implemented
 
 
 
 
+##### Ideas on features that can be added
 
-You do this by first choosing the name of the device you want to recive data from, or choosing to recive from all. Next choose what the request is, if it is a request for reciving the gps position, a picture or stream video. Then send the request by clicking send.
 
-You can also send more requests at the same time, you do this by choosing ; after the choosen request. Then you continue by choosing the devise as before.
 
-You can also send your own position by choosing send position after choosing a devise to send to.
+## License
+
+Apache License, Version 2.0, January 2004
+
+http://www.apache.org/licenses/
+
+
+## Support
+
+If you are having issues, please let us know, by posting an issue on this github page.
