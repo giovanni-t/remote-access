@@ -5,10 +5,6 @@ University project for MobServ class at Eurecom.
 The purpose of the project is to build a client-server application that allows to send remote commands between Android devices, having one (or more) of them onboard on drones.
 The server is a simple chat server in Python/Twisted, and the client is an Android app that sends/receives messages and performs actions described there.
 
-Supported features so far are requests of gps position, photo shooting and live streaming.
-
-Potential new features include a remote pilot for the drones.
-
 
 ### How to install
 
@@ -48,16 +44,53 @@ The action field is used for the specific action of the command. E.g. Gps, Photo
 
 The params and moreparams field is used for any parameters that the action migth need. This field will be specific for every different action.
 
+The server forward the message m by sending “< sendername >, m” to the recipient, where sendername is the name of the message sender. 
+
+Examples of messages:
+
+```< user3 >
+/user1/req/photo```
+
+Here user3 requests a photo from user1
+
+```< server >
+/all/resp/clientlist/2/user1/user3```
+
+Here the server broadcast the clientlist
+
 
 ### Features
 
 ##### Already implemented
 
+Supported features so far are
 
+ - Properly connect/disconnect from the server
+ - Proper interpretation of server messages
+ - Easy message composability/suggestions
+ - List of connected users
+ - Ask/send GPS coordinates in plaintext
+ - Show received GPS position on a map
+ - Send GPS position through clicking on a map
+ - Ask/Send pictures to/from other clients
+ - Save received pictures to memory
+ - Save received pictures in app gallery
+ - Stream video
+ - Log activity to file
 
 
 ##### Ideas on features that can be added
 
+A potential new feature that can be implemented is the ability to interact with the drone API. Making it possible to control the drone with your android device, sending commands for it to e.g. move left, right, up, down, etc. There is also a possibility to implement the possibility to send a position by clicking on the map, making the drone fly to the given position.
+
+Another feature that can be added include event-based subscription for batch commands.
+
+There is also the possibility to implement a request for data from various sensors, e.g. a humidity or temperature sensor  connected to the application. You will then be able to monitor the environment where the sensors are located, if the sensors allow it, it is possible to implement a command to change e.g. the temperature.
+
+
+##### How to implement new features
+
+In order to implement new features you need 
 
 
 ## License
@@ -69,4 +102,4 @@ http://www.apache.org/licenses/
 
 ## Support
 
-If you are having issues, please let us know, by posting an issue on this github page.
+If you are having issues, please let us know by posting an issue on this github page.
