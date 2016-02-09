@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
         NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (mWifi.isConnected() == false) {
             Toast.makeText(this, R.string.not_wifi_connected, Toast.LENGTH_LONG).show();
-            startActivity(it);
         } else {
             startActivity(it);
         }
