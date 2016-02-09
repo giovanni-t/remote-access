@@ -3,11 +3,9 @@ package com.example.mobserv.remoteapp;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,8 +14,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 /**
  * Created by giovanni on 24/12/15. just before christmas eating
@@ -63,7 +59,7 @@ public class DrawerActivity extends AppCompatActivity {
     }
 
     private void addDrawerItems() {
-        final String[] menuArray = { "Gallery", "Live Streamings", "Session Log", "Total log" };
+        final String[] menuArray = { "Gallery", "Live Streamings", "Session Log", "Total log"};
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, menuArray);
         mDrawerList.setAdapter(mAdapter);
         Log.d("DrawerActivity", "Mock List added");

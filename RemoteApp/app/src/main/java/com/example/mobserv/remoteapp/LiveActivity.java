@@ -1,6 +1,5 @@
 package com.example.mobserv.remoteapp;
 
-import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,7 +18,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 
-public class LiveActivity extends Activity {
+public class LiveActivity extends DrawerActivity {
     private final String TAG = "Live Activity";
     private MjpegView mv;
     private ViewGroup IpLinearLayout;
@@ -112,7 +111,14 @@ public class LiveActivity extends Activity {
     }
 
     public void stopPlayback() {
-        Log.i(TAG,"Stop playback");
+        Log.i(TAG, "Stop playback");
         new DoRead().onCloseConnection();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopPlayback();
+        return;
     }
 }

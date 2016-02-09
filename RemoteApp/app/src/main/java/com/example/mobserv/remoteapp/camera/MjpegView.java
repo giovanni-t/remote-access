@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -14,8 +15,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
-import java.io.IOException;
 
 /**
  * Created by alessioalberti on 13/12/15.
@@ -121,6 +120,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                         synchronized (mSurfaceHolder) {
                             try {
                                 bm = mIn.readMjpegFrame();
+                                Matrix matrix = new Matrix();
+                                matrix.postRotate(90);
+                                bm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
                                 destRect = destRect(bm.getWidth(), bm.getHeight());
                                 c.drawColor(Color.BLACK);
                                 c.drawBitmap(bm, null, destRect, p);
@@ -129,7 +131,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                     if (ovl != null) {
                                         height = ((ovlPos & 1) == 1) ? destRect.top : destRect.bottom - ovl.getHeight();
                                         width = ((ovlPos & 8) == 8) ? destRect.left : destRect.right - ovl.getWidth();
-                                        c.drawBitmap(ovl, width, height, null);
+                                        c.drawBitmap(ovl, height, width, null);
                                     }
                                     p.setXfermode(null);
                                     frameCounter++;
@@ -140,7 +142,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                         ovl = makeFpsOverlay(overlayPaint, fps);
                                     }
                                 }
-                            } catch(IOException e) {
+                            } catch(Exception e) {
                                 Log.d(TAG, "Mjpeg View IOException generated");
                                 mRun = false;
                                 e.printStackTrace();

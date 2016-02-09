@@ -89,7 +89,7 @@ public class ClientActivity extends DrawerActivity implements TaskFragment.TaskC
         // If the Fragment is non-null, then it is currently being
         // retained across a configuration change,
         // but otherwise we instantiate a NEW ONE
-        if (mTaskFragment == null) {
+        if (mTaskFragment == null && this.serverip != null) {
             Bundle bd = new Bundle();
             bd.putString("serverip", serverip);
             mTaskFragment = new TaskFragment();
