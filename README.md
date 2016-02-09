@@ -90,16 +90,18 @@ There is also the possibility to implement a request for data from various senso
 
 ##### How to implement new features
 
-In order to implement new features you need 
+In order to implement new features you just need to add a new case in the switch case for `messageIsReq()` and `messageIsResp()`. If you want to implement a new feature which need to deal with the GUI, you need to add a callback and implement it in the activity in charge of the GUI.
+
+If you want to, you can also rewrite the GUI. You do this by rewriting the class ChatActivity.
 
 
-## License
+### License
 
 Apache License, Version 2.0, January 2004
 
 http://www.apache.org/licenses/
 
 
-## Support
+### Support
 
 If you are having issues, please let us know by posting an issue on this github page.
