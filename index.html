@@ -68,6 +68,58 @@ Once you are connected you can choose a name, if you choose a name already taken
 <p>You can also send your own position by choosing send position after choosing a devise to send to.</p>
 
 <h3>
+<a id="protocol-syntax" class="anchor" href="#protocol-syntax" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>
+Protocol syntax</h3>
+
+<p>The syntaxt of the messages beeing sent over the server is of the form</p>
+<p>/recipient_user/command/action/params/moreparams</p>
+<p>The recipient_user field is used for the username of the user the command is beeing sent to. recipient_user can also be set to <em>all</em> in case of broadcast.</p>
+<p>The command field is used for commands, like requests (Req), responses or execute (Exec).</p>
+<p>The action field is used for the specific action of the command. E.g. Gps, Photo, Live stream or Network. </p>
+<p>The params and moreparams field is used for any parameters that the action migth need. This field will be specific for every different action.</p>
+<p>The server forward the message m by sending “&lt; sendername &gt;, m” to the recipient, where sendername is the name of the message sender. </p>
+<p>Examples of messages:</p>
+<p><code>&lt; user3 &gt;
+/user1/req/photo</code></p>
+<p>Here user3 requests a photo from user1</p>
+<p><code>&lt; server &gt;
+/all/resp/clientlist/2/user1/user3</code></p>
+<p>Here the server broadcast the clientlist</p>
+
+<h3>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>
+Features</h3>
+<h5>Already implemented</h5>
+<p>Supported features so far are</p>
+<ul>
+<li>Properly connect/disconnect from the server</li>
+<li>Proper interpretation of server messages</li>
+<li>Easy message composability/suggestions</li>
+<li>List of connected users</li>
+<li>Ask/send GPS coordinates in plaintext</li>
+<li>Show received GPS position on a map</li>
+<li>Send GPS position through clicking on a map</li>
+<li>Ask/Send pictures to/from other clients</li>
+<li>Save received pictures to memory</li>
+<li>Save received pictures in app gallery</li>
+<li>Stream video</li>
+<li>Log activity to file</li>
+</ul>
+<h5>Ideas on features that can be added</h5>
+<p>A potential new feature that can be implemented is the ability to interact with the drone API. Making it possible to control the drone with your android device, sending commands for it to e.g. move left, right, up, down, etc. There is also a possibility to implement the possibility to send a position by clicking on the map, making the drone fly to the given position.</p>
+<p>Another feature that can be added include event-based subscription for batch commands.</p>
+<p>There is also the possibility to implement a request for data from various sensors, e.g. a humidity or temperature sensor  connected to the application. You will then be able to monitor the environment where the sensors are located, if the sensors allow it, it is possible to implement a command to change e.g. the temperature.</p>
+<h5>How to implement new features</h5>
+<p>In order to implement new features you just need to add a new case in the switch case for <code>messageIsReq()</code> and <code>messageIsResp()</code>. If you want to implement a new feature which need to deal with the GUI, you need to add a callback and implement it in the activity in charge of the GUI.</p>
+<p>If you want to, you can also rewrite the GUI. You do this by rewriting the class ChatActivity.</p>
+
+<h3>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h3>
+<p>Apache License, Version 2.0, January 2004</p>
+<p>http://www.apache.org/licenses/</p>
+
+
+<h3>
 <a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Screenshots</h3>
 
 <img src="./images/ss/1.png" width="25%" height="25%">
@@ -76,6 +128,10 @@ Once you are connected you can choose a name, if you choose a name already taken
 <img src="./images/ss/4.png" width="25%" height="25%">
 <img src="./images/ss/5.png" width="25%" height="25%">
 
+
+<h3>
+<a id="support" class="anchor" href="#support" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Support</h3>
+<p>If you are having issues, please let us know by posting an issue on this github page.</p>
 
         </section>
 
@@ -88,7 +144,10 @@ Once you are connected you can choose a name, if you choose a name already taken
             <small>Download</small>
             .tar.gz file
           </a>
-
+          <a href="./RemoteApp/app/build/outputs/apk/app-debug.apk" class="button">
+            <small>Download (pre-release)</small>
+            .apk file
+          </a>
           <p class="repo-owner"><a href="https://github.com/gtataranni/remote-access"></a> is maintained by <a href="https://github.com/gtataranni">gtataranni</a>.</p>
 
           <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
