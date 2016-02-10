@@ -2,6 +2,9 @@ package com.example.mobserv.remoteapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
@@ -278,7 +281,6 @@ public class TaskFragment extends Fragment {
                     }
                     break;
                 case "gps":
-
                     try {
                         Double lon = Double.parseDouble(args[4]);
                         Double lat = Double.parseDouble(args[5]);
@@ -319,6 +321,9 @@ public class TaskFragment extends Fragment {
                     ips.addAll(Arrays.asList(args).subList(5, args.length));
                     Log.d("msgIsResp", "Parsed list of ips: " + numOfIPs + " " + ips.toString());
                     mCallbacks.onIpListReceived(numOfIPs, ips);
+                    break;
+                case "battery":
+                    // nothing to do
                     break;
                 default:
                     mCallbacks.onShowToast("Unknown RESP message:\n" + TextUtils.join("/", args));
@@ -396,6 +401,7 @@ public class TaskFragment extends Fragment {
                         reply.add(info.toString());
                         replyList.add(reply);
                         break;
+
                     default:
                         mCallbacks.onShowToast("Unknown REQ-BATCH message:\n" + TextUtils.join("/", args));
                 }
@@ -473,6 +479,17 @@ public class TaskFragment extends Fragment {
                         reply.add("resp");
                         reply.add("network");
                         reply.add(info.toString());
+                        break;
+                    case "battery":
+                        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                        Intent batteryStatus = getContext().registerReceiver(null, ifilter);
+                        int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                        float batteryPct = level / (float)scale;
+                        batteryPct *= 100;
+                        reply.add("resp");
+                        reply.add("battery");
+                        reply.add(String.valueOf(batteryPct));
                         break;
                     default:
                         mCallbacks.onShowToast("Unknown REQ message:\n" + TextUtils.join("/", args));

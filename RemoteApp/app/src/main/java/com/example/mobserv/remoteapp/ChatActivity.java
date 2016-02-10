@@ -257,6 +257,7 @@ public class ChatActivity extends DrawerActivity implements TaskFragment.TaskCal
         l.add("photo");
         l.add("live");
         l.add("network");
+        l.add("battery");
         setSuggestions(l);
     }
 
